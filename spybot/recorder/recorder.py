@@ -27,7 +27,9 @@ class Recorder:
 
                 while True:
                     event = ts3conn.wait_for_event()
-                    print(f"new Event: {event.parsed}")
+                    # quick hax
+                    event._parse_data()
+                    print(f"new Event of type {event._event}: {event.parsed}")
 
 
                 """print("hello from background thread")
