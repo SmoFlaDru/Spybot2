@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.conf import settings
+from django.template import loader
 
 from spybot.models import TSChannel
 
@@ -9,6 +10,13 @@ import ts3
 
 def index(request):
     return HttpResponse("Spybot is here")
+
+
+def home(request):
+    channel_list = TSChannel.objects.all()
+    template = loader.get_template('home.html')
+    context = { 'channel_list': channel_list }
+    return HttpResponse(template.render(context, request))
 
 
 def live(request):
