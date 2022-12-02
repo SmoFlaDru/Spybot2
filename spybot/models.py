@@ -8,7 +8,26 @@
 from django.db import models
 
 
-class TSChannel(models.Model):
+class DebuggableModel(models.Model):
+    class Meta:
+        abstract = True
+
+    def __repr__(self):
+        fields = self._meta.get_fields()
+        buf = "<%s" % self.__class__.__name__
+
+        for field in fields:
+            if not field.concrete:
+                continue
+
+            buf += " %s: %s" % (field.name, getattr(self, field.name))
+
+        buf += ">"
+
+        return buf
+
+
+class TSChannel(DebuggableModel):
     id = models.PositiveIntegerField(primary_key=True, null=False)
     name = models.CharField(max_length=64, blank=True, null=True)
 
@@ -17,7 +36,7 @@ class TSChannel(models.Model):
         db_table = 'TSChannel'
 
 
-class TSUser(models.Model):
+class TSUser(DebuggableModel):
     id = models.PositiveIntegerField(primary_key=True, null=False)
     name = models.CharField(max_length=128, blank=True, null=True)
 
@@ -26,7 +45,7 @@ class TSUser(models.Model):
         db_table = 'TSUser'
 
 
-class TSID(models.Model):
+class TSID(DebuggableModel):
     tsuser_id = models.ForeignKey(TSUser, models.DO_NOTHING, db_column='tsUserID', blank=True, null=True)
     ts_id = models.CharField(db_column='tsID', max_length=32, primary_key=True)
 
@@ -35,7 +54,7 @@ class TSID(models.Model):
         db_table = 'TSID'
 
 
-class TSUserActivity(models.Model):
+class TSUserActivity(DebuggableModel):
     id = models.IntegerField(primary_key=True, null=False)
     tsuser_id = models.ForeignKey(TSUser, models.DO_NOTHING, db_column='tsUserID', blank=True, null=True)  # Field name made lowercase.
     start_time = models.DateTimeField(db_column='startTime', blank=True, null=True)  # Field name made lowercase.
