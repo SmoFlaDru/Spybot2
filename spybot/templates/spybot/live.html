@@ -1,0 +1,31 @@
+<style>
+    table {
+        margin-left: auto;
+        margin-right: auto;
+        border:1px solid black;
+        border-collapse: collapse;
+    }
+    table tr {
+        border-bottom:1px solid black;
+    }
+</style>
+
+{% if channels %}
+<table>
+    <tr><td><b>TS3</b></td></tr>
+
+    {% for channel in channels %}
+        {% if 'spacer' not in channel.name %}
+            <tr><td>{{ channel.name }}</td></tr>
+            {% for client in clients %}
+                {% if channel.id == client.cid|add:"0" and client.client_type == "0" %}
+                    <tr><td style="padding-left:15px;">-->{{ client.client_nickname }}</td></tr>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+</table>
+
+{% else %}
+cringe
+{% endif %}
