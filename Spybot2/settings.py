@@ -89,12 +89,12 @@ DATABASES = {
         'USER': env('DB_USER'),
         'PASSWORD': env('DB_PASSWORD'),
         'HOST': env('DB_HOST'),
-        'PORT': '3306',
-    }
-    # {
+        'PORT': env('DB_PORT'),
+    },
+    #'old': {
     #     'ENGINE': 'django.db.backends.sqlite3',
     #     'NAME': BASE_DIR / 'db.sqlite3',
-    # }
+    #}
 }
 
 
