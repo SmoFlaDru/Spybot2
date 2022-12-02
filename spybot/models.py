@@ -17,15 +17,6 @@ class TSChannel(models.Model):
         db_table = 'TSChannel'
 
 
-class TSID(models.Model):
-    tsuser_id = models.ForeignKey('models.TSUser', models.DO_NOTHING, db_column='tsUserID', blank=True, null=True)
-    ts_id = models.CharField(db_column='tsID', max_length=32, primary_key=True)
-
-    class Meta:
-        managed = False
-        db_table = 'TSID'
-
-
 class TSUser(models.Model):
     id = models.PositiveIntegerField(primary_key=True, null=False)
     name = models.CharField(max_length=128, blank=True, null=True)
@@ -33,6 +24,15 @@ class TSUser(models.Model):
     class Meta:
         managed = False
         db_table = 'TSUser'
+
+
+class TSID(models.Model):
+    tsuser_id = models.ForeignKey(TSUser, models.DO_NOTHING, db_column='tsUserID', blank=True, null=True)
+    ts_id = models.CharField(db_column='tsID', max_length=32, primary_key=True)
+
+    class Meta:
+        managed = False
+        db_table = 'TSID'
 
 
 class TSUserActivity(models.Model):
