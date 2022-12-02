@@ -9,6 +9,8 @@ from ts3 import TS3Error
 from ts3.query import TS3ServerConnection, TS3TimeoutError
 from ts3.response import TS3ParserError
 
+from spybot.models import TSUserActivity, TSUser, TSID
+
 
 class Recorder:
 
@@ -36,6 +38,7 @@ class Recorder:
 
     def main_loop(self, ts3conn: TS3ServerConnection):
         try:
+            ts3conn.exec_("clientupdate", client_nickname="spytwo")
             # fetch all connected clients initally
             client_list_response = ts3conn.exec_("clientlist", "uid")
             len(client_list_response.parsed)
@@ -129,9 +132,29 @@ class Recorder:
             # because fuck that tsmonitor
             return
 
+        # check if we have this user yet
+        tsid = None
+        try:
+            tsid = TSID.objects.get(ts_id=client_unique_identifier)
+            tsuser = tsid.tsuser
+            print(f"found existing TSID for user: {tsid} and tsuser: {tsuser}")
+        except TSID.DoesNotExist:
+            print("did not find TSID for user")
+            # create new TSUser and TSID for this client
+            u = TSUser(name=client_nickname)
+            u.save()
+            tsid = TSID(ts_id=client_unique_identifier, tsuser_id=u.id)
+            tsid.save()
+            print(f"created tsuser {u.name} and tsid {tsid}for new client")
+
+        #TSUser.objects.filter(tsid__exact=)
+
+
         # check if client has an existing client_enter for this channel,
         # and it's the latest entry for this user.
         # In that case don't enter anything in the DB
+
+        #TSUserActivity.objects.get(tsuser)
 
         # enter new client into DB
 
@@ -141,7 +164,6 @@ class Recorder:
     reason_id: 3 for timeout, 0 for intended disconnect
     """
     def client_leave(self, client_id: int, channel_id: int, reason_id: int):
-
         pass
 
     def client_move(self,  client_id: int, channel_to_id: int, reason_id: int):
