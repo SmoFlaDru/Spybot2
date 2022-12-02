@@ -14,15 +14,13 @@ class DebuggableModel(models.Model):
 
     def __repr__(self):
         fields = self._meta.get_fields()
-        buf = "<%s"%(self.__class__.__name__)
-        buf += "\n"
+        buf = "<%s" % self.__class__.__name__
 
         for field in fields:
             if not field.concrete:
                 continue
 
-            buf += "\t%s: %s"%(field.name, getattr(self, field.name))
-            buf += "\n"
+            buf += " %s: %s" % (field.name, getattr(self, field.name))
 
         buf += ">"
 
