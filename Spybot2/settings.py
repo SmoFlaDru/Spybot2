@@ -28,7 +28,13 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-@mnp&pj+11dt%#0&0tavguxcsetxpdp6w-$0r7(7qf9&-or953'
+SECRET_KEY = env('SECRET_KEY')
+
+# TS DATA
+TS_USER = env('TS_USER')
+TS_PASSWORD = env('TS_PASSWORD')
+TS_IP = env('TS_IP')
+TS_PORT = env('TS_PORT')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
