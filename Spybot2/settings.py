@@ -92,7 +92,8 @@ WSGI_APPLICATION = 'Spybot2.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': env('DB_NAME'),
+        #'NAME': env('DB_NAME'),
+        'NAME': env('DB_TEST'),
         'USER': env('DB_USER'),
         'PASSWORD': env('DB_PASSWORD'),
         'HOST': env('DB_HOST'),
