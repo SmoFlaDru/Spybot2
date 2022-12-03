@@ -3,7 +3,7 @@ echo "starting to deploy..."
 
 ls -al
 
-echo "test" > .env
+echo "testing" > .env
 
 git pull origin master
 
