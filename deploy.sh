@@ -7,4 +7,4 @@ echo "$SECRET" > .env
 git pull origin master
 
 # restart spybot service here
-systemctl restart spybot2
+systemctl restart spybot2.service
