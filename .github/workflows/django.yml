@@ -50,8 +50,6 @@ jobs:
           envs: SECRET
           script: |
             cd Spybot2
-            echo "$SECRET" >> .env
-            echo "$SECRET"
-            echo "blabla" >> .env
+            echo "$SECRET" > .env
             chmod +x deploy.sh
             ./deploy.sh
