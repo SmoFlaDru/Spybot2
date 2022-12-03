@@ -49,6 +49,6 @@ jobs:
           port: ${{ secrets.LINUX_PORT }}
           envs: SECRET
           script: |
-            echo "Vars:$SECRET"
             cd Spybot2
+            chmod +x deploy.sh
             ./deploy.sh
