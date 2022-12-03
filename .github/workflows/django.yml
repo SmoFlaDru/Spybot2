@@ -51,4 +51,4 @@ jobs:
           script: |
             ls -al
             cd Spybot2
-            deploy.sh
+            ./deploy.sh
