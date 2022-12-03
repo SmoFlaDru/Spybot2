@@ -1,6 +1,8 @@
-echo starting to deploy
+echo "starting to deploy..."
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+
 echo "$SECRET" > .env
-# maybe git pull here required idk?
 git pull origin master
 
 # run DB migrations if necessary
