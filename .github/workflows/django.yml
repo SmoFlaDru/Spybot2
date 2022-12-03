@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: [linux, x64]
+    runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
       matrix:
@@ -36,7 +36,7 @@ jobs:
   deploy:
     needs: build
     name: Deploy to Server
-    runs-on: linux
+    runs-on: ubuntu-latest
     steps:
       - name: execute remote ssh commands
         uses: appleboy/ssh-action@master
@@ -45,5 +45,7 @@ jobs:
           username: ${{ secrets.LINUX_USERNAME }}
           key: ${{ secrets.LINUX_KEY }}
           port: ${{ secrets.LINUX_PORT }}
+          run: |
+            echo "${{ secrets.ENV_FILE }}" > Spybot2/.env
           script: |
             Spybot2/deploy.sh
