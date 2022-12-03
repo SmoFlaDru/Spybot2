@@ -1,10 +1,13 @@
-echo "starting to deploy..."
-ls -al
 cd "$HOME/Spybot2" || exit || return 1
+echo "starting to deploy..."
+
+ls -al
+echo "$SECRET" > .env
+
 python -m pip install --upgrade pip
+# pyenv smth smth
 pip install -r requirements.txt
 
-echo "$SECRET" > .env
 git pull origin master
 
 # run DB migrations if necessary
