@@ -1,7 +1,9 @@
-# maybe git pull here required idk?
+cd "$HOME/Spybot2" || exit || return 1
+echo "starting to deploy..."
 
-# run DB migrations if necessary
-python manage.py migrate
+ls -al
 
-# run django app
-python manage.py runserver
+git pull origin master
+
+# restart spybot service here
+sudo systemctl restart spybot
