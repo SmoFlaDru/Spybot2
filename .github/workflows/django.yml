@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: [linux, x64]
     strategy:
       max-parallel: 4
       matrix:
@@ -31,3 +31,19 @@ jobs:
     - name: Run Tests
       run: |
         python manage.py test
+
+
+  deploy:
+    needs: build
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+    steps:
+      - name: execute remote ssh commands
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.LINUX_HOST }}
+          username: ${{ secrets.LINUX_USERNAME }}
+          key: ${{ secrets.LINUX_KEY }}
+          port: ${{ secrets.LINUX_PORT }}
+          script: |
+            Spybot2/deploy.sh
