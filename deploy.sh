@@ -1,5 +1,6 @@
 echo "starting to deploy..."
 ls -al
+cd "$HOME/Spybot2" || exit || return 1
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 

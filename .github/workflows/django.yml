@@ -50,4 +50,5 @@ jobs:
           envs: SECRET
           script: |
             ls -al
-            Spybot2/deploy.sh
+            cd Spybot2
+            deploy.sh
