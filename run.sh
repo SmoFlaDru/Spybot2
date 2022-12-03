@@ -1,3 +1,5 @@
+source /venv/bin/activate
+
 # install any missing python deps
 pip install -r requirements.txt
 

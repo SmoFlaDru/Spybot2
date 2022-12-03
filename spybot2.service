@@ -1,0 +1,10 @@
+[Unit]
+Description=Unit for starting the Spybot2 Django App
+
+[Service]
+Restart=on-failure
+WorkingDirectory=/home/justus/Spybot2
+ExecStart=run.sh
+
+[Install]
+WantedBy=multi-user.target
