@@ -5,7 +5,7 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
-
+  workflow_dispatch:
 jobs:
   build:
 
@@ -36,7 +36,7 @@ jobs:
   deploy:
     needs: build
     name: Deploy to Server
-    runs-on: ubuntu-latest
+    runs-on: linux
     steps:
       - name: execute remote ssh commands
         uses: appleboy/ssh-action@master
