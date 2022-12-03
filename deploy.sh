@@ -8,4 +8,4 @@ echo "test" > .env
 git pull origin master
 
 # restart spybot service here
-#systemctl restart spybot2.service
+sudo systemctl restart spybot
