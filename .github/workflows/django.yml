@@ -40,12 +40,13 @@ jobs:
     steps:
       - name: execute remote ssh commands
         uses: appleboy/ssh-action@master
+        env:
+          SECRET: ${{ secrets.ENV_FILE }}
         with:
           host: ${{ secrets.LINUX_HOST }}
           username: ${{ secrets.LINUX_USERNAME }}
           key: ${{ secrets.LINUX_KEY }}
           port: ${{ secrets.LINUX_PORT }}
-          run: |
-            echo "${{ secrets.ENV_FILE }}" > Spybot2/.env
+          envs: SECRET
           script: |
             Spybot2/deploy.sh

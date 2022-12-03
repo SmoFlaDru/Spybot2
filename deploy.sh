@@ -1,3 +1,5 @@
+echo starting to deploy
+echo "$SECRET" > .env
 # maybe git pull here required idk?
 git pull origin master
 
