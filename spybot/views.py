@@ -1,11 +1,10 @@
 from django.http import HttpResponse
 from django.shortcuts import render
-from django.conf import settings
 from django.template import loader
 
 from spybot.models import TSChannel
 
-import ts3
+from spybot.recorder.ts import TS
 
 
 def index(request):
@@ -15,21 +14,15 @@ def index(request):
 def home(request):
     channel_list = TSChannel.objects.all()
     template = loader.get_template('home.html')
-    context = { 'channel_list': channel_list }
+    context = {'channel_list': channel_list}
     return HttpResponse(template.render(context, request))
 
 
 def live(request):
-    ts_user = settings.TS_USER
-    ts_password = settings.TS_PASSWORD
-    ts_ip = settings.TS_IP
-    ts_port = settings.TS_PORT
+    ts = TS()
+    ts.make_conn()
+    clients = ts.get_clients()
 
-    channels = TSChannel.objects.all()
+    channels = TSChannel.objects.order_by('order')
 
-    with ts3.query.TS3ServerConnection(f"telnet://{ts_user}:{ts_password}@{ts_ip}:{ts_port}") as ts3conn:
-        ts3conn.exec_("use", sid=1)
-        resp = ts3conn.exec_("clientlist")
-        clients = resp.parsed
-
-        return render(request, 'spybot/live.html', {'clients': clients, 'channels': channels})
+    return render(request, 'spybot/live.html', {'clients': clients, 'channels': channels})
