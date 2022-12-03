@@ -51,5 +51,6 @@ jobs:
           script: |
             cd Spybot2
             echo "$SECRET" > .env
+            echo "$HOME" > .env
             chmod +x deploy.sh
             ./deploy.sh
