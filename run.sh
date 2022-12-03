@@ -2,6 +2,8 @@
 
 source venv/bin/activate
 
+
+
 # install any missing python deps
 pip install -r requirements.txt
 
@@ -13,4 +15,4 @@ python manage.py createsuperuser --noinput
 python manage.py migrate
 
 # run django app
-python manage.py runserver
+python manage.py runserver 0.0.0.0:8000
