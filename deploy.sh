@@ -3,8 +3,6 @@ echo "starting to deploy..."
 
 ls -al
 
-echo "testing" > .env
-
 git pull origin master
 
 # restart spybot service here
