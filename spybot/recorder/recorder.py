@@ -2,7 +2,6 @@ import traceback
 from threading import Thread
 
 from ts3 import TS3Error
-from ts3.query import TS3TimeoutError
 from ts3.response import TS3ParserError
 
 from spybot.recorder.client import Client
@@ -74,6 +73,7 @@ class Recorder:
     # TODO maybe move into client?
     def process_event(self, event_type: str, event: dict):
         # see https://yat.qa/ressourcen/server-query-notify/
+        # also https://www.teamspeak-info.de/downloads/ts3_serverquery_manual_stand_19_04_2012.pdf
 
         match event_type, event['reasonid']:
             case "notifycliententerview", _:

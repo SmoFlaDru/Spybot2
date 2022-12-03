@@ -11,7 +11,7 @@ class Client:
     def client_enter(self, client_id: int, channel_id: int, client_database_id: int, client_nickname: str,
                      client_type: int, client_unique_identifier: str):
         print(f"client {client_nickname} entered")
-        if client_type == 1:
+        if client_type == "1":
             # because fuck that tsmonitor
             return
 
@@ -20,7 +20,7 @@ class Client:
         try:
             tsid = TSID.objects.get(ts_id=client_unique_identifier)
             tsuser = tsid.tsuser
-            print(f"found existing TSID for user: {tsid} and tsuser: {tsuser}")
+            print(f"found existing TSID for user: {tsid} and tsuser: {tsuser.name}")
         except TSID.DoesNotExist:
             print("did not find TSID for user")
             # create new TSUser and TSID for this client
