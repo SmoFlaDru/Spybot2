@@ -7,13 +7,14 @@ from spybot.models import TSChannel
 from spybot.recorder.ts import TS
 
 
-def index(request):
-    return HttpResponse("Spybot is here")
+def helloworld(request):
+    template = loader.get_template('spybot/helloworld.html')
+    return HttpResponse(template.render({}, request))
 
 
 def home(request):
     channel_list = TSChannel.objects.all()
-    template = loader.get_template('home.html')
+    template = loader.get_template('spybot/home.html')
     context = {'channel_list': channel_list}
     return HttpResponse(template.render(context, request))
 
