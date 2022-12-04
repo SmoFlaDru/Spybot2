@@ -6,7 +6,7 @@ from ts3.query import TS3ServerConnection, TS3TimeoutError
 class TS:
 
     def __init__(self):
-        # TODO define it better so line 19 doesn't error anymore
+        # TODO define it better so line 21 doesn't error anymore
         self.ts3conn: TS3ServerConnection
 
         self.ts_user = settings.TS_USER
@@ -43,7 +43,7 @@ class TS:
 
     def get_channels(self):
         # TODO not really sure about that command
-        return self.ts3conn.exec_("channellist")
+        return self.ts3conn.exec_("channellist").parsed
 
     def keep_alive(self):
         self.ts3conn.send_keepalive()

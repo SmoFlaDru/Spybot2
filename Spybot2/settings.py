@@ -39,7 +39,7 @@ TS_PORT = env('TS_PORT')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [TS_IP, 'localhost']
+ALLOWED_HOSTS = [TS_IP, 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -99,9 +99,9 @@ DATABASES = {
         'HOST': env('DB_HOST'),
         'PORT': env('DB_PORT'),
     },
-    #'old': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': BASE_DIR / 'db.sqlite3',
+    #'default': {
+    #    'ENGINE': 'django.db.backends.sqlite3',
+    #    'NAME': BASE_DIR / 'db.sqlite3',
     #}
 }
 

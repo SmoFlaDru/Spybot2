@@ -77,7 +77,7 @@ class Recorder:
 
         match event_type, event['reasonid']:
             case "notifycliententerview", _:
-                print(f"client {event['client_nickname']} entered")
+                print(f"event: {event['client_nickname']} entered")
                 self.client.client_enter(
                     client_id=event["clid"],
                     channel_id=event["ctid"],

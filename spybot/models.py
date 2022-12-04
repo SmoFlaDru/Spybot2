@@ -33,16 +33,16 @@ class TSChannel(DebuggableModel):
     order = models.PositiveIntegerField(null=False)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'TSChannel'
 
 
 class TSUser(DebuggableModel):
-    id = models.PositiveIntegerField(primary_key=True, null=False)
     name = models.CharField(max_length=128, blank=True, null=True)
+    client_id = models.PositiveIntegerField(db_column="clientID")
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'TSUser'
 
 
@@ -51,7 +51,7 @@ class TSID(DebuggableModel):
     ts_id = models.CharField(db_column='tsID', max_length=32, primary_key=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'TSID'
 
 
@@ -67,5 +67,5 @@ class TSUserActivity(DebuggableModel):
     channel_id = models.ForeignKey(TSChannel, models.DO_NOTHING, db_column='cID')  # Field name made lowercase.
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'TSUserActivity'
