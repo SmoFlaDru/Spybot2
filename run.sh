@@ -12,7 +12,6 @@ pip install -r requirements.txt
 python manage.py createsuperuser --noinput
 
 # run DB migrations if necessary
-python manage.py makemigrations
 python manage.py migrate
 
 # run django app
