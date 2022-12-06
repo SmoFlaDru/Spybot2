@@ -49,7 +49,8 @@ class Recorder:
                     client_database_id=user["client_database_id"],
                     client_nickname=user["client_nickname"],
                     client_type=user["client_type"],
-                    client_unique_identifier=user["client_unique_identifier"]
+                    client_unique_identifier=user["client_unique_identifier"],
+                    server_start=True
                 )
 
             # wait for events
@@ -75,8 +76,8 @@ class Recorder:
         # see https://yat.qa/ressourcen/server-query-notify/
         # also https://www.teamspeak-info.de/downloads/ts3_serverquery_manual_stand_19_04_2012.pdf
 
-        match event_type, event['reasonid']:
-            case "notifycliententerview", _:
+        match event_type:
+            case "notifycliententerview":
                 print(f"event: {event['client_nickname']} entered")
                 self.client.client_enter(
                     client_id=event["clid"],
@@ -86,7 +87,9 @@ class Recorder:
                     client_type=event["client_type"],
                     client_unique_identifier=event["client_unique_identifier"]
                 )
-            case "notifyclientleftview", 0:
+            case "notifyclientleftview":
+                # TODO wrong there is no reasonid necessarily sometimes
+                # clid = client_id, cfid = channel_from_id
                 # notifyclientleftview: [{'cfid': '1', 'ctid': '0', 'reasonid': '8', 'reasonmsg': 'Verlassen',
                 # 'clid': '3088'}]
 
@@ -94,9 +97,9 @@ class Recorder:
                 self.client.client_leave(
                     client_id=event["clid"],
                     channel_id=event["cfid"],
-                    reason_id=event["reasonid"]
+                    reason_id=event.get("reasonid", -1)
                 )
-            case "notifyclientmoved", _:
+            case "notifyclientmoved":
                 # notifyclientmoved: [{'ctid': '37', 'reasonid': '0', 'clid': '2760'}]
                 print(f"Client {event['clid']} moved", event)
                 self.client.client_move(
