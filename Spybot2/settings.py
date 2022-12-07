@@ -98,6 +98,7 @@ DATABASES = {
         'PASSWORD': env('DB_PASSWORD'),
         'HOST': env('DB_HOST'),
         'PORT': env('DB_PORT'),
+        'CONN_MAX_AGE': 3600,
     },
     #'default': {
     #    'ENGINE': 'django.db.backends.sqlite3',
