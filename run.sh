@@ -15,4 +15,4 @@ python manage.py createsuperuser --noinput
 python manage.py migrate
 
 # run django app
-python manage.py runserver 0.0.0.0:8000
+PYTHONUNBUFFERED=1 python manage.py runserver 0.0.0.0:8000
