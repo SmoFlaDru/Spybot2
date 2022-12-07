@@ -5,26 +5,34 @@ from spybot.models import TSID, TSUser, TSUserActivity, TSChannel
 
 class Client:
 
-    # client_id: int
-    # channel_id: int
-    # client_nickname: string
-    # client_type: int
-    # client_unique_identifier: str
+    """
+    called when a client enters
+    server_start is True when the server reads initial client list on (re)start
+    """
     def client_enter(self, client_id: int, channel_id: int, client_database_id: int, client_nickname: str,
-                     client_type: int, client_unique_identifier: str):
+                     client_type: int, client_unique_identifier: str, server_start: bool = False):
         if client_type == "1":
             # because fuck that tsmonitor
             return
 
         # check if we have this user yet
-        tsid = None
+        tsid, tsuser = None, None
         try:
             tsid = TSID.objects.get(ts_id=client_unique_identifier)
             tsuser = tsid.tsuser
-            tsuser.client_id = client_id
-            tsuser.save()
-            print(f"found existing TSID for user: {tsuser.name} with id={tsid}")
-            self.__client_start_session(tsuser, channel_id)
+            assert tsuser.id
+            # user exists
+
+            # check if user already has open sessions when server restarts
+            # TODO check if this actually works
+            if server_start:
+                # TODO find better name
+                self.__handle_old_sessions(tsid, tsuser, channel_id, client_id)
+            else:
+                # temporary clientID while client is online
+                print(f"found existing TSID for user: {tsuser.name} with id={tsid}")
+                self.__client_start_session(tsuser, channel_id, client_id)
+
         except TSID.DoesNotExist as e:
             print(f"did not find TSID for user {e}")
             # create new TSUser and TSID for this client
@@ -41,32 +49,37 @@ class Client:
     # client_id: userID
     # channel_id: channel that was left
     # reason_id: 3 for timeout, 0 for intended disconnect, 8 unknown
-    def client_leave(self, client_id: int, channel_id: int, reason_id: int):
-        user = TSUser.objects.get(client_id__exact=client_id)
-        user.client_id = None
+    def client_leave(self, client_id: int, channel_id: int, reason_id: int = -1):
+        user = TSUser.objects.get(client_id=client_id)
+        user.client_id = 0
+        user.online = False
         user.save()
 
-        self.__client_end_session(user, reason_id, channel_id)
+        self.__client_end_session(user, reason_id)
 
     def client_move(self, client_id: int, channel_to_id: int, reason_id: int):
         print("Client moved!")
         user = self.__get_user_from_client_id(client_id)
 
         self.__client_end_session(user, reason_id)
-        self.__client_start_session(user, channel_to_id)
+        self.__client_start_session(user, channel_to_id, client_id)
 
-    def __client_start_session(self, ts_user: TSUser, channel_id: int, is_new_user: bool = True):
+    """
+    TODO:
+    on serverstart:
+    - logic for setting online at serverstart
+    - check for open sessions and incorrectly online clients on server start and close them
+    - set join column correctly
+    - treat server start client fetch differently
+    """
+
+    def __client_start_session(self, ts_user: TSUser, channel_id: int, client_id: int):
         # TODO maybe joined?, check if already has open session?
         print(f"starting session for {ts_user.id}")
 
-        if not is_new_user:
-            # TODO
-            # client was already on server when spybot started
-            # check if he has an open-ended session and close/remove it
-            # maybe sth like this
-            # if TSUserActivity.objects.order_by('-startTime').filter(tsuser_id=ts_user.id).exists():
-            #   assert (TSUserActivity.objects.order_by('-startTime').get(tsuser_id=ts_user.id).end_time is None)
-            pass
+        ts_user.client_id = client_id
+        ts_user.online = True
+        ts_user.save()
 
         try:
             channel = TSChannel.objects.get(id__exact=channel_id)
@@ -76,15 +89,12 @@ class Client:
             print(f"channel ID wrong: {channel_id}")
 
 
-    def __client_end_session(self, ts_user: TSUser, reason_id: int, channel_id: int = -1):
+    def __client_end_session(self, ts_user: TSUser, reason_id: int):
         print("Ending Session!")
         # old_activity = newest TSUserActivity for client_id (in channel_id)
         # insert endTime, reason_id into old_activity
         try:
             old_activity = TSUserActivity.objects.order_by('-start_time').filter(tsuser_id=ts_user)[0]
-
-            if channel_id != -1:
-                assert channel_id == old_activity.channel_id
 
             if old_activity.end_time is not None:
                 raise ValueError('end_time should be empty here')
@@ -101,3 +111,35 @@ class Client:
             return ts_user
         except TSUser.DoesNotExist as e:
             print(f"Error client ID is wrong: {e}")
+
+    """
+    make sure session is correct and correct if mistakes were made
+    if user is already online, check if he has an open session
+    if so, make sure it is for the correct channel
+    if no close it and start a new one
+    TODO maybe even remove it
+    """
+    def __handle_old_sessions(self, tsid: TSID, tsuser: TSUser, channel_id, client_id):
+        print(f"handle old session for {tsuser.name}")
+        if not tsuser.online:
+            # user joined after server went down, start normally
+            tsuser.online = True
+            tsuser.client_id = client_id
+            tsuser.save()
+            self.__client_start_session(tsuser, channel_id, client_id)
+            return
+
+        # user is already online
+        open_session = TSUserActivity\
+            .objects\
+            .filter(tsuser_id=tsuser.id)\
+            .order_by('-start_time').first()
+        # TODO this is BS, refactor
+        print(f"open session: {open_session}")
+        # check if session was in same channel
+        if open_session.channel_id.id != channel_id:
+            self.__client_end_session(tsuser, 0)
+            self.__client_start_session(tsuser, channel_id, client_id)
+        else:
+            tsuser.client_id = client_id
+            tsuser.save()

@@ -40,6 +40,8 @@ class TSChannel(DebuggableModel):
 class TSUser(DebuggableModel):
     name = models.CharField(max_length=128, blank=True, null=True)
     client_id = models.PositiveIntegerField(db_column="clientID")
+    # maybe remove
+    online = models.BooleanField(db_column='isCurrentlyOnline', default=False)
 
     class Meta:
         managed = True
