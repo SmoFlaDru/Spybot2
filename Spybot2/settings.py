@@ -35,11 +35,12 @@ TS_USER = env('TS_USER')
 TS_PASSWORD = env('TS_PASSWORD')
 TS_IP = env('TS_IP')
 TS_PORT = env('TS_PORT')
+SERVER_IP = env('SERVER_IP')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [TS_IP, 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = [SERVER_IP, TS_IP, 'localhost', '127.0.0.1']
 
 
 # Application definition

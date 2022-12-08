@@ -118,8 +118,6 @@ class Client:
             keep_session_user = None
 
             for client in clients:
-                print(f"ClientID: {session.tsuser_id.client_id}:{client['clid']}")
-                print(f"channelID: {session.channel_id.id}:{client['cid']}")
                 if session.tsuser_id.client_id == int(client['clid']) \
                         and session.channel_id.id == int(client['cid']):
                     # KEEP SESSION OPEN
@@ -135,7 +133,7 @@ class Client:
 
         return clients
 
-        # i don't even remember what I did here anymore :(
+        # I don't even remember what I did here anymore :(
         """tsid: TSID, tsuser: TSUser, channel_id, client_id):
         print(f"handle old session for {tsuser.name}")
         if not tsuser.online:
