@@ -21,7 +21,6 @@ class Recorder:
     def run(self):
 
         while True:
-
             self.ts.make_conn()
             self.ts.register_events()
             self.ts.set_nickname("spytwo")
@@ -36,12 +35,13 @@ class Recorder:
             # TODO fetch all channels and update in DB if necessary
 
             # fetch all connected clients initally
-            client_list_response = self.ts.get_clients()
+            client_list = self.ts.get_clients()
 
-            len(client_list_response)
-            print(f"Client-list inital: {client_list_response}")
+            print(f"Client-list inital: {client_list}")
+            # close old open sessions
+            client_list = self.client.handle_old_sessions(client_list)
 
-            for user in client_list_response:
+            for user in client_list:
                 # enter in db
                 self.client.client_enter(
                     client_id=user["clid"],
@@ -50,7 +50,7 @@ class Recorder:
                     client_nickname=user["client_nickname"],
                     client_type=user["client_type"],
                     client_unique_identifier=user["client_unique_identifier"],
-                    server_start=True
+                    joined=True
                 )
 
             # wait for events
