@@ -125,7 +125,7 @@ class Client:
                     break
 
             if keep_session_user:
-                print("Keeping old session alive probably")
+                print(f"Keeping old session alive probably for {session.tsuser_id.name}")
                 clients.remove(keep_session_user)
             elif not keep_session_user:
                 print("Ending old session")

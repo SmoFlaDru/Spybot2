@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.template import loader
 
-from spybot.models import TSChannel
+from spybot.models import TSChannel, TSUser
 
 from spybot.recorder.ts import TS
 
@@ -25,5 +25,12 @@ def live(request):
     clients = ts.get_clients()
 
     channels = TSChannel.objects.order_by('order')
+
+    return render(request, 'spybot/live.html', {'clients': clients, 'channels': channels})
+
+
+def live_db(request):
+    channels = TSChannel.objects.order_by('order')
+    clients = TSUser.objects.filter(online=True)
 
     return render(request, 'spybot/live.html', {'clients': clients, 'channels': channels})
