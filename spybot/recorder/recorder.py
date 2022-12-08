@@ -50,7 +50,6 @@ class Recorder:
                     client_nickname=user["client_nickname"],
                     client_type=user["client_type"],
                     client_unique_identifier=user["client_unique_identifier"],
-                    joined=True
                 )
 
             # wait for events

@@ -42,12 +42,15 @@ class Client:
     # channel_id: channel that was left
     # reason_id: 3 for timeout, 0 for intended disconnect, 8 unknown
     def client_leave(self, client_id: int, channel_id: int, reason_id: int = -1):
-        user = TSUser.objects.get(client_id=client_id)
-        user.client_id = 0
-        user.online = False
-        user.save()
+        try:
+            user = TSUser.objects.get(client_id=client_id)
+            user.client_id = 0
+            user.online = False
+            user.save()
 
-        self.__client_end_session(user, reason_id)
+            self.__client_end_session(user, reason_id)
+        except TSUser.DoesNotExist as e:
+            print(f"caught a bot leaving: {e}")
 
     def client_move(self, client_id: int, channel_to_id: int, reason_id: int):
         print("Client moved!")
