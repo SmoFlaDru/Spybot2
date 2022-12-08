@@ -99,6 +99,7 @@ DATABASES = {
         'HOST': env('DB_HOST'),
         'PORT': env('DB_PORT'),
         'CONN_MAX_AGE': 3600,
+        'CONN_HEALTH_CHECKS': True,
     },
     #'default': {
     #    'ENGINE': 'django.db.backends.sqlite3',
