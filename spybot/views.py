@@ -37,4 +37,4 @@ def live_db(request):
 
 
 def spybot(request):
-    return render(request, 'spybot/sidebar.html')
+    return render(request, 'spybot/base/sidebar.html')
