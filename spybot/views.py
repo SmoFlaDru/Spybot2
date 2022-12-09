@@ -34,3 +34,7 @@ def live_db(request):
     clients = TSUser.objects.filter(online=True)
 
     return render(request, 'spybot/live.html', {'clients': clients, 'channels': channels})
+
+
+def spybot(request):
+    return render(request, 'spybot/sidebar.html')
