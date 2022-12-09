@@ -87,7 +87,7 @@ class Recorder:
                     client_unique_identifier=event["client_unique_identifier"]
                 )
             case "notifyclientleftview":
-                # TODO wrong there is no reasonid necessarily sometimes
+                # TODO wrong there is no reasonid because of ts3 vs ts5
                 # clid = client_id, cfid = channel_from_id
                 # notifyclientleftview: [{'cfid': '1', 'ctid': '0', 'reasonid': '8', 'reasonmsg': 'Verlassen',
                 # 'clid': '3088'}]
