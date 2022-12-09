@@ -15,9 +15,11 @@
     </head>
     <body>
         <script src="{% static 'theme.js' %}"></script>
-        {% block sidebar %}sidebar{% endblock sidebar %}
+        {% include 'spybot/base/sidebar.html' %}
         <div>
-            yoyoyo
+            {% block content %}
+            error
+            {% endblock %}
         </div>
 
     </body>

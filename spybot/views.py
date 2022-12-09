@@ -3,7 +3,6 @@ from django.shortcuts import render
 from django.template import loader
 
 from spybot.models import TSChannel, TSUser
-
 from spybot.recorder.ts import TS
 
 
@@ -14,12 +13,11 @@ def helloworld(request):
 
 def home(request):
     channel_list = TSChannel.objects.all()
-    template = loader.get_template('spybot/home.html')
     context = {'channel_list': channel_list}
-    return HttpResponse(template.render(context, request))
+    return render(request, 'spybot/home.html', context)
 
 
-def live(request):
+def live_legacy(request):
     ts = TS()
     ts.make_conn()
     clients = ts.get_clients()
@@ -29,7 +27,7 @@ def live(request):
     return render(request, 'spybot/live.html', {'clients': clients, 'channels': channels})
 
 
-def live_db(request):
+def live(request):
     channels = TSChannel.objects.order_by('order')
     clients = TSUser.objects.filter(online=True)
 

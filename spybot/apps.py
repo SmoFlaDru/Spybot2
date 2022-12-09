@@ -10,8 +10,6 @@ class SpybotConfig(AppConfig):
     def ready(self):
         if os.environ.get('RUN_MAIN'):
             from spybot.recorder.recorder import Recorder
-            #TODO
-            #print("spybot app ready")
-            #rec = Recorder()
-            #rec.start()
-
+            print("spybot app ready")
+            rec = Recorder()
+            rec.start()
