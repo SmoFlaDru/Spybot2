@@ -46,6 +46,7 @@ def live_legacy(request):
     return render(request, 'spybot/live_legacy.html', {'clients': clients, 'channels': channels})
 
 
+# TODO load live view seperately and poll with javascript
 def live(request):
     channels = TSChannel.objects.order_by('order')
     sessions = TSUserActivity.objects.filter(end_time=None)
