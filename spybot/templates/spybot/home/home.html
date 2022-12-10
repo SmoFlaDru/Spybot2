@@ -3,10 +3,39 @@
 {% block content %}
     <div class="row row-cards justify-content-md-center">
         <div class="col-md-6">
-            {% include 'spybot/home/activity_chart.html'%}
+            <div class="row row-cards">
+                <div class="col-md-12">
+                    {% include 'spybot/home/activity_chart.html'%}
+                </div>
+                <div class="col-md-12">
+                    <div class="row row-cards">
+                        <div class="col-md-6">
+                            {% include 'spybot/home/info_tile.html' %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include 'spybot/home/info_tile.html' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="col-md-3">
             {% include 'spybot/home/live_user_list.html' %}
+        </div>
+        <div class="col-md-3">
+            {% include 'spybot/home/info_tile.html' %}
+        </div>
+        <div class="col-md-3">
+            {% include 'spybot/home/info_tile.html' %}
+        </div>
+        <div class="col-md-3">
+            {% include 'spybot/home/info_tile.html' %}
+        </div>
+        <div class="col-md-3">
+            {% include 'spybot/home/info_tile.html' %}
+        </div>
+        <div class="col-md-3">
+            {% include 'spybot/home/info_tile.html' %}
         </div>
     </div>
 {% endblock %}
