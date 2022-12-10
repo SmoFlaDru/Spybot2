@@ -7,7 +7,7 @@ def daily_activity():
             WITH data AS (
                 SELECT
                     DATE_FORMAT(CAST(startTime AS date), '%Y-%m-%d') AS date,
-                    SUM(CAST(endTime AS INTEGER) - CAST(startTime AS INTEGER)) / 3600 AS time_hours
+                    SUM(TIMESTAMPDIFF(SECOND, startTime, endTime)) / 3600 AS time_hours
                 FROM TSUserActivity
                 WHERE
                     startTime > DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
