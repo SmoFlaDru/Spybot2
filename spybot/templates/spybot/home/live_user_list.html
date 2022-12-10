@@ -16,13 +16,15 @@
                 {% for client in clients %}
                     {% if channel.id == client.channel_id|add:"0" %}
                         <div class="list-group-item">
-            <div class="row align-items-center">
-                <div class="col-auto"><span class="badge bg-red"></span></div>
-                <div class="col text-truncate">
-                    <a href="#" class="text-reset d-block">{{ client.name }}</a>
-                </div>
-            </div>
-        </div>
+                            <div class="row align-items-center">
+                                <div class="col-auto"><span class="
+                                {% if channel.id == 7 or channel.id == 3 %}
+                                    badge bg-red{% else %}badge bg-green{% endif %}"></span></div>
+                                <div class="col text-truncate">
+                                    <a href="#" class="text-reset d-block">{{ client.name }}</a>
+                                </div>
+                            </div>
+                        </div>
                     {% endif %}
                 {% endfor %}
             {% endif %}
