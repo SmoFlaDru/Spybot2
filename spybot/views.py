@@ -5,6 +5,7 @@ from django.template import loader
 from spybot import visualization
 from spybot.models import TSChannel, TSUser, TSUserActivity
 from spybot.recorder.ts import TS
+from spybot.templatetags import ts_filters
 
 
 def helloworld(request):
