@@ -13,7 +13,7 @@ def daily_activity():
                 WHERE
                     startTime > DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
                     AND endTime IS NOT NULL
-                    AND channel.name NOT IN ('bei\\sBedarf\\sanstupsen', 'AFK')
+                    AND channel.name NOT IN ('bei\\\sBedarf\\\sanstupsen', 'AFK')
                 GROUP BY date
                 ORDER BY date
             ),
@@ -26,7 +26,7 @@ def daily_activity():
                 WHERE
                     startTime > DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
                     AND endTime IS NOT NULL
-                    AND channel.name IN ('bei\\sBedarf\\sanstupsen', 'AFK')
+                    AND channel.name IN ('bei\\\sBedarf\\\sanstupsen', 'AFK')
                 GROUP BY date
                 ORDER BY date
             )
