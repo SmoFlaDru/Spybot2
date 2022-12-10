@@ -1,3 +1,4 @@
+{% load ts_filters %}
 <div class="card">
     <div class="card-header">
         <h3 class="card-title">Live View</h3>
@@ -18,7 +19,7 @@
                         </span>
 
                         <div class="col text-truncate">
-                            <a href="#" class="text-reset d-block">{{ channel.name }}</a>
+                            <a href="#" class="text-reset d-block">{{ channel.name|replace_ts_special_chars }}</a>
                         </div>
                     </div>
                 </div>
