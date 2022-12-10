@@ -14,9 +14,9 @@ def helloworld(request):
 
 def home(request):
     data = visualization.daily_activity()
-    dates, values = zip(*data)
+    dates, active_values, afk_values = zip(*data)
     # convert tuples back to lists when passing to template
-    context = {'dates': list(dates), 'values': list(values)}
+    context = {'dates': list(dates), 'active_values': list(active_values), 'afk_values': list(afk_values)}
     return render(request, 'spybot/home.html', context)
 
 

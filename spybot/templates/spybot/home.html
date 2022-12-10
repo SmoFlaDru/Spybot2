@@ -56,7 +56,10 @@ document.addEventListener("DOMContentLoaded", function () {
         },
         series: [{
             name: "Time spent",
-            data: {{ values|safe }}
+            data: {{ active_values|safe }}
+        },{
+            name: "Idling",
+            data: {{ afk_values|safe }}
         }],
         tooltip: {
             theme: 'dark'
@@ -93,7 +96,7 @@ document.addEventListener("DOMContentLoaded", function () {
             },
         },
         labels: {{ dates|safe }},
-        colors: [tabler.getColor("primary"), tabler.getColor("primary", 0.8), tabler.getColor("green", 0.8)],
+        colors: [tabler.getColor("primary"), tabler.getColor("red", 0.8), tabler.getColor("green", 0.8)],
         legend: {
             show: false,
         },
