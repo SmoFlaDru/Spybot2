@@ -17,7 +17,7 @@ def home(request):
     dates, active_values, afk_values = zip(*data)
     # convert tuples back to lists when passing to template
     context = {'dates': list(dates), 'active_values': list(active_values), 'afk_values': list(afk_values)}
-    return render(request, 'spybot/home.html', context)
+    return render(request, 'spybot/home/home.html', context)
 
 
 def live_legacy(request):
@@ -27,18 +27,26 @@ def live_legacy(request):
 
     channels = TSChannel.objects.order_by('order')
 
-    return render(request, 'spybot/live.html', {'clients': clients, 'channels': channels})
+    return render(request, 'spybot/live_legacy.html', {'clients': clients, 'channels': channels})
 
 
 def live(request):
     channels = TSChannel.objects.order_by('order')
-    clients = TSUser.objects.filter(online=True)
+    sessions = TSUserActivity.objects.filter(end_time=None)
+
+    clients = []
+
+    for session in sessions:
+        channel_id = session.channel.id
+        user_name = session.tsuser.name
+        clients.append({'channel_id': channel_id, 'name': user_name})
 
     return render(request, 'spybot/live.html', {'clients': clients, 'channels': channels})
 
 
 def spybot(request):
     return render(request, 'spybot/base/navbar.html')
+
 
 def widget_legacy(request):
     sessions = TSUserActivity.objects.filter(end_time=None)
