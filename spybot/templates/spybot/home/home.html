@@ -1,7 +1,12 @@
 {% extends 'spybot/base/base.html' %}
 
 {% block content %}
-
-{% include 'spybot/home/activity_chart.html'%}
-{% include 'spybot/home/live_user_list.html' %}
+    <div class="row row-cards">
+        <div class="col-md-6">
+            {% include 'spybot/home/activity_chart.html'%}
+        </div>
+        <div class="col-md-3">
+            {% include 'spybot/home/live_user_list.html' %}
+        </div>
+    </div>
 {% endblock %}
