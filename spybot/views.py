@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.template import loader
 
+from spybot import visualization
 from spybot.models import TSChannel, TSUser
 from spybot.recorder.ts import TS
 
@@ -12,8 +13,10 @@ def helloworld(request):
 
 
 def home(request):
-    channel_list = TSChannel.objects.all()
-    context = {'channel_list': channel_list}
+    data = visualization.daily_activity()
+    dates, values = zip(*data)
+    # convert tuples back to lists when passing to template
+    context = {'dates': list(dates), 'values': list(values)}
     return render(request, 'spybot/home.html', context)
 
 

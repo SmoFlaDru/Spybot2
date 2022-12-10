@@ -11,16 +11,19 @@
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler.min.css">
         <script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js"></script>
-
+        <script src="https://cdn.jsdelivr.net/npm/apexcharts" defer></script>
+        {% block header %}
+        {%  endblock %}
     </head>
     <body>
         <script src="{% static 'theme.js' %}"></script>
         {% include 'spybot/base/sidebar.html' %}
-        <div>
-            {% block content %}
-            error
-            {% endblock %}
+        <div class="page-body">
+            <div class="container-xl">
+                {% block content %}
+                error
+                {% endblock %}
+            </div>
         </div>
-
     </body>
 </html>
