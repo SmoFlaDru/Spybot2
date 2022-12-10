@@ -16,7 +16,6 @@ def daily_activity():
             )
             SELECT date, CAST(time_hours AS DOUBLE)
             FROM data
-            WHERE date != '2022-11-30'
             ORDER BY date
         """)
         return cursor.fetchall()
