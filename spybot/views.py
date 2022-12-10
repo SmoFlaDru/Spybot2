@@ -1,8 +1,8 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template import loader
 
-from spybot.models import TSChannel, TSUser
+from spybot.models import TSChannel, TSUser, TSUserActivity
 from spybot.recorder.ts import TS
 
 
@@ -36,3 +36,21 @@ def live(request):
 
 def spybot(request):
     return render(request, 'spybot/base/sidebar.html')
+
+def widget_legacy(request):
+    sessions = TSUserActivity.objects.filter(end_time=None)
+
+    active_clients = []
+    inactive_clients = []
+    res = {}
+    for session in sessions:
+        print(f"session={session}")
+        user_name = session.tsuser_id.name
+        channel_name = session.channel_id.name
+        if channel_name == "bei Bedarf anstupsen" or channel_name == "AFK":
+            inactive_clients.append(user_name)
+        else:
+            active_clients.append(user_name)
+    res["activeClients"] = active_clients
+    res["inactiveClients"] = inactive_clients
+    return JsonResponse(res)
