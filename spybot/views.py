@@ -38,7 +38,7 @@ def live(request):
 
 
 def spybot(request):
-    return render(request, 'spybot/base/sidebar.html')
+    return render(request, 'spybot/base/navbar.html')
 
 def widget_legacy(request):
     sessions = TSUserActivity.objects.filter(end_time=None)
