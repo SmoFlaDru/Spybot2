@@ -1,0 +1,35 @@
+<div class="row row-cards">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Live View</h3>
+            </div>
+            <div class="list-group list-group-flush list-group-hoverable">
+
+                {% for channel in channels %}
+                    {% if 'spacer' not in channel.name and channel.order < 100 %}
+                        <div class="list-group-item">
+                    <div class="row align-items-center">
+                        <div class="col text-truncate">
+                            <a href="#" class="text-reset d-block">{{ channel.name }}</a>
+                        </div>
+                    </div>
+                </div>
+                        {% for client in clients %}
+                            {% if channel.id == client.channel_id|add:"0" %}
+                                <div class="list-group-item">
+                    <div class="row align-items-center">
+                        <div class="col-auto"><span class="badge bg-red"></span></div>
+                        <div class="col text-truncate">
+                            <a href="#" class="text-reset d-block">{{ client.name }}</a>
+                        </div>
+                    </div>
+                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>

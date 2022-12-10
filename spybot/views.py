@@ -13,10 +13,26 @@ def helloworld(request):
 
 
 def home(request):
+    # activity chart
     data = visualization.daily_activity()
     dates, active_values, afk_values = zip(*data)
     # convert tuples back to lists when passing to template
     context = {'dates': list(dates), 'active_values': list(active_values), 'afk_values': list(afk_values)}
+
+    # live view
+    sessions = TSUserActivity.objects.filter(end_time=None)
+    channels = TSChannel.objects.order_by('order')
+    clients = []
+
+    for session in sessions:
+        channel_id = session.channel.id
+        user_name = session.tsuser.name
+        print(f"appending client {user_name}")
+        clients.append({'channel_id': channel_id, 'name': user_name})
+    context['clients'] = clients
+    context['channels'] = channels
+    print(f"context: {context}")
+
     return render(request, 'spybot/home/home.html', context)
 
 
