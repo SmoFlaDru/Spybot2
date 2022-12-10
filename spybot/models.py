@@ -59,14 +59,12 @@ class TSID(DebuggableModel):
 
 class TSUserActivity(DebuggableModel):
     id = models.IntegerField(primary_key=True, null=False)
-    # todo: fix the name
-    tsuser_id = models.ForeignKey(TSUser, models.DO_NOTHING, db_column='tsUserID', blank=True, null=True)  # Field name made lowercase.
+    tsuser = models.ForeignKey(TSUser, models.DO_NOTHING, db_column='tsUserID', blank=True, null=True)  # Field name made lowercase.
     start_time = models.DateTimeField(db_column='startTime', blank=True, null=True)  # Field name made lowercase.
     end_time = models.DateTimeField(db_column='endTime', blank=True, null=True)  # Field name made lowercase.
     joined = models.BooleanField(null=False, default=False)
     disconnect_id = models.IntegerField(db_column='discID', blank=True, null=True)  # Field name made lowercase.
-    # todo: fix the name
-    channel_id = models.ForeignKey(TSChannel, models.DO_NOTHING, db_column='cID')  # Field name made lowercase.
+    channel = models.ForeignKey(TSChannel, models.DO_NOTHING, db_column='cID')  # Field name made lowercase.
 
     class Meta:
         managed = True
