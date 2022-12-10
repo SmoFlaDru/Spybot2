@@ -1,6 +1,6 @@
 <div class="card">
     <div class="card-body">
-        <h3 class="card-title">Time spent</h3>
+        <h3 class="card-title">Time spent on server</h3>
         {# include ui/chart.html chart-id="mentions" size="lg" legend=true #}
         <div id="chart-mentions" class="chart-lg"></div>
     </div>
@@ -84,8 +84,11 @@ document.addEventListener("DOMContentLoaded", function () {
         },
         yaxis: {
             labels: {
-                padding: 4
-            },
+                padding: 4,
+                formatter: (value) => {
+                    return value.toFixed(1) + 'h'
+                }
+            }
         },
         labels: {{ dates|safe }},
         colors: [tabler.getColor("primary"), tabler.getColor("red", 0.8), tabler.getColor("green", 0.8)],
