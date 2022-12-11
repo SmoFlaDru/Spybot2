@@ -87,6 +87,10 @@ def timeline(request):
 
     users = {}
     for x in data:
+        # skip activities shorter than 10 seconds
+        if x.end_time is not None and (x.end_time - x.start_time).total_seconds() <= 10:
+            continue
+
         user_name = x.tsuser.name
         if user_name not in users:
             users[user_name] = {
