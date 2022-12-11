@@ -37,16 +37,6 @@ def home(request):
     return render(request, 'spybot/home/home.html', context)
 
 
-def live_legacy(request):
-    ts = TS()
-    ts.make_conn()
-    clients = ts.get_clients()
-
-    channels = TSChannel.objects.order_by('order')
-
-    return render(request, 'spybot/live_legacy.html', {'clients': clients, 'channels': channels})
-
-
 # TODO load live view seperately and poll with javascript
 def live(request):
     channels = TSChannel.objects.order_by('order')
