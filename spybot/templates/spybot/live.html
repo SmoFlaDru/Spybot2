@@ -1,4 +1,4 @@
-{% extends 'spybot/base.html' %}
+{% extends 'spybot/base/base.html' %}
 
 {% block content %}
 
@@ -22,8 +22,8 @@
             {% if 'spacer' not in channel.name and channel.order < 100 %}
                 <tr><td>{{ channel.name }}</td></tr>
                 {% for client in clients %}
-                    {% if channel.id == client.cid|add:"0" and client.client_type == "0" %}
-                        <tr><td style="padding-left:15px;">-->{{ client.client_nickname }}</td></tr>
+                    {% if channel.id == client.channel_id|add:"0" %}
+                        <tr><td style="padding-left:15px;">-->{{ client.name }}</td></tr>
                     {% endif %}
                 {% endfor %}
             {% endif %}

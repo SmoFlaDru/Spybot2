@@ -1,0 +1,30 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <meta charset="utf-8" />
+        <link rel="icon" href="../../../static/favicon.png" sizes="144x115">
+
+        <title>Spybot 2 by Justus and Benno</title>
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/apexcharts" defer></script>
+        {% block header %}
+        {%  endblock %}
+    </head>
+    <body>
+        <script src="{% static 'theme.js' %}"></script>
+        {% include 'spybot/base/navbar.html' %}
+        <div class="page-body">
+            <div class="container-xl">
+                {% block content %}
+                error
+                {% endblock %}
+            </div>
+        </div>
+    </body>
+</html>

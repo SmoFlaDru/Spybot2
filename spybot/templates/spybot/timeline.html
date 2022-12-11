@@ -1,0 +1,82 @@
+{%  extends 'spybot/base/base.html' %}
+
+{%  block content %}
+<div class="row row-cards justify-content-md-center">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">Timeline</h3>
+                <div id="chart-timeline" class="chart-lg">
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+{{ activity_by_user|json_script:"time-series-data" }}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const data = JSON.parse(document.querySelector('#time-series-data').textContent);
+    const options = {
+        series: data,
+        chart: {
+            height: 550,
+            type: 'rangeBar',
+            toolbar: {
+                show: false
+            }
+        },
+        plotOptions: {
+            bar: {
+                horizontal: true,
+                barHeight: '80%'
+            }
+        },
+        xaxis: {
+            type: 'datetime',
+            labels: {
+                datetimeUTC: false
+            }
+        },
+        yaxis: {
+            labels: {
+                style: {
+                     //cssClass: 'card-body text-muted'
+                }
+            }
+        },
+        stroke: {
+            width: 1
+        },
+        fill: {
+            type: 'solid',
+            opacity: 0.6
+        },
+        legend: {
+            position: 'top',
+            horizontalAlign: 'left',
+            fontSize: '18px',
+            fontFamily: 'inherit',
+            markers: {
+                radius: 18,
+                offsetX: -5
+            },
+            itemMargin: {
+                horizontal: 20
+            }
+        },
+        tooltip: {
+            x: {
+                format: 'hh:mm:ss tt'
+            },
+            theme: document.body.classList.contains("theme-dark") ? 'dark' : 'light'
+        },
+        theme: {
+            palette: 'palette2'
+        },
+    };
+
+    const chart = new ApexCharts(document.querySelector("#chart-timeline"), options);
+    chart.render();
+})
+</script>
+{%  endblock content %}

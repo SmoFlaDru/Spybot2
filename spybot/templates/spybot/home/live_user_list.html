@@ -1,0 +1,62 @@
+{% load ts_filters %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Live View</h3>
+    </div>
+    <div class="list-group list-group-flush list-group-hoverable">
+
+        {% for channel in channels %}
+            {% if 'spacer' not in channel.name and channel.order < 100 %}
+                <div class="list-group-item">
+                    <div class="row align-items-center">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                               <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                               <polyline points="5 12 3 12 12 3 21 12 19 12"></polyline>
+                               <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"></path>
+                               <rect x="10" y="12" width="4" height="4"></rect>
+                            </svg>
+                        </span>
+
+                        <div class="col text-truncate">
+                            <a href="#" class="text-reset d-block">{{ channel.name|replace_ts_special_chars }}</a>
+                        </div>
+                    </div>
+                </div>
+                {% for client in clients %}
+                    {% if channel.id == client.channel_id|add:"0" %}
+                        <div id="user" class="list-group-item">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <span class="{% if channel.id == 7 or channel.id == 13 %}
+                                    badge bg-red{% else %}badge bg-green{% endif %}"></span>
+                                </div>
+                                <div id="list_text" class="col text-truncate">
+                                    <a href="#" class="text-reset d-block">{{ client.name }}</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+
+<style>
+    .list-group-item {
+        padding-bottom: 4px;
+        padding-top: 4px;
+    }
+    #user {
+        padding-left: 50px;
+    }
+    #list_text{
+        padding-left: 0;
+    }
+    .card-header {
+        padding-bottom: 6px;
+        padding-top: 6px;
+    }
+</style>

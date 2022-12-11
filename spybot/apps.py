@@ -13,4 +13,3 @@ class SpybotConfig(AppConfig):
             print("spybot app ready")
             rec = Recorder()
             rec.start()
-
