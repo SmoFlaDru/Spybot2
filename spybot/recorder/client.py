@@ -51,9 +51,6 @@ class Client:
     def client_leave(self, client_id: int, channel_id: int, reason_id: int = -1):
         try:
             user = TSUser.objects.get(client_id=client_id)
-            user.client_id = 0
-            user.online = False
-            user.save()
 
             self.__client_end_session(user, reason_id)
         except TSUser.DoesNotExist as e:
@@ -83,14 +80,16 @@ class Client:
         # old_activity = newest TSUserActivity for client_id (in channel_id)
         # insert endTime, reason_id into old_activity
         try:
-            old_activity = TSUserActivity.objects.order_by('-start_time').filter(tsuser=ts_user)[0]
+            old_activity = TSUserActivity.objects.order_by('-start_time').filter(tsuser=ts_user, end_time=None)
 
-            if old_activity.end_time is not None:
-                raise ValueError('end_time should be empty here')
+            ts_user.client_id = 0
+            ts_user.online = False
+            ts_user.save()
+            for o_a in old_activity:
+                o_a.end_time = timezone.now()
+                o_a.disconnect_id = reason_id
+                o_a.save()
 
-            old_activity.end_time = timezone.now()
-            old_activity.disconnect_id = reason_id
-            old_activity.save()
         except Exception as e:  # TODO specify Exception
             print(f"User does not exist or smth: {e}")
 
