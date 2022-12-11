@@ -123,6 +123,7 @@ def timeline(request):
             if series is not None:
                 new_first_user_series.append(series)
             else:
+                # insert dummy entry for channel ordering purposes
                 new_first_user_series.append({
                     'x': ts_filters.replace_ts_special_chars(c.name),
                     'y': []
