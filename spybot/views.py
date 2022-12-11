@@ -81,7 +81,9 @@ def widget_legacy(request):
 
 def timeline(request):
     cutoff = timezone.now() - timedelta(hours=6)
-    data = TSUserActivity.objects.filter(start_time__gte=cutoff)
+    data = TSUserActivity.objects.filter(start_time__gte=cutoff).order_by('channel__order')
+
+    already_seen_channels = set()
 
     users = {}
     for x in data:
@@ -103,5 +105,29 @@ def timeline(request):
                 time.mktime(x.end_time.timetuple()) * 1000
             ]
         })
+
+        if x.channel.name not in already_seen_channels:
+            already_seen_channels.add(x.channel.name)
+
+    # fixes for correct channel order
+    first_user = next(iter(users))
+    first_user_object = users[first_user]
+    first_user_series = first_user_object["data"]
+    new_first_user_series = []
+
+    for c in TSChannel.objects.order_by('order'):
+        if c.name in already_seen_channels:
+            # make sure this channel is in the first user series
+            # check if it already exists, copy it over
+            series = next((s for s in first_user_series if s['x'] == ts_filters.replace_ts_special_chars(c.name)), None)
+            if series is not None:
+                new_first_user_series.append(series)
+            else:
+                # insert dummy entry for channel ordering purposes
+                new_first_user_series.append({
+                    'x': ts_filters.replace_ts_special_chars(c.name),
+                    'y': []
+                })
+    first_user_object["data"] = new_first_user_series
 
     return render(request, 'spybot/timeline.html', {'activity_by_user': list(users.values())})
