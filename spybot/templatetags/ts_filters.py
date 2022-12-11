@@ -9,18 +9,18 @@ def replace_ts_special_chars(value):
     Use `{{ "aaa"|replace_ts_special_chars }}`
     """
     ts_special_chars = {
-         "\\\\": "\\",
+        "\\\\": "\\",
         "\\/": "/",
         "\\s": " ",
         "\\p": "|",
         "\\;": ";",
-         "\\a": "\a",
-         "\\b": "\b",
-         "\\f": "\f",
-         "\\n": "\n",
-         "\\r": "\r",
-         "\\t": "\t",
-         "\\v": "\v",
+        "\\a": "\a",
+        "\\b": "\b",
+        "\\f": "\f",
+        "\\n": "\n",
+        "\\r": "\r",
+        "\\t": "\t",
+        "\\v": "\v",
     }
 
     for search, replace in ts_special_chars.items():
