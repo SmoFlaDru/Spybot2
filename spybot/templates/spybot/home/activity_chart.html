@@ -31,7 +31,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 show: false,
             },
             animations: {
-                enabled: false
+                enabled: true,
+                easing: 'easein',
+                speed: 1000,
+                animateGradually: {
+                    enabled: true,
+                    delay: 150
+                },
+                dynamicAnimation: {
+                    enabled: true,
+                    speed: 550
+                }
             },
             stacked: true,
         },
