@@ -1,6 +1,10 @@
+import time
+from datetime import timedelta
+
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template import loader
+from django.utils import timezone
 
 from spybot import visualization
 from spybot.models import TSChannel, TSUser, TSUserActivity
@@ -73,3 +77,31 @@ def widget_legacy(request):
     res["activeClients"] = active_clients
     res["inactiveClients"] = inactive_clients
     return JsonResponse(res)
+
+
+def timeline(request):
+    cutoff = timezone.now() - timedelta(hours=6)
+    data = TSUserActivity.objects.filter(start_time__gte=cutoff)
+
+    users = {}
+    for x in data:
+        user_name = x.tsuser.name
+        if user_name not in users:
+            users[user_name] = {
+                'name': user_name,
+                'data': []
+            }
+
+        if x.end_time is None:
+            x.end_time = timezone.now()
+
+        users[user_name]['data'].append({
+            'x': ts_filters.replace_ts_special_chars(x.channel.name),
+            'y': [
+                # JS dates are in unix timestamp * 1000
+                time.mktime(x.start_time.timetuple()) * 1000,
+                time.mktime(x.end_time.timetuple()) * 1000
+            ]
+        })
+
+    return render(request, 'spybot/timeline.html', {'activity_by_user': list(users.values())})
