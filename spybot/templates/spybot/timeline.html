@@ -73,6 +73,19 @@ document.addEventListener("DOMContentLoaded", () => {
         theme: {
             palette: 'palette2'
         },
+        dataLabels: {
+            enabled: true,
+            formatter: function (val, { seriesIndex, dataPointIndex, w }) {
+                if (val[0] === undefined && val[1] === undefined) {
+                    // this is a dummy entry for correct channel ordering, don't emit a label
+                    return ""
+                }
+                return w.config.series[seriesIndex].name;
+            },
+            style: {
+                colors: ["#f3f4f5", "#fff"]
+            }
+        },
     };
 
     const chart = new ApexCharts(document.querySelector("#chart-timeline"), options);
