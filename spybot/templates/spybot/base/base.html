@@ -19,12 +19,15 @@
     <body>
         <script src="{% static 'theme.js' %}"></script>
         {% include 'spybot/base/navbar.html' %}
-        <div class="page-body">
-            <div class="container-xl">
-                {% block content %}
-                error
-                {% endblock %}
+        <div class="page-wrapper">
+            <div class="page-body">
+                <div class="container-xl">
+                    {% block content %}
+                    error
+                    {% endblock %}
+                </div>
             </div>
+            {% include 'spybot/base/footer.html' %}
         </div>
     </body>
 </html>
