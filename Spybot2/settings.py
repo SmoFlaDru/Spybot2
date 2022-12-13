@@ -47,6 +47,7 @@ ALLOWED_HOSTS = [SERVER_IP, TS_IP, 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'spybot',
+    'django_crontab',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -150,3 +151,10 @@ STATIC_ROOT = '../spybot_static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# django-crontab config
+
+CRONJOBS = [
+    ('* * * * *', 'spybot.recorder.cron.cron.my_scheduled_job')
+]
+CRONTAB_COMMAND_PREFIX = env.str('CRONTAB_COMMAND_PREFIX', '')
