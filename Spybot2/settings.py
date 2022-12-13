@@ -155,6 +155,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # django-crontab config
 
 CRONJOBS = [
-    ('* * * * *', 'spybot.recorder.cron.cron.my_scheduled_job')
+    ('* * * * *', 'spybot.recorder.cron.cron.my_scheduled_job'),
+    ('59 * * * *', 'spybot.recorder.cron.cron.record_hourly_activity')
 ]
 CRONTAB_COMMAND_PREFIX = env.str('CRONTAB_COMMAND_PREFIX', '')
