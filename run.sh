@@ -14,5 +14,8 @@ python manage.py createsuperuser --noinput
 # run DB migrations if necessary
 python manage.py migrate
 
+# start cronjobs with crontab using django-crontab
+python manage.py crontab add
+
 # run django app
 PYTHONUNBUFFERED=1 python manage.py runserver 0.0.0.0:8000
