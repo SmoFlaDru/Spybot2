@@ -20,7 +20,7 @@ def tabler_icon(name, **kwargs):
         <svg width="24" height="24" class="{}">
             <use xlink:href="{}#tabler-{}"/>
         </svg>"""),
-       kwargs.get("class", ""),
+        kwargs.get("class", ""),
         url,
         name
     )
