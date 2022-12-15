@@ -35,7 +35,9 @@ document.addEventListener("DOMContentLoaded", () => {
             type: 'datetime',
             labels: {
                 datetimeUTC: false
-            }
+            },
+            max: {{ max }},
+            min: {{ min }},
         },
         yaxis: {
             labels: {
@@ -66,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         tooltip: {
             x: {
-                format: 'hh:mm:ss tt'
+                format: 'HH:mm:ss'
             },
             theme: document.body.classList.contains("theme-dark") ? 'dark' : 'light'
         },

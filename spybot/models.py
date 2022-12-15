@@ -70,6 +70,9 @@ class TSUserActivity(DebuggableModel):
     class Meta:
         managed = True
         db_table = 'TSUserActivity'
+        indexes = [
+            models.Index(fields=['start_time'])
+        ]
 
 
 class HourlyActivity(DebuggableModel):

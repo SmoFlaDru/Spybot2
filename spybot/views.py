@@ -1,3 +1,4 @@
+import datetime
 import time
 from datetime import timedelta
 
@@ -7,8 +8,7 @@ from django.template import loader
 from django.utils import timezone
 
 from spybot import visualization
-from spybot.models import TSChannel, TSUser, TSUserActivity
-from spybot.recorder.ts import TS
+from spybot.models import TSChannel, TSUserActivity
 from spybot.templatetags import ts_filters
 
 
@@ -81,7 +81,12 @@ def widget_legacy(request):
 
 def timeline(request):
     cutoff = timezone.now() - timedelta(hours=6)
+    now_time = timezone.now()
     data = TSUserActivity.objects.filter(start_time__gte=cutoff).order_by('channel__order')
+
+    def convert_to_jstime(dt: datetime.datetime):
+        # JS dates are in unix timestamp * 1000
+        return time.mktime(dt.timetuple()) * 1000
 
     already_seen_channels = set()
 
@@ -104,9 +109,8 @@ def timeline(request):
         users[user_name]['data'].append({
             'x': ts_filters.replace_ts_special_chars(x.channel.name),
             'y': [
-                # JS dates are in unix timestamp * 1000
-                time.mktime(x.start_time.timetuple()) * 1000,
-                time.mktime(x.end_time.timetuple()) * 1000
+                convert_to_jstime(x.start_time),
+                convert_to_jstime(x.end_time),
             ]
         })
 
@@ -134,4 +138,8 @@ def timeline(request):
                 })
     first_user_object["data"] = new_first_user_series
 
-    return render(request, 'spybot/timeline.html', {'activity_by_user': list(users.values())})
+    return render(request, 'spybot/timeline.html', {
+        'activity_by_user': list(users.values()),
+        'min': convert_to_jstime(cutoff),
+        'max': convert_to_jstime(now_time),
+    })
