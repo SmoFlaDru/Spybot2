@@ -7,6 +7,9 @@ source venv/bin/activate
 # install any missing python deps
 pip install -r requirements.txt
 
+# copy static files to directory for http server
+python manage.py collectstatic
+
 # create django superuser if necessary.
 # Set the env vars DJANGO_SUPERUSER_{PASSWORD,USERNAME,EMAIL} when running this script
 python manage.py createsuperuser --noinput
@@ -18,4 +21,4 @@ python manage.py migrate
 python manage.py crontab add
 
 # run django app
-PYTHONUNBUFFERED=1 python manage.py runserver 0.0.0.0:8000
+PYTHONUNBUFFERED=1 python manage.py runserver 127.0.0.1:8000

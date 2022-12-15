@@ -27,7 +27,9 @@ jobs:
         pip install -r requirements.txt
     - name: 'Create env file'
       run: |
-        echo "${{ secrets.ENV_FILE }}" > .env
+        cat > .env << 'EOF'
+        ${{ secrets.ENV_FILE }}
+        EOF
     - name: Run Tests
       run: |
         python manage.py test
