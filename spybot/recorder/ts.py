@@ -1,5 +1,7 @@
+import time
+
 from django.conf import settings
-from ts3.query import TS3ServerConnection, TS3TimeoutError
+from ts3.query import TS3ServerConnection, TS3TimeoutError, TS3QueryError
 
 
 # TODO maybe make this thread safe singleton
@@ -50,5 +52,17 @@ class TS:
 
     def set_nickname(self, name: str):
         # TODO Teamspeak error error id 513: nickname is already in use, retry connection
-        # ts3conn.exec_("clientupdate", client_nickname="spytwo")
-        pass
+
+        postfix = 0
+        while True:
+            try:
+                attempted_name = f"{name}_{postfix}" if postfix != 0 else name
+                self.ts3conn.exec_("clientupdate", client_nickname=attempted_name)
+            except TS3QueryError as error:
+                if int(error.resp.error["id"]) == 513:
+                    # name already in use, try another
+                    print("trying another name")
+                    postfix += 1
+                    time.sleep(2)
+                    continue
+            break
