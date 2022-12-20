@@ -2,6 +2,7 @@ import datetime
 import time
 from datetime import timedelta
 
+from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template import loader
@@ -82,7 +83,9 @@ def widget_legacy(request):
 def timeline(request):
     cutoff = timezone.now() - timedelta(hours=6)
     now_time = timezone.now()
-    data = TSUserActivity.objects.filter(start_time__gte=cutoff).order_by('channel__order')
+    data = TSUserActivity.objects.filter(
+        Q(end_time__gt=cutoff) | Q(end_time__isnull=True)
+    ).order_by('channel__order')
 
     def convert_to_jstime(dt: datetime.datetime):
         # JS dates are in unix timestamp * 1000
