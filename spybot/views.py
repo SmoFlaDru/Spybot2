@@ -43,6 +43,15 @@ def home(request):
     context['channels'] = channels
     print(f"context: {context}")
 
+    # time of day histogram
+    tod_data = visualization.time_of_day_histogram()
+    context['tod_data'] = list(tod_data)
+
+    # top users of week tile
+    top_users = visualization.top_users_of_week()
+    context['top_users_data'] = list(top_users)
+
+
     return render(request, 'spybot/home/home.html', context)
 
 

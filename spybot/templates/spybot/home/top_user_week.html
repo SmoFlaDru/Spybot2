@@ -1,0 +1,82 @@
+{% load tabler_icons %}
+
+<style>
+    .bg-gold-lt {
+        --gold: 201, 176, 55;
+        --tblr-bg-opacity: .1;
+        --tblr-text-opacity: 1;
+        color: rgba(var(--gold),var(--tblr-text-opacity)) !important;
+        background-color: rgba(var(--gold),var(--tblr-bg-opacity))!important;
+    }
+    .bg-silver-lt {
+        --silver: 150, 150, 150;
+        --tblr-bg-opacity: .1;
+        --tblr-text-opacity: 1;
+        color: rgba(var(--silver),var(--tblr-text-opacity)) !important;
+        background-color: rgba(var(--silver),var(--tblr-bg-opacity))!important;
+    }
+    .bg-bronze-lt {
+        --bronze: 127, 67, 6;
+        --tblr-bg-opacity: .1;
+        --tblr-text-opacity: 1;
+        color: rgba(var(--bronze),var(--tblr-text-opacity)) !important;
+        background-color: rgba(var(--bronze),var(--tblr-bg-opacity)) !important;
+    }
+</style>
+<div class="card">
+    <div class="ribbon ribbon-top bg-yellow">
+        {% tabler_icon 'star' %}
+    </div>
+    <div class="card-header">
+        <h3 class="card-title my-2">Top users this week</h3>
+    </div>
+    <div class="card-body">
+        <div class="divide-y">
+            {% if top_users_data|length > 0 %}
+            <div class="row">
+                <div class="col-auto">
+                    <span class="avatar bg-gold-lt">
+                        {% tabler_icon 'trophy' %}
+                    </span>
+                </div>
+                <div class="col">
+                    <div class="text-truncate">
+                        {{ top_users_data.0.name }}
+                    </div>
+                    <div class="text-muted">{{ top_users_data.0.time_hours|floatformat }} hours this week</div>
+                </div>
+            </div>
+            {% endif %}
+            {% if top_users_data|length > 1 %}
+            <div class="row">
+                <div class="col-auto">
+                    <span class="avatar bg-silver-lt">
+                        {% tabler_icon 'trophy' %}
+                    </span>
+                </div>
+                <div class="col">
+                    <div class="text-truncate">
+                        {{ top_users_data.1.name }}
+                    </div>
+                    <div class="text-muted">{{ top_users_data.1.time_hours|floatformat }} hours this week</div>
+                </div>
+            </div>
+            {% endif %}
+            {% if top_users_data|length > 2 %}
+            <div class="row">
+                <div class="col-auto">
+                    <span class="avatar bg-bronze-lt">
+                        {% tabler_icon 'trophy' %}
+                    </span>
+                </div>
+                <div class="col">
+                    <div class="text-truncate">
+                        {{ top_users_data.2.name }}
+                    </div>
+                    <div class="text-muted">{{ top_users_data.2.time_hours|floatformat }} hours this week</div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
