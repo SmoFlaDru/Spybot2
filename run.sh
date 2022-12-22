@@ -7,6 +7,9 @@ source venv/bin/activate
 pip install poetry
 poetry install
 
+# enter shell with configured poetry environment
+poetry shell
+
 # copy static files to directory for http server
 python manage.py collectstatic
 
@@ -22,3 +25,6 @@ python manage.py crontab add
 
 # run django app
 PYTHONUNBUFFERED=1 python manage.py runserver 127.0.0.1:8000
+
+# exit poetry-activated shell
+exit
