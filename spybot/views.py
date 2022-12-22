@@ -9,6 +9,7 @@ from django.template import loader
 from django.utils import timezone
 
 from spybot import visualization
+from spybot.forms import TimeRangeForm
 from spybot.models import TSChannel, TSUserActivity
 from spybot.templatetags import ts_filters
 
@@ -81,7 +82,11 @@ def widget_legacy(request):
 
 
 def timeline(request):
-    cutoff = timezone.now() - timedelta(hours=6)
+    form = TimeRangeForm(request.POST or {})
+    form.is_valid()
+    time_hours = int(form.cleaned_data.get('range'))
+
+    cutoff = timezone.now() - timedelta(hours=time_hours)
     now_time = timezone.now()
     data = TSUserActivity.objects.filter(
         Q(end_time__gt=cutoff) | Q(end_time__isnull=True)
@@ -145,4 +150,5 @@ def timeline(request):
         'activity_by_user': list(users.values()),
         'min': convert_to_jstime(cutoff),
         'max': convert_to_jstime(now_time),
+        'form': form,
     })

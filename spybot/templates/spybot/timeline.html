@@ -5,7 +5,15 @@
     <div class="col-md-12">
         <div class="card">
             <div class="card-body">
-                <h3 class="card-title">Timeline</h3>
+                <div class="d-flex align-items-center">
+                    <h3 class="card-title">Timeline</h3>
+                    <div class="ms-auto">
+                        <form method="post">
+                            {% csrf_token %}
+                            {{ form }}
+                        </form>
+                    </div>
+                </div>
                 <div id="chart-timeline" class="chart-lg">
             </div>
         </div>
