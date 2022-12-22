@@ -1,11 +1,11 @@
 #!/bin/bash
 
+# activate venv
 source venv/bin/activate
 
-
-
-# install any missing python deps
-pip install -r requirements.txt
+# install project python deps
+pip install poetry
+poetry install
 
 # copy static files to directory for http server
 python manage.py collectstatic
