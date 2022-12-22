@@ -9,6 +9,7 @@ from django.template import loader
 from django.utils import timezone
 
 from spybot import visualization
+from spybot.forms import TimeRangeForm
 from spybot.models import TSChannel, TSUserActivity
 from spybot.templatetags import ts_filters
 
@@ -81,7 +82,11 @@ def widget_legacy(request):
 
 
 def timeline(request):
-    cutoff = timezone.now() - timedelta(hours=6)
+    form = TimeRangeForm(request.POST or {})
+    form.is_valid()
+    time_hours = int(form.cleaned_data.get('range'))
+
+    cutoff = timezone.now() - timedelta(hours=time_hours)
     now_time = timezone.now()
     data = TSUserActivity.objects.filter(
         Q(end_time__gt=cutoff) | Q(end_time__isnull=True)
@@ -121,28 +126,30 @@ def timeline(request):
             already_seen_channels.add(x.channel.name)
 
     # fixes for correct channel order
-    first_user = next(iter(users))
-    first_user_object = users[first_user]
-    first_user_series = first_user_object["data"]
-    new_first_user_series = []
+    if len(users) > 0:
+        first_user = next(iter(users))
+        first_user_object = users[first_user]
+        first_user_series = first_user_object["data"]
+        new_first_user_series = []
 
-    for c in TSChannel.objects.order_by('order'):
-        if c.name in already_seen_channels:
-            # make sure this channel is in the first user series
-            # check if it already exists, copy it over
-            series = next((s for s in first_user_series if s['x'] == ts_filters.replace_ts_special_chars(c.name)), None)
-            if series is not None:
-                new_first_user_series.append(series)
-            else:
-                # insert dummy entry for channel ordering purposes
-                new_first_user_series.append({
-                    'x': ts_filters.replace_ts_special_chars(c.name),
-                    'y': []
-                })
-    first_user_object["data"] = new_first_user_series
+        for c in TSChannel.objects.order_by('order'):
+            if c.name in already_seen_channels:
+                # make sure this channel is in the first user series
+                # check if it already exists, copy it over
+                series = next((s for s in first_user_series if s['x'] == ts_filters.replace_ts_special_chars(c.name)), None)
+                if series is not None:
+                    new_first_user_series.append(series)
+                else:
+                    # insert dummy entry for channel ordering purposes
+                    new_first_user_series.append({
+                        'x': ts_filters.replace_ts_special_chars(c.name),
+                        'y': []
+                    })
+        first_user_object["data"] = new_first_user_series
 
     return render(request, 'spybot/timeline.html', {
         'activity_by_user': list(users.values()),
         'min': convert_to_jstime(cutoff),
         'max': convert_to_jstime(now_time),
+        'form': form,
     })
