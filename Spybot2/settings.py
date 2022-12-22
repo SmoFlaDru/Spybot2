@@ -41,6 +41,7 @@ SERVER_IP = env('SERVER_IP')
 DEBUG = True
 
 ALLOWED_HOSTS = [SERVER_IP, TS_IP, 'localhost', '127.0.0.1']
+CSRF_TRUSTED_ORIGINS = ['https://' + SERVER_IP]
 
 
 # Application definition
