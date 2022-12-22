@@ -64,15 +64,15 @@ def top_users_of_week():
                 SELECT DATE_ADD(UTC_DATE(), INTERVAL(-WEEKDAY(UTC_DATE())) DAY) AS date
             )
             SELECT
-                SUM(TIMESTAMPDIFF(SECOND, startTime, endTime)) / 3600 AS time_hours,
-                TU.name AS name,
+                SUM(TIMESTAMPDIFF(SECOND, startTime, endTime)) / 3600 AS time,
+                TRIM(TRAILING '1' FROM TU.name) AS user_name,
                 TU.id AS userID
             FROM startOfWeek, TSUserActivity
             INNER JOIN TSUser TU on tsUserID = TU.id
             WHERE startTime > startOfWeek.date
                 AND endTime IS NOT NULL
-            GROUP BY userId
-            ORDER BY time_hours DESC
+            GROUP BY user_name
+            ORDER BY time DESC
             LIMIT 3;
         """)
         return dictfetchall(cursor)
