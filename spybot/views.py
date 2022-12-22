@@ -24,7 +24,10 @@ def home(request):
     data = visualization.daily_activity()
     dates, active_values, afk_values = zip(*data)
     # convert tuples back to lists when passing to template
-    context = {'dates': list(dates), 'active_values': list(active_values), 'afk_values': list(afk_values)}
+    context = {'daily_dates': list(dates),
+               'daily_active_values': list(active_values),
+               'daily_afk_values': list(afk_values)
+               }
 
     # live view
     sessions = TSUserActivity.objects.filter(end_time=None)
@@ -39,6 +42,15 @@ def home(request):
     context['clients'] = clients
     context['channels'] = channels
     print(f"context: {context}")
+
+    # time of day histogram
+    tod_data = visualization.time_of_day_histogram()
+    context['tod_data'] = list(tod_data)
+
+    # top users of week tile
+    top_users = visualization.top_users_of_week()
+    context['top_users_data'] = list(top_users)
+
 
     return render(request, 'spybot/home/home.html', context)
 

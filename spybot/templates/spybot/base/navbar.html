@@ -46,16 +46,6 @@
                     </span>
                         </a>
                     </li>
-                    <li class="nav-item  {% if request.resolver_match.url_name == 'live' %}active{% endif %}">
-                        <a class="nav-link" href="/live">
-                        <span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
-                            {% tabler_icon 'home' %}
-                        </span>
-                        <span class="nav-link-title">
-                          Live
-                        </span>
-                        </a>
-                    </li>
                     <li class="nav-item  {% if request.resolver_match.url_name == 'timeline' %}active{% endif %}">
                         <a class="nav-link" href="/timeline">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
@@ -64,16 +54,6 @@
                         <span class="nav-link-title">
                             Timeline
                         </span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="./form-elements.html">
-                            <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                {% tabler_icon 'checkbox' %}
-                            </span>
-                            <span class="nav-link-title">
-                              Forms
-                            </span>
                         </a>
                     </li>
                 </ul>
