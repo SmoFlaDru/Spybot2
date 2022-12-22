@@ -24,7 +24,10 @@ def home(request):
     data = visualization.daily_activity()
     dates, active_values, afk_values = zip(*data)
     # convert tuples back to lists when passing to template
-    context = {'dates': list(dates), 'active_values': list(active_values), 'afk_values': list(afk_values)}
+    context = {'daily_dates': list(dates),
+               'daily_active_values': list(active_values),
+               'daily_afk_values': list(afk_values)
+               }
 
     # live view
     sessions = TSUserActivity.objects.filter(end_time=None)

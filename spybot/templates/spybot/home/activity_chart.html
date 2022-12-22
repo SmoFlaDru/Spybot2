@@ -5,20 +5,6 @@
         <div id="chart-mentions" class="chart-lg"></div>
     </div>
 </div>
-
-    {%  comment "old channel list logic" %}
-    <p>Home page</p>
-    {% if channel_list %}
-        <ul>
-        {% for channel in channel_list %}
-            <li><a href="/channels/{{ channel.id }}/">{{ channel.name }}</a></li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>No channels found</p>
-    {% endif %}
-    {%  endcomment %}
-
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     window.ApexCharts && (new ApexCharts(document.getElementById('chart-mentions'), {
@@ -58,10 +44,10 @@ document.addEventListener("DOMContentLoaded", function () {
         },
         series: [{
             name: "Time spent",
-            data: {{ active_values|safe }}
+            data: {{ daily_active_values|safe }}
         },{
             name: "Idling",
-            data: {{ afk_values|safe }}
+            data: {{ daily_afk_values|safe }}
         }],
         tooltip: {
             theme: 'dark'
@@ -100,7 +86,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             }
         },
-        labels: {{ dates|safe }},
+        labels: {{ daily_dates|safe }},
         colors: [tabler.getColor("primary"), tabler.getColor("red", 0.8), tabler.getColor("green", 0.8)],
         legend: {
             show: false,
