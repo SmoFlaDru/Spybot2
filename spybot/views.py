@@ -51,6 +51,10 @@ def home(request):
     top_users = visualization.top_users_of_week()
     context['top_users_data'] = list(top_users)
 
+    # week trend tile
+    week_trend = visualization.week_activity_trend()
+    context['week_trend'] = week_trend[0]
+
 
     return render(request, 'spybot/home/home.html', context)
 

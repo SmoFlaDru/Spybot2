@@ -76,3 +76,42 @@ def top_users_of_week():
             LIMIT 3;
         """)
         return dictfetchall(cursor)
+
+
+def week_activity_trend():
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            WITH
+                currentWeek AS (
+                    SELECT
+                        CAST(DATE_ADD(UTC_DATE(), INTERVAL(-WEEKDAY(UTC_DATE())) DAY) AS datetime) AS start,
+                        DATE_ADD(DATE_ADD(DATE_ADD(
+                            UTC_TIMESTAMP(), INTERVAL(-MINUTE(UTC_TIMESTAMP())) MINUTE),
+                            INTERVAL(-SECOND(UTC_TIMESTAMP())) SECOND),
+                            INTERVAL(-1) HOUR) AS end
+                ),
+                compareWeek AS (
+                    SELECT
+                        DATE_ADD(currentWeek.end, INTERVAL -1 WEEK) AS end,
+                        DATE_ADD(currentWeek.start, INTERVAL -1 WEEK) AS start
+                    FROM currentWeek
+                ),
+                currentWeekData AS (
+                    SELECT COALESCE(SUM(activity_hours), 0) AS sum
+                    FROM HourlyActivity, currentWeek
+                    WHERE HourlyActivity.datetime >= currentWeek.start
+                        AND HourlyActivity.datetime <= currentWeek.end
+                ),
+                compareWeekData AS (
+                    SELECT COALESCE(SUM(activity_hours), 0) AS sum
+                    FROM HourlyActivity, compareWeek
+                    WHERE HourlyActivity.datetime >= compareWeek.start
+                        AND HourlyActivity.datetime <= compareWeek.end
+                )
+            SELECT currentWeekData.sum AS current_week_sum, 
+                compareWeekData.sum AS compare_week_sum,
+                currentWeekData.sum / compareWeekData.sum AS fraction,
+                100 * ((currentWeekData.sum / compareWeekData.sum) - 1) AS delta_percent
+            FROM currentWeekData, compareWeekData;
+        """)
+        return dictfetchall(cursor)
