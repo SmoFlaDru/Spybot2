@@ -1,0 +1,14 @@
+{% load tabler_icons %}
+
+<span class="text-{% if percentage > 0 %}green
+{% elif percentage == 0 %}yellow
+{% else %}red
+{% endif %} d-inline-flex align-items-center lh-1">
+   {{ percentage|floatformat:0 }}% {% if percentage > 0 %}
+{% tabler_icon 'trending-up' class='icon ms-1' %}
+{% elif percentage == 0 %}
+{% tabler_icon 'minus' class='icon ms-1' %}
+{% else %}
+{% tabler_icon 'trending-down' class='icon ms-1' %}
+{% endif %}
+</span>
