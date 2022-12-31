@@ -11,8 +11,8 @@ from spybot.recorder.ts import TS
 class Recorder:
 
     def __init__(self):
-        self.client = Client()
         self.ts = TS()
+        self.client = Client(self.ts)
 
     def start(self):
         thread = Thread(target=self.run, daemon=True)
@@ -79,9 +79,9 @@ class Recorder:
             case "notifycliententerview":
                 print(f"event: {event['client_nickname']} entered")
                 self.client.client_enter(
-                    client_id=event["clid"],
-                    channel_id=event["ctid"],
-                    client_database_id=event["client_database_id"],
+                    client_id=int(event["clid"]),
+                    channel_id=int(event["ctid"]),
+                    client_database_id=int(event["client_database_id"]),
                     client_nickname=event["client_nickname"],
                     client_type=event["client_type"],
                     client_unique_identifier=event["client_unique_identifier"]
