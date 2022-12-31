@@ -21,11 +21,14 @@ class DebuggableModel(models.Model):
             if not field.concrete:
                 continue
 
-            buf += " %s: %s" % (field.name, getattr(self, field.name))
+            buf += " %s=%s" % (field.name, getattr(self, field.name))
 
         buf += ">"
 
         return buf
+
+    def __str__(self):
+        return self.__repr__()
 
 
 class TSChannel(DebuggableModel):
