@@ -23,7 +23,7 @@ class Recorder:
         while True:
             self.ts.make_conn()
             self.ts.register_events()
-            self.ts.set_nickname("spytwo")
+            self.ts.set_nickname("Spybot_2")
 
             self.main_loop()
 
