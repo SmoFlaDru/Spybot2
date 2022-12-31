@@ -51,8 +51,6 @@ class TS:
         self.ts3conn.send_keepalive()
 
     def set_nickname(self, name: str):
-        # TODO Teamspeak error error id 513: nickname is already in use, retry connection
-
         postfix = 0
         while True:
             try:
