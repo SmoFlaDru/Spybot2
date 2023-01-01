@@ -1,3 +1,5 @@
+from typing import TypedDict, List
+
 from django.db import connection
 
 
@@ -57,7 +59,13 @@ def time_of_day_histogram():
         return cursor.fetchall()
 
 
-def top_users_of_week():
+class TopUserResult(TypedDict):
+    time: float
+    user_name: str
+    user_id: int
+
+
+def top_users_of_week() -> List[TopUserResult]:
     with connection.cursor() as cursor:
         cursor.execute("""
             WITH startOfWeek AS (
@@ -66,7 +74,7 @@ def top_users_of_week():
             SELECT
                 SUM(TIMESTAMPDIFF(SECOND, startTime, endTime)) / 3600 AS time,
                 TRIM(TRAILING '1' FROM TU.name) AS user_name,
-                TU.id AS userID
+                TU.id AS user_id
             FROM startOfWeek, TSUserActivity
             INNER JOIN TSUser TU on tsUserID = TU.id
             WHERE startTime > startOfWeek.date

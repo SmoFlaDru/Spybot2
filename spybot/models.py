@@ -21,11 +21,14 @@ class DebuggableModel(models.Model):
             if not field.concrete:
                 continue
 
-            buf += " %s: %s" % (field.name, getattr(self, field.name))
+            buf += " %s=%s" % (field.name, getattr(self, field.name))
 
         buf += ">"
 
         return buf
+
+    def __str__(self):
+        return self.__repr__()
 
 
 class TSChannel(DebuggableModel):
@@ -39,6 +42,7 @@ class TSChannel(DebuggableModel):
 
 
 class TSUser(DebuggableModel):
+    id = models.PositiveIntegerField(primary_key=True)
     name = models.CharField(max_length=128, blank=True, null=True)
     client_id = models.PositiveIntegerField(db_column="clientID")
     # maybe remove
@@ -84,3 +88,25 @@ class HourlyActivity(DebuggableModel):
         indexes = [
             models.Index(fields=['datetime']),
         ]
+
+
+class QueuedClientMessage(DebuggableModel):
+    tsuser = models.ForeignKey(TSUser, models.CASCADE, blank=False, null=False)
+    text = models.CharField(max_length=1024, blank=False, null=False)
+    type = models.CharField(max_length=128, blank=False, null=False)
+    date = models.DateField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['tsuser', 'type'], name='constraint_unique_type_user')
+        ]
+
+
+class Award(DebuggableModel):
+    class AwardType(models.TextChoices):
+        USER_OF_WEEK = 'USER_OF_WEEK', 'User of the week'
+
+    tsuser = models.ForeignKey(TSUser, models.CASCADE, blank=False, null=False)
+    date = models.DateField(auto_now_add=True)
+    type = models.CharField(max_length=64, choices=AwardType.choices, default=AwardType.USER_OF_WEEK, null=False)
+    points = models.IntegerField(blank=False, null=False)

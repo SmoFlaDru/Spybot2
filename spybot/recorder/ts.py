@@ -51,8 +51,6 @@ class TS:
         self.ts3conn.send_keepalive()
 
     def set_nickname(self, name: str):
-        # TODO Teamspeak error error id 513: nickname is already in use, retry connection
-
         postfix = 0
         while True:
             try:
@@ -66,3 +64,21 @@ class TS:
                     time.sleep(2)
                     continue
             break
+
+    def poke_client(self, client_id: int, message: str):
+        if len(message) > 100:
+            print("Error: poke message is too long")
+            message = message[:100]
+        try:
+            self.ts3conn.exec_("clientpoke", clid=client_id, msg=message)
+        except TS3QueryError as error:
+            print("Error while poking:", error)
+
+    def send_text_message(self, client_id: int, message: str):
+        if len(message) > 1024:
+            print("Error: text message is too long")
+            message = message[:1024]
+        try:
+            self.ts3conn.exec_("sendtextmessage", targetmode=1, target=client_id, msg=message)
+        except TS3QueryError as error:
+            print("Error while sending text message:", error)

@@ -1,13 +1,18 @@
 from django.utils import timezone
 
-from spybot.models import TSID, TSUser, TSUserActivity, TSChannel
+from spybot.models import TSID, TSUser, TSUserActivity, TSChannel, QueuedClientMessage
+from spybot.recorder.ts import TS
 
 
 class Client:
 
+    def __init__(self, ts: TS):
+        self.ts = ts
+
     """
     called when a client enters
     """
+
     def client_enter(self, client_id: int, channel_id: int, client_database_id: int, client_nickname: str,
                      client_type: int, client_unique_identifier: str):
         # TODO save bots maybe
@@ -31,6 +36,8 @@ class Client:
 
             print(f"found existing TSID for user: {tsuser.name} with id={tsid}")
             self.__client_start_session(tsuser, channel_id, client_id, joined=True)
+
+            self.send_queued_messages(client_id, tsuser)
 
         except TSID.DoesNotExist as e:
             print(f"did not find TSID for user {e}")
@@ -107,6 +114,7 @@ class Client:
     if no close it and start a new one
     TODO maybe even remove it
     """
+
     def handle_old_sessions(self, clients):
 
         # get all open sessions and close them
@@ -131,3 +139,12 @@ class Client:
                 self.__client_end_session(session.tsuser, -2)
 
         return clients
+
+    def send_queued_messages(self, client_id: int, user: TSUser):
+        msgs = QueuedClientMessage.objects.filter(tsuser=user).order_by("-date").all()
+
+        for message in msgs:
+            self.ts.poke_client(client_id, "You got an important message from Spybot! Check out my private message "
+                                           "for details")
+            self.ts.send_text_message(client_id, message.text)
+            message.delete()
