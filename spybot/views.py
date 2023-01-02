@@ -59,7 +59,7 @@ def home(request):
     return render(request, 'spybot/home/home.html', context)
 
 
-# TODO load live view seperately and poll with javascript
+# TODO load live view separately and poll with javascript
 def live(request):
     channels = TSChannel.objects.order_by('order')
     sessions = TSUserActivity.objects.filter(end_time=None)
