@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", function () {
         yaxis: {
             title: {/*text: "Visitors"*/},
             min: 0,
-            max: Math.max(...raw_data),
+            max: Math.max(...raw_data.map(i => i[1])),
             labels: {
                 formatter: (value) => {
                     return value.toFixed(0)
