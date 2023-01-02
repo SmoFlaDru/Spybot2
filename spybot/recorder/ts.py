@@ -37,7 +37,6 @@ class TS:
                 res._parse_data()
                 return res._event, res.parsed[0]
             except TS3TimeoutError:
-                print("Sending TS keep-alive")
                 self.keep_alive()
 
     def get_clients(self):

@@ -119,7 +119,7 @@ def week_activity_trend():
             SELECT currentWeekData.sum AS current_week_sum, 
                 compareWeekData.sum AS compare_week_sum,
                 currentWeekData.sum / compareWeekData.sum AS fraction,
-                100 * ((currentWeekData.sum / compareWeekData.sum) - 1) AS delta_percent
+                100 * (COALESCE(currentWeekData.sum / compareWeekData.sum, 1) - 1) AS delta_percent
             FROM currentWeekData, compareWeekData;
         """)
         return dictfetchall(cursor)
