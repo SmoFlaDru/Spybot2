@@ -51,6 +51,9 @@ def home(request):
 
     # week trend tile
     week_trend = visualization.week_activity_trend()
+    # convert to float if it's not the special infinity value
+    if week_trend[0]['delta_percent'] != 'infinity':
+        week_trend[0]['delta_percent'] = float(week_trend[0]['delta_percent'])
     context['week_trend'] = week_trend[0]
 
     return render(request, 'spybot/home/home.html', context)
