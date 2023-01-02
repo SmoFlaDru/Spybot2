@@ -18,11 +18,13 @@
         </div>
         <div class="text-muted">
             {%  if week_trend.delta_percent > 0 %}
-            up
+            up from
+            {% elif week_trend.delta_percent < 0 %}
+            down from
             {% else %}
-            down
+            same as
             {% endif %}
-            from last week
+             last week
         </div>
     </div>
 </div>
