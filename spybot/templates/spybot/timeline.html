@@ -16,7 +16,11 @@
                 </div>
             </div>
             <div class="card-body">
-                <div id="chart-timeline" class="chart-lg"></div>
+                {% if activity_by_user %}
+                    <div id="chart-timeline" class="chart-lg"></div>
+                {% else %}
+                    {% include 'spybot/util/empty.html' with title='No data for this time range' subtitle='Try adjusting the time interval or come back later' action='Reload page' only %}
+                {% endif %}
             </div>
         </div>
     </div>

@@ -1,0 +1,18 @@
+{% load static %}
+{% load tabler_icons %}
+<div class="empty{% if class %} {{ class }}{% endif %}">
+    <div class="empty-img">
+        <img src="{% static 'quitting_time.svg' %}" height="{{ height|default:128 }}" alt="">
+    </div>
+
+	<p class="empty-title">{{ title|default:"No results found" }}</p>
+	<p class="empty-subtitle text-muted">
+		{{ subtitle|default:"Try adjusting your search or filter to find what you're looking for."}}
+	</p>
+	<div class="empty-action">
+        <a href="javascript:window.location.reload(true)" class="btn btn-primary">
+            {% tabler_icon 'search' class='icon' %}
+            {{ action|default:"Search again" }}
+        </a>
+	</div>
+</div>
