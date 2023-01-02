@@ -37,11 +37,9 @@ def home(request):
     for session in sessions:
         channel_id = session.channel.id
         user_name = session.tsuser.name
-        print(f"appending client {user_name}")
         clients.append({'channel_id': channel_id, 'name': user_name})
     context['clients'] = clients
     context['channels'] = channels
-    print(f"context: {context}")
 
     # time of day histogram
     tod_data = visualization.time_of_day_histogram()
@@ -54,7 +52,6 @@ def home(request):
     # week trend tile
     week_trend = visualization.week_activity_trend()
     context['week_trend'] = week_trend[0]
-
 
     return render(request, 'spybot/home/home.html', context)
 
@@ -85,7 +82,6 @@ def widget_legacy(request):
     inactive_clients = []
     res = {}
     for session in sessions:
-        print(f"session={session}")
         user_name = session.tsuser_id.name
         channel_name = session.channel_id.name
         if channel_name == "bei Bedarf anstupsen" or channel_name == "AFK":
