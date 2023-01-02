@@ -22,6 +22,8 @@ python manage.py migrate
 
 # start cronjobs with crontab using django-crontab
 python manage.py crontab add
+# run twice in case jobs have been removed. See: https://github.com/kraiz/django-crontab/blob/master/django_crontab/crontab.py#L209
+python manage.py crontab add
 
 # run django app
 PYTHONUNBUFFERED=1 python manage.py runserver 127.0.0.1:8000
