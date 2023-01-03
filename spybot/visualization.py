@@ -126,3 +126,27 @@ def week_activity_trend():
             FROM currentWeekData, compareWeekData;
         """)
         return dictfetchall(cursor)
+
+
+def channel_popularity():
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            WITH absolute AS (
+                SELECT ROUND(SUM(TIMESTAMPDIFF(SECOND, startTime, endTime)) / 3600) AS hours,
+                    TSChannel.name
+                FROM TSUserActivity
+                INNER JOIN TSChannel on TSUserActivity.cID = TSChannel.id
+                WHERE startTime > DATE_ADD(UTC_TIMESTAMP(), INTERVAL -1 YEAR)
+                    AND TSChannel.name NOT LIKE '%spacer%'
+                GROUP BY TSChannel.id
+                HAVING hours > 5
+            ), total_hours AS (
+                SELECT SUM(hours) as hours FROM absolute 
+            )
+            SELECT
+                absolute.name,
+                100 * absolute.hours / total_hours.hours AS percentage
+            FROM absolute, total_hours
+            ORDER BY percentage DESC;
+        """)
+        return dictfetchall(cursor)
