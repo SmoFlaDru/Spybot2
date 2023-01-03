@@ -2,7 +2,7 @@
     <div class="card-header">
         <h3 class="card-title my-2">Time spent last month</h3>
     </div>
-    <div class="card-body">
+    <div class="card-body ps-2">
         <div id="chart-mentions" class="chart-lg"></div>
     </div>
 </div>
@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", function () {
             opacity: 1,
         },
         series: [{
-            name: "Time spent",
+            name: "Talking",
             data: {{ daily_active_values|safe }}
         },{
             name: "Idling",
@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", function () {
             padding: {
                 top: -20,
                 right: 0,
-                left: -4,
+                left: 4,
                 bottom: -4
             },
             strokeDashArray: 4,
@@ -72,6 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
         xaxis: {
             labels: {
                 padding: 0,
+                format: "d.MM",
             },
             tooltip: {
                 enabled: false
@@ -82,10 +83,15 @@ document.addEventListener("DOMContentLoaded", function () {
             type: 'datetime',
         },
         yaxis: {
+            title: {
+                text: "Cumulative hours",
+                offsetX: 0,
+                style: {fontWeight: 500},
+            },
             labels: {
-                padding: 4,
+                padding: 20,
                 formatter: (value) => {
-                    return value.toFixed(0) + 'h'
+                    return value.toFixed(0)
                 }
             }
         },
