@@ -54,7 +54,13 @@ document.addEventListener("DOMContentLoaded", function () {
             data: {{ daily_afk_values|safe }}
         }],
         tooltip: {
-            theme: 'dark'
+            theme: 'dark',
+            x: {
+                format: 'dd MMMM',
+            },
+            shared: true,
+            intersect: false,
+            followCursor: false,
         },
         grid: {
             padding: {
@@ -73,7 +79,9 @@ document.addEventListener("DOMContentLoaded", function () {
         xaxis: {
             labels: {
                 padding: 0,
-                format: "d.MM",
+                datetimeFormatter: {
+                    day: 'dd.',
+                },
             },
             tooltip: {
                 enabled: false
