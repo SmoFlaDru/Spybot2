@@ -51,12 +51,15 @@ def home(request):
 
     # week trend tile
     week_trend = visualization.week_activity_trend()
+    # convert to float if it's not the special infinity value
+    if week_trend[0]['delta_percent'] != 'infinity':
+        week_trend[0]['delta_percent'] = float(week_trend[0]['delta_percent'])
     context['week_trend'] = week_trend[0]
 
     return render(request, 'spybot/home/home.html', context)
 
 
-# TODO load live view seperately and poll with javascript
+# TODO load live view separately and poll with javascript
 def live(request):
     channels = TSChannel.objects.order_by('order')
     sessions = TSUserActivity.objects.filter(end_time=None)

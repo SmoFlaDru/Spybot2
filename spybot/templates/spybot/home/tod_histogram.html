@@ -26,15 +26,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 (_, i)=>({
                     x: 0.5+i,
                     y: raw_data[i][1],
-                    ... i === 4 ? ({fillColor: 'rgba(32, 120, 255, 0.4)', strokeColor: '#80afff'}) : ({})
                 }))
         }],
         plotOptions:{
             bar: {
-                columnWidth: "85%",
-                strokeWidth: 2,
-                //borderRadius: 5,
-                //borderRadiusApplication: "end",
+                columnWidth: "70%",
+                strokeWidth: 0,
+                borderRadius: 2,
+                borderRadiusApplication: "end",
             }
         },
         fill:{
@@ -79,7 +78,7 @@ document.addEventListener("DOMContentLoaded", function () {
         yaxis: {
             title: {/*text: "Visitors"*/},
             min: 0,
-            max: Math.max(...raw_data),
+            max: Math.max(...raw_data.map(i => i[1])),
             labels: {
                 formatter: (value) => {
                     return value.toFixed(0)
