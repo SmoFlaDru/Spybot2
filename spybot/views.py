@@ -56,6 +56,12 @@ def home(request):
         week_trend[0]['delta_percent'] = float(week_trend[0]['delta_percent'])
     context['week_trend'] = week_trend[0]
 
+    # channel popularity
+    channel_popularity = visualization.channel_popularity()
+    for row in channel_popularity:
+        row["name"] = ts_filters.replace_ts_special_chars(row["name"])
+    context["channel_data"] = channel_popularity
+
     return render(request, 'spybot/home/home.html', context)
 
 
