@@ -38,7 +38,7 @@ TS_PORT = env('TS_PORT')
 SERVER_IP = env('SERVER_IP')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool('DEBUG', False)
 
 ALLOWED_HOSTS = [SERVER_IP, TS_IP, 'localhost', '127.0.0.1']
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
