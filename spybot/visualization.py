@@ -119,8 +119,9 @@ def week_activity_trend():
             SELECT currentWeekData.sum AS current_week_sum, 
                 compareWeekData.sum AS compare_week_sum,
                 currentWeekData.sum / compareWeekData.sum AS fraction,
-                CASE compareWeekData.sum
-                    WHEN 0 THEN 'infinity'
+                CASE
+                    WHEN currentWeekData.sum = 0 AND compareWeekData.sum = 0 THEN 0
+                    WHEN compareWeekData.sum = 0 THEN 'infinity'
                     ELSE 100 * ((currentWeekData.sum / compareWeekData.sum) - 1) 
                 END AS delta_percent
             FROM currentWeekData, compareWeekData;
