@@ -31,7 +31,6 @@ jobs:
         cat > .env << 'EOF'
         ${{ secrets.ENV_FILE }}
         EOF
-    - uses: valeriangalliat/action-sshd-cloudflared@v1
     - name: Run Tests
       run: |
         poetry run python manage.py test
