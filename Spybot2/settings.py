@@ -43,6 +43,9 @@ DEBUG = env.bool('DEBUG', False)
 ALLOWED_HOSTS = [SERVER_IP, TS_IP, 'localhost', '127.0.0.1']
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+CSRF_COOKIE_SECURE = not env.bool('INSECURE_COOKIES', False)
+SESSION_COOKIE_SECURE = not env.bool('INSECURE_COOKIES', False)
+
 
 # Application definition
 
