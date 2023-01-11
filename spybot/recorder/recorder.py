@@ -4,6 +4,7 @@ from threading import Thread
 from ts3 import TS3Error
 from ts3.response import TS3ParserError
 
+from Spybot2 import settings
 from spybot.recorder.client import Client
 from spybot.recorder.ts import TS
 
@@ -15,8 +16,9 @@ class Recorder:
         self.client = Client(self.ts)
 
     def start(self):
-        thread = Thread(target=self.run, daemon=True)
-        thread.start()
+        if settings.RECORDER_ENABLED:
+            thread = Thread(target=self.run, daemon=True)
+            thread.start()
 
     def run(self):
 
