@@ -27,6 +27,8 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
+RECORDER_ENABLED = env.bool('RECORDER_ENABLED', True)
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
 
@@ -42,6 +44,9 @@ DEBUG = env.bool('DEBUG', False)
 
 ALLOWED_HOSTS = [SERVER_IP, TS_IP, 'localhost', '127.0.0.1']
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+CSRF_COOKIE_SECURE = not env.bool('INSECURE_COOKIES', False)
+SESSION_COOKIE_SECURE = not env.bool('INSECURE_COOKIES', False)
 
 
 # Application definition
