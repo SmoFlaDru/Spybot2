@@ -52,7 +52,7 @@ def end_of_week_awards():
 
 
 def _generate_news_event_for_top_user_of_week(user: TSUser, idx: int, points: int):
-    date = datetime.ut
+    date = datetime.now()
     week_of_year = int(date.strftime("%V"))
     year = date.year
 
