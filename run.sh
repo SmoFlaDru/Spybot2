@@ -11,7 +11,7 @@ poetry install
 poetry shell
 
 # copy static files to directory for http server
-python manage.py collectstatic
+python manage.py collectstatic --noinput
 
 # create django superuser if necessary.
 # Set the env vars DJANGO_SUPERUSER_{PASSWORD,USERNAME,EMAIL} when running this script
