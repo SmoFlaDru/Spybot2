@@ -110,3 +110,9 @@ class Award(DebuggableModel):
     date = models.DateTimeField(auto_now_add=True)
     type = models.CharField(max_length=64, choices=AwardType.choices, default=AwardType.USER_OF_WEEK, null=False)
     points = models.IntegerField(blank=False, null=False)
+
+
+class NewsEvent(DebuggableModel):
+    text = models.CharField(max_length=1024, null=False)
+    website_link = models.CharField(max_length=256, null=True)
+    date = models.DateTimeField(auto_now_add=True)
