@@ -10,7 +10,7 @@ from django.utils import timezone
 
 from spybot import visualization
 from spybot.forms import TimeRangeForm
-from spybot.models import TSChannel, TSUserActivity
+from spybot.models import TSChannel, TSUserActivity, NewsEvent
 from spybot.templatetags import ts_filters
 
 
@@ -61,6 +61,13 @@ def home(request):
     for row in channel_popularity:
         row["name"] = ts_filters.replace_ts_special_chars(row["name"])
     context["channel_data"] = channel_popularity
+
+    # recent events
+    recent_events = NewsEvent.objects.order_by("-date")[:10].values()
+    for event in recent_events:
+        is_recent = timezone.now() - event["date"] < datetime.timedelta(weeks=1)
+        event["is_recent"] = is_recent
+    context["recent_events"] = recent_events
 
     return render(request, 'spybot/home/home.html', context)
 
