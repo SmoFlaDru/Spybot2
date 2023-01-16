@@ -1,4 +1,5 @@
 import time
+from typing import Optional
 
 from django.conf import settings
 from ts3.query import TS3ServerConnection, TS3TimeoutError, TS3QueryError
@@ -45,6 +46,13 @@ class TS:
     def get_channels(self):
         # TODO not really sure about that command
         return self.ts3conn.exec_("channellist").parsed
+
+    def get_channel_name(self, channel_id: int) -> Optional[str]:
+        try:
+            return self.ts3conn.exec_("channelinfo", cid=channel_id).parsed[0]["channel_name"]
+        except TS3QueryError as e:
+            print("Error occurred while trying to get channel name: ", e)
+        return None
 
     def keep_alive(self):
         self.ts3conn.send_keepalive()
