@@ -13,35 +13,42 @@
                         <div class="col-md-12">
                             {% include 'spybot/home/tod_histogram.html' %}
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="row row-cards">
+                <div class="col-md-6">
+                    <div class="row row-cards">
                         <div class="col-md-12">
-                            {% include 'spybot/home/channel_tree_map.html' %}
+                            {% include 'spybot/home/live_user_list.html' %}
+                        </div>
+                        <div class="col-md-12">
+                            {% include 'spybot/home/week_trend.html' %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="row row-cards">
+                        <div class="col-md-12">
+                            {% include 'spybot/home/info_tile.html' %}
+                        </div>
+                        <div class="col-md-12">
+                            {% include 'spybot/home/top_user_week.html' %}
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="row row-cards">
-                <div class="col-md-12">
-                    {% include 'spybot/home/live_user_list.html' %}
-                </div>
-                <div class="col-md-12">
-                    {% include 'spybot/home/week_trend.html' %}
-                </div>
-            </div>
+        <div class="col-md-6">
+            {% include 'spybot/home/recent_events.html' with recent_events=recent_events only %}
         </div>
-        <div class="col-md-3">
-            <div class="row row-cards">
-                <div class="col-md-12">
-                    {% include 'spybot/home/info_tile.html' %}
-                </div>
-                <div class="col-md-12">
-                    {% include 'spybot/home/top_user_week.html' %}
-                </div>
-                <div class="col-md-12">
-                    {% include 'spybot/home/info_tile.html' %}
-                </div>
-            </div>
+        <div class="col-md-6">
+            {% include 'spybot/home/channel_tree_map.html' %}
         </div>
+
+
+
     </div>
 {% endblock %}
