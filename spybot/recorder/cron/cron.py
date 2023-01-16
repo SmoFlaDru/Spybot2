@@ -12,11 +12,15 @@ def end_of_week_awards():
     print("Calculating weekly awards")
     top_users = visualization.top_users_of_week()
     print(top_users)
+    # reverse list to save third award, then second, then first award
+    top_users.reverse()
+
     for idx, result in enumerate(top_users):
-        if idx > 2:
-            break
 
         user = TSUser.objects.get(id=result['user_id'])
+        # correct index because of reversed list
+        idx = 2 - idx
+
         score = 3 - idx
 
         # create award
@@ -97,7 +101,7 @@ def _generate_news_event_for_top_user_of_week(user: TSUser, idx: int, points: in
 
     second_line = f"This is {previous_times_specifier} {user.name} won {metal_type_specifier} award{end}"
 
-    message = f"{user.name} earned the {metal} award for being the{specifier} most active user of week {week_of_year} " \
+    message = f"{user.name} earned the {metal} award for being the{specifier} most active user of week&nbsp;{week_of_year} " \
               f"in {year}. Congratulations! {second_line}"
 
     n = NewsEvent(text=message, website_link=link)
