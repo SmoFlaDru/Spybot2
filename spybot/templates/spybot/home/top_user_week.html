@@ -1,26 +1,20 @@
 {% load tabler_icons %}
 
 <style>
-    .bg-gold-lt {
-        --gold: 201, 176, 55;
-        --tblr-bg-opacity: .1;
-        --tblr-text-opacity: 1;
-        color: rgba(var(--gold),var(--tblr-text-opacity)) !important;
-        background-color: rgba(var(--gold),var(--tblr-bg-opacity))!important;
+    .bg-medal {
+        --text-opacity: 1;
+        --bg-opacity: 0.1;
+        color: rgba(var(--icon-color), var(--text-opacity)) !important;
+        background-color: rgba(var(--icon-color),var(--bg-opacity)) !important;
     }
-    .bg-silver-lt {
-        --silver: 150, 150, 150;
-        --tblr-bg-opacity: .1;
-        --tblr-text-opacity: 1;
-        color: rgba(var(--silver),var(--tblr-text-opacity)) !important;
-        background-color: rgba(var(--silver),var(--tblr-bg-opacity))!important;
+    .medal-gold {
+        --icon-color: 201, 176, 55;
     }
-    .bg-bronze-lt {
-        --bronze: 127, 67, 6;
-        --tblr-bg-opacity: .1;
-        --tblr-text-opacity: 1;
-        color: rgba(var(--bronze),var(--tblr-text-opacity)) !important;
-        background-color: rgba(var(--bronze),var(--tblr-bg-opacity)) !important;
+    .medal-silver {
+        --icon-color: 150, 150, 150;
+    }
+    .medal-bronze {
+        --icon-color: 127, 67, 6;
     }
 </style>
 <div class="card">
@@ -35,7 +29,7 @@
             {% if top_users_data|length > 0 %}
             <div class="row">
                 <div class="col-auto">
-                    <span class="avatar bg-gold-lt">
+                    <span class="avatar bg-medal medal-gold">
                         {% tabler_icon 'trophy' %}
                     </span>
                 </div>
@@ -49,7 +43,7 @@
             {% else %}
             <div class="row">
                 <div class="col-auto">
-                    <span class="avatar bg-green-lt">
+                    <span class="avatar bg-medal bg-green-lt">
                         N/A
                     </span>
                 </div>
@@ -64,7 +58,7 @@
             {% if top_users_data|length > 1 %}
             <div class="row">
                 <div class="col-auto">
-                    <span class="avatar bg-silver-lt">
+                    <span class="avatar bg-medal medal-silver">
                         {% tabler_icon 'trophy' %}
                     </span>
                 </div>
@@ -79,7 +73,7 @@
             {% if top_users_data|length > 2 %}
             <div class="row">
                 <div class="col-auto">
-                    <span class="avatar bg-bronze-lt">
+                    <span class="avatar bg-medal medal-bronze">
                         {% tabler_icon 'trophy' %}
                     </span>
                 </div>
