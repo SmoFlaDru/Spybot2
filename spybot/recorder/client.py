@@ -1,3 +1,4 @@
+from ts3 import escape
 from django.utils import timezone
 
 from spybot.models import TSID, TSUser, TSUserActivity, TSChannel, QueuedClientMessage
@@ -19,6 +20,9 @@ class Client:
         if client_type == "1":
             # because fuck that tsmonitor
             return
+
+        # update channel name if necessary
+        self.__update_channel(channel_id)
 
         # check if we have this user yet
         tsid, tsuser = None, None
@@ -65,10 +69,30 @@ class Client:
 
     def client_move(self, client_id: int, channel_to_id: int, reason_id: int):
         print("Client moved!")
+        # update channel name if necessary
+        self.__update_channel(channel_to_id)
+
         user = self.__get_user_from_client_id(client_id)
 
         self.__client_end_session(user, reason_id)
         self.__client_start_session(user, channel_to_id, client_id, joined=False)
+
+    def __update_channel(self, channel_id: int):
+        raw_name = self.ts.get_channel_name(channel_id)
+        if raw_name is None:
+            return
+
+        current_channel_name = escape.escape(raw_name)
+        db_channel_query = TSChannel.objects.filter(id=channel_id)
+        if db_channel_query.exists():
+            db_channel = db_channel_query.first()
+            if db_channel.name != current_channel_name:
+                print(f"Need to update channel name from {db_channel.name} to {current_channel_name}")
+                db_channel.name = current_channel_name
+                db_channel.save()
+        else:
+            # TODO: create the channel here
+            pass
 
     def __client_start_session(self, ts_user: TSUser, channel_id: int, client_id: int, joined):
         ts_user.client_id = client_id

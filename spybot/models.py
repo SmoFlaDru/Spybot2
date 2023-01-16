@@ -6,6 +6,7 @@
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
+from django.db.models.fields import AutoFieldMixin, PositiveIntegerField
 from django.utils import timezone
 
 
@@ -41,8 +42,17 @@ class TSChannel(DebuggableModel):
         db_table = 'TSChannel'
 
 
+# Django doesn't have an unsigned int auto (auto-incremented) field type natively, so we provide our own
+class PositiveAutoField(AutoFieldMixin, PositiveIntegerField):
+    def get_internal_type(self):
+        return "PositiveIntegerField"
+
+    def rel_db_type(self, connection):
+        return PositiveIntegerField().db_type(connection=connection)
+
+
 class TSUser(DebuggableModel):
-    id = models.PositiveIntegerField(primary_key=True)
+    id = PositiveAutoField(primary_key=True)
     name = models.CharField(max_length=128, blank=True, null=True)
     client_id = models.PositiveIntegerField(db_column="clientID")
     # maybe remove
