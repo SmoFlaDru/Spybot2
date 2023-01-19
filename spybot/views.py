@@ -164,9 +164,10 @@ def timeline(request):
             if c.name in already_seen_channels:
                 # make sure this channel is in the first user series
                 # check if it already exists, copy it over
-                series = next((s for s in first_user_series if s['x'] == ts_filters.replace_ts_special_chars(c.name)), None)
-                if series is not None:
-                    new_first_user_series.append(series)
+                items = list(data_point for data_point in first_user_series
+                             if data_point['x'] == ts_filters.replace_ts_special_chars(c.name))
+                if len(items) > 0:
+                    new_first_user_series += items
                 else:
                     # insert dummy entry for channel ordering purposes
                     new_first_user_series.append({
