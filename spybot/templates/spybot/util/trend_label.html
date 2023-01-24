@@ -6,7 +6,7 @@
 {% else %}red
 {% endif %} d-inline-flex align-items-center lh-1">
     {% if percentage|is_string %}
-        +{{ percentage }}
+        +{{ percentage }} {# +infinity #}
     {% else %}
         {{ percentage|stringformat:"+.0f" }}%
     {% endif %}
