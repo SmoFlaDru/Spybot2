@@ -8,7 +8,7 @@
     {% if percentage|is_string %}
         +{{ percentage }} {# +infinity #}
     {% else %}
-        {{ percentage }}%
+        {{ percentage|stringformat:"+.0f" }}%
     {% endif %}
 {% if percentage > 0 or percentage == 'infinity' %}
 {% tabler_icon 'trending-up' class='icon ms-1' %}
