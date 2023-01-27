@@ -52,7 +52,6 @@ def home(request):
     # week trend tile
     week_trend = visualization.week_activity_trend()
     # convert to float if it's not the special infinity value
-    week_trend[0]['delta_percent'] = -0.3
     if week_trend[0]['delta_percent'] != 'infinity':
         week_trend[0]['delta_percent'] = round(float(week_trend[0]['delta_percent']))
     context['week_trend'] = week_trend[0]
