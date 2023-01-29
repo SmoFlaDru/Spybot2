@@ -26,5 +26,70 @@
             {% endif %}
              last week
         </div>
+        <div id="chart-week-comparison" class="chart-sm" style="min-height: 40px;"></div>
     </div>
 </div>
+{{ week_comparison|json_script:"week-comparison-data" }}
+<script>
+    const data = JSON.parse(document.querySelector('#week-comparison-data').textContent);
+    document.addEventListener("DOMContentLoaded", function () {
+        window.ApexCharts && (new ApexCharts(document.getElementById('chart-week-comparison'), {
+            chart: {
+                type: "line",
+                fontFamily: 'inherit',
+                height: 40.0,
+                sparkline: {
+                    enabled: true
+                },
+                animations: {
+                    enabled: false
+                },
+            },
+            fill: {
+                opacity: 1,
+            },
+            stroke: {
+                width: [2, 1],
+                dashArray: [0, 3],
+                lineCap: "round",
+                curve: "smooth",
+            },
+            series: [{
+                name: "This week",
+                data: data.map(x => x.hours_current)
+            }, {
+                name: "Last week",
+                data: data.map(x => x.hours_compare)
+            }],
+            tooltip: {
+                enabled: false,
+                theme: 'dark',
+                x: {
+                    format: 'dddd H:mm'
+                },
+            },
+            grid: {
+                strokeDashArray: 4,
+            },
+            xaxis: {
+                labels: {
+                    padding: 0,
+                },
+                tooltip: {
+                    enabled: false
+                },
+                type: 'datetime',
+            },
+            yaxis: {
+                labels: {
+                    padding: 4
+                },
+            },
+            labels: data.map(x => x.datetime),
+            colors: [tabler.getColor("primary"), tabler.getColor("gray-600")],
+            legend: {
+                show: false,
+            },
+        })).render();
+    });
+</script>

@@ -129,6 +129,50 @@ def week_activity_trend():
         return dictfetchall(cursor)
 
 
+def week_activity_comparison():
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            WITH currentWeek AS (
+                SELECT
+                    temp.start AS start,
+                    CAST(DATE_ADD(temp.start, INTERVAL 7 DAY) AS datetime) as end
+                FROM (
+                    SELECT CAST(DATE_ADD(UTC_DATE(), INTERVAL(-WEEKDAY(UTC_DATE())) DAY) AS datetime) AS start
+                ) temp
+            ),
+            compareWeek AS (
+                SELECT
+                    DATE_ADD(currentWeek.end, INTERVAL -1 WEEK) AS end,
+                    DATE_ADD(currentWeek.start, INTERVAL -1 WEEK) AS start
+                FROM currentWeek
+            ),
+            currentWeekData AS (
+                SELECT datetime, activity_hours
+                FROM HourlyActivity, currentWeek
+                WHERE HourlyActivity.datetime >= currentWeek.start
+                    AND HourlyActivity.datetime <= currentWeek.end
+            ),
+            compareWeekData AS (
+                SELECT datetime, activity_hours
+                FROM HourlyActivity, compareWeek
+                WHERE HourlyActivity.datetime >= compareWeek.start
+                    AND HourlyActivity.datetime <= compareWeek.end
+            ),
+            cumulateCurrentWeekData AS (
+                SELECT datetime, activity_hours, SUM(activity_hours) OVER(ORDER BY datetime) AS cumulative_sum
+                FROM currentWeekData
+            ),
+            cumulateCompareWeekData AS (
+                SELECT datetime + INTERVAL 7 DAY AS datetime, activity_hours, SUM(activity_hours) OVER(ORDER BY datetime) AS cumulative_sum
+                FROM compareWeekData
+            )
+            SELECT comp.datetime, cur.cumulative_sum AS hours_current, comp.cumulative_sum AS hours_compare
+            FROM cumulateCompareWeekData AS comp
+            LEFT JOIN cumulateCurrentWeekData cur ON comp.datetime = cur.datetime;
+        """)
+        return dictfetchall(cursor)
+
+
 def channel_popularity():
     with connection.cursor() as cursor:
         cursor.execute("""

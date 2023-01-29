@@ -51,10 +51,12 @@ def home(request):
 
     # week trend tile
     week_trend = visualization.week_activity_trend()
+    week_comparison = visualization.week_activity_comparison()
     # convert to float if it's not the special infinity value
     if week_trend[0]['delta_percent'] != 'infinity':
         week_trend[0]['delta_percent'] = round(float(week_trend[0]['delta_percent']))
     context['week_trend'] = week_trend[0]
+    context['week_comparison'] = week_comparison
 
     # channel popularity
     channel_popularity = visualization.channel_popularity()
