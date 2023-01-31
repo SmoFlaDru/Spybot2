@@ -1,18 +1,18 @@
-<div class="card">
+<div class="card h-100">
     <div class="card-header">
         <h3 class="card-title my-2">Time spent last month</h3>
     </div>
     <div class="card-body ps-2">
-        <div id="chart-mentions" class="chart-lg"></div>
+        <div id="chart-mentions" class="h-100"></div>
     </div>
 </div>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     window.ApexCharts && (new ApexCharts(document.getElementById('chart-mentions'), {
         chart: {
+            height: "100%",
             type: "bar",
             fontFamily: 'inherit',
-            height: 282,
             parentHeightOffset: 0,
             toolbar: {
                 show: false,
