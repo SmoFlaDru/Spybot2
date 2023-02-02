@@ -3,29 +3,24 @@
 
 {% block content %}
     <div class="row row-cards justify-content-md-center">
-        <div class="col-md-6">
-            <div class="row row-cards">
-                <div class="col-md-12">
+        <!-- first top-level column -->
+        <div class="col-md-6 height-xs-150vw">
+            <div class="row row-cards row-height-100">
+                <div class="col-md-12 col-height-50">
                     {% include 'spybot/home/activity_chart.html'%}
                 </div>
-                <div class="col-md-12">
-                    <div class="row row-cards">
-                        <div class="col-md-12">
-                            {% include 'spybot/home/tod_histogram.html' %}
-                        </div>
-                    </div>
+                <div class="col-md-12 col-height-50">
+                    {% include 'spybot/home/tod_histogram.html' %}
                 </div>
             </div>
         </div>
+        <!-- second top-level column (determines height of first row) -->
         <div class="col-md-6">
             <div class="row row-cards">
                 <div class="col-md-6">
-                    <div class="row row-cards">
-                        <div class="col-md-12">
-                            {% include 'spybot/home/live_user_list.html' %}
-                        </div>
-                    </div>
+                    {% include 'spybot/home/live_user_list.html' %}
                 </div>
+                <!-- this column determines the height of the first row -->
                 <div class="col-md-6">
                     <div class="row row-cards">
                         <div class="col-md-12">
@@ -41,9 +36,11 @@
                 </div>
             </div>
         </div>
+        <!-- third top-level column -->
         <div class="col-md-6">
             {% include 'spybot/home/recent_events.html' with recent_events=recent_events only %}
         </div>
+        <!-- fourth top-level column -->
         <div class="col-md-6">
             {% include 'spybot/home/channel_tree_map.html' %}
         </div>
