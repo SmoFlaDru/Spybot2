@@ -42,15 +42,6 @@ class TSChannel(DebuggableModel):
         db_table = 'TSChannel'
 
 
-# Django doesn't have an unsigned int auto (auto-incremented) field type natively, so we provide our own
-class PositiveAutoField(AutoFieldMixin, PositiveIntegerField):
-    def get_internal_type(self):
-        return "PositiveIntegerField"
-
-    def rel_db_type(self, connection):
-        return PositiveIntegerField().db_type(connection=connection)
-
-
 class TSUser(DebuggableModel):
     id = AutoField(primary_key=True)
     name = models.CharField(max_length=128, blank=True, null=True)
