@@ -22,7 +22,6 @@ jobs:
           MARIADB_USER: test_user
           MARIADB_PASSWORD: test_user_pw
           MARIADB_ROOT_PASSWORD: test_admin_pw
-          MARIADB_DATABASE: spybot
         ports:
           - 3306:3306
         volumes:
