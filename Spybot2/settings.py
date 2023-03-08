@@ -102,6 +102,9 @@ DATABASES = {
         **env.db_url('DB_URL'),
         'CONN_MAX_AGE': 3600,
         'CONN_HEALTH_CHECKS': True,
+        'TEST': {
+            'NAME': 'spybot'
+        }
     },
     #'default': {
     #    'ENGINE': 'django.db.backends.sqlite3',
