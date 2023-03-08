@@ -99,15 +99,12 @@ WSGI_APPLICATION = 'Spybot2.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        #'NAME': env('DB_NAME'),
-        'NAME': env('DB_TEST'),
-        'USER': env('DB_USER'),
-        'PASSWORD': env('DB_PASSWORD'),
-        'HOST': env('DB_HOST'),
-        'PORT': env('DB_PORT'),
+        **env.db_url('DB_URL'),
         'CONN_MAX_AGE': 3600,
         'CONN_HEALTH_CHECKS': True,
+        'TEST': {
+            'NAME': 'spybot'
+        }
     },
     #'default': {
     #    'ENGINE': 'django.db.backends.sqlite3',
@@ -165,3 +162,27 @@ CRONJOBS = [
     ('59 * * * *', 'spybot.recorder.cron.cron.record_hourly_activity')
 ]
 CRONTAB_COMMAND_PREFIX = env.str('CRONTAB_COMMAND_PREFIX', '')
+
+
+# Testing
+
+TEST_RUNNER = 'xmlrunner.extra.djangotestrunner.XMLTestRunner'
+TEST_OUTPUT_FILE_NAME = 'tests_result.xml'
+
+# logging
+# LOGGING = {
+#     'version': 1,
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django.db.backends': {
+#             'level': 'DEBUG',
+#         },
+#     },
+#     'root': {
+#         'handlers': ['console'],
+#     }
+# }

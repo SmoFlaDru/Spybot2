@@ -2,19 +2,30 @@ name: Django CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "develop" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "develop" ]
   workflow_dispatch:
 
 jobs:
   build:
+    name: Build & test
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
       matrix:
         python-version: [3.11]
-
+    services:
+      mysql:
+        image: mariadb:11.0-rc
+        env:
+          MARIADB_USER: test_user
+          MARIADB_PASSWORD: test_user_pw
+          MARIADB_ROOT_PASSWORD: test_admin_pw
+        ports:
+          - 3306:3306
+        volumes:
+          - ${{ github.workspace }}/test_db.sql:/docker-entrypoint-initdb.d/
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -25,12 +36,17 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install poetry
-        poetry install
+        poetry install --with test
     - name: 'Create env file'
       run: |
-        cat > .env << 'EOF'
-        ${{ secrets.ENV_FILE }}
-        EOF
+        mv .env.test .env
     - name: Run Tests
       run: |
         poetry run python manage.py test
+    - name: Report test results
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: Django Tests
+        path: tests_result.xml
+        reporter: java-junit

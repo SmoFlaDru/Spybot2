@@ -4,11 +4,11 @@
     <div class="card-header">
         <h3 class="card-title my-2">Live View</h3>
     </div>
-    <div class="list-group list-group-flush list-group-hoverable">
+    <div class="list-group list-group-flush list-group-hoverable" style="display: grid; height: 100%; grid-template-columns: 1fr; grid-auto-flow: row;">
 
         {% for channel in channels %}
             {% if 'spacer' not in channel.name and channel.order < 100 %}
-                <div class="list-group-item py-2">
+                <div class="list-group-item py-2" style="">
                     <div class="row align-items-center">
                         <span class="nav-link-icon d-inline-block">
                             {% tabler_icon 'home-2' %}
