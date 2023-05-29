@@ -1,4 +1,5 @@
 {% load tabler_icons %}
+{% load util %}
 
 <div class="card">
     <div class="card-header">
@@ -17,7 +18,7 @@
 			</div>
         </div>
         <div class="text-muted">
-            {%  if week_trend.delta_percent > 0 %}
+            {%  if week_trend.delta_percent > 0 or week_trend.delta_percent|is_string %}
             up from
             {% elif week_trend.delta_percent < 0 %}
             down from
