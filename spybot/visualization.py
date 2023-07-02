@@ -196,3 +196,27 @@ def channel_popularity():
             ORDER BY percentage DESC;
         """)
         return dictfetchall(cursor)
+
+
+def user_hall_of_fame():
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            WITH total_time AS (
+                SELECT
+                    spybot_mergeduser.name as user,
+                    SUM(TIMESTAMPDIFF(SECOND, TSUserActivity.startTime, COALESCE(TSUserActivity.endTime, UTC_TIMESTAMP()))) as time
+                FROM TSUserActivity, TSUser, spybot_mergeduser
+                WHERE TSUserActivity.tsUserID = TSUser.id
+               AND spybot_mergeduser.id = TSUser.merged_user_id
+               GROUP BY TSUser.merged_user_id
+            )
+            SELECT
+                user,
+                time
+            FROM total_time
+            ORDER BY time DESC
+            LIMIT 25;
+        """)
+
+        return dictfetchall(cursor)
+
