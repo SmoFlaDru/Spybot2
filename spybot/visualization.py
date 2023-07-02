@@ -212,10 +212,11 @@ def user_hall_of_fame():
             )
             SELECT
                 user,
-                time,
-                BIG_SEC_TO_TIME(time) AS formatted_time
+                time
             FROM total_time
-            ORDER BY time DESC;
+            ORDER BY time DESC
+            LIMIT 25;
         """)
+
         return dictfetchall(cursor)
 

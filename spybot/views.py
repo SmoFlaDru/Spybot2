@@ -184,3 +184,10 @@ def timeline(request):
         'max': convert_to_jstime(now_time),
         'form': form,
     })
+
+
+def halloffame(request):
+    print("before")
+    context = {'top_users': visualization.user_hall_of_fame()}
+    print(context)
+    return render(request, 'spybot/halloffame.html', context)
