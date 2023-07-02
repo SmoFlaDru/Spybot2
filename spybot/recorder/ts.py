@@ -81,6 +81,12 @@ class TS:
         except TS3QueryError as error:
             print("Error while poking:", error)
 
+    def get_client_info(self, client_id: int):
+        try:
+            return self.ts3conn.exec_("clientinfo", clid=client_id)
+        except TS3QueryError as error:
+            print("Error while getting client info:", error)
+
     def send_text_message(self, client_id: int, message: str):
         if len(message) > 1024:
             print("Error: text message is too long")
