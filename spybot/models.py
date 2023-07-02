@@ -55,6 +55,9 @@ class MergedUser(DebuggableModel):
     name = models.CharField(max_length=128, blank=False, null=False)
     obsolete = models.BooleanField(default=False)
 
+    def merged_user_names(self):
+        return list(TSUser.objects.values_list('name', flat=True).filter(merged_user=self))
+
 
 class TSUser(DebuggableModel):
     id = AutoField(primary_key=True)
@@ -67,6 +70,9 @@ class TSUser(DebuggableModel):
     class Meta:
         managed = True
         db_table = 'TSUser'
+
+    def last_login_time(self):
+        return getattr(TSUserActivity.objects.filter(tsuser=self, end_time__isnull=False).order_by('-end_time').first(), 'end_time', None)
 
 
 class TSID(DebuggableModel):
