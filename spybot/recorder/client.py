@@ -35,6 +35,9 @@ class Client:
             # update nickname in DB if the user changed it
             if tsuser.name != client_nickname:
                 print("User changed their name")
+                if tsuser.merged_user.name == tsuser.name:
+                    tsuser.merged_user.name = client_nickname
+                    tsuser.merged_user.save()
                 tsuser.name = client_nickname
                 tsuser.save()
 
