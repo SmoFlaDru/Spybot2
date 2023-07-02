@@ -53,6 +53,7 @@ class PositiveAutoField(AutoFieldMixin, PositiveIntegerField):
 
 class MergedUser(DebuggableModel):
     name = models.CharField(max_length=128, blank=False, null=False)
+    obsolete = models.BooleanField(default=False)
 
 
 class TSUser(DebuggableModel):
@@ -61,7 +62,7 @@ class TSUser(DebuggableModel):
     client_id = models.PositiveIntegerField(db_column="clientID")
     # maybe remove
     online = models.BooleanField(db_column='isCurrentlyOnline', default=False)
-    merged_user = models.ForeignKey(MergedUser, on_delete=models.SET_NULL, null=True)
+    merged_user = models.ForeignKey(MergedUser, on_delete=models.SET_NULL, null=True, related_name="tsusers")
 
     class Meta:
         managed = True
