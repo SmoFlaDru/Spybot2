@@ -51,12 +51,17 @@ class PositiveAutoField(AutoFieldMixin, PositiveIntegerField):
         return PositiveIntegerField().db_type(connection=connection)
 
 
+class MergedUser(DebuggableModel):
+    name = models.CharField(max_length=128, blank=False, null=False)
+
+
 class TSUser(DebuggableModel):
     id = AutoField(primary_key=True)
     name = models.CharField(max_length=128, blank=True, null=True)
     client_id = models.PositiveIntegerField(db_column="clientID")
     # maybe remove
     online = models.BooleanField(db_column='isCurrentlyOnline', default=False)
+    merged_user = models.ForeignKey(MergedUser, on_delete=models.SET_NULL, null=True)
 
     class Meta:
         managed = True
