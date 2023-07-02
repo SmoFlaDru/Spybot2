@@ -51,16 +51,28 @@ class PositiveAutoField(AutoFieldMixin, PositiveIntegerField):
         return PositiveIntegerField().db_type(connection=connection)
 
 
+class MergedUser(DebuggableModel):
+    name = models.CharField(max_length=128, blank=False, null=False)
+    obsolete = models.BooleanField(default=False)
+
+    def merged_user_names(self):
+        return list(TSUser.objects.values_list('name', flat=True).filter(merged_user=self))
+
+
 class TSUser(DebuggableModel):
     id = AutoField(primary_key=True)
     name = models.CharField(max_length=128, blank=True, null=True)
     client_id = models.PositiveIntegerField(db_column="clientID")
     # maybe remove
     online = models.BooleanField(db_column='isCurrentlyOnline', default=False)
+    merged_user = models.ForeignKey(MergedUser, on_delete=models.SET_NULL, null=True, related_name="tsusers")
 
     class Meta:
         managed = True
         db_table = 'TSUser'
+
+    def last_login_time(self):
+        return getattr(TSUserActivity.objects.filter(tsuser=self, end_time__isnull=False).order_by('-end_time').first(), 'end_time', None)
 
 
 class TSID(DebuggableModel):

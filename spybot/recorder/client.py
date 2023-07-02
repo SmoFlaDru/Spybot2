@@ -1,7 +1,7 @@
 from ts3 import escape
 from django.utils import timezone
 
-from spybot.models import TSID, TSUser, TSUserActivity, TSChannel, QueuedClientMessage
+from spybot.models import TSID, TSUser, TSUserActivity, TSChannel, QueuedClientMessage, MergedUser
 from spybot.recorder.ts import TS
 
 
@@ -35,8 +35,15 @@ class Client:
             # update nickname in DB if the user changed it
             if tsuser.name != client_nickname:
                 print("User changed their name")
+                if tsuser.merged_user.name == tsuser.name:
+                    tsuser.merged_user.name = client_nickname
+                    tsuser.merged_user.save()
                 tsuser.name = client_nickname
                 tsuser.save()
+
+            print("Get client info...")
+            ci = self.ts.get_client_info(client_id)
+            print(ci._parsed)
 
             print(f"found existing TSID for user: {tsuser.name} with id={tsid}")
             self.__client_start_session(tsuser, channel_id, client_id, joined=True)
@@ -46,7 +53,9 @@ class Client:
         except TSID.DoesNotExist as e:
             print(f"did not find TSID for user {e}")
             # create new TSUser and TSID for this client
-            u = TSUser(name=client_nickname, client_id=client_id)
+            mu = MergedUser(name=client_nickname)
+            mu.save()
+            u = TSUser(name=client_nickname, client_id=client_id, merged_user=mu)
             u.save()
             tsid = TSID(tsuser_id=u.id, ts_id=client_unique_identifier)
             tsid.save()

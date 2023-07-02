@@ -22,7 +22,7 @@ def helloworld(request):
 def home(request):
     # activity chart
     data = visualization.daily_activity()
-    dates, active_values, afk_values = zip(*data)
+    dates, active_values, afk_values = zip(*data) if len(data) > 0 else ((), (), ())
     # convert tuples back to lists when passing to template
     context = {'daily_dates': list(dates),
                'daily_active_values': list(active_values),
