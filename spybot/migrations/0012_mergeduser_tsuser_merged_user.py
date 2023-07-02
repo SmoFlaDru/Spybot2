@@ -36,5 +36,16 @@ class Migration(migrations.Migration):
             name='merged_user',
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='spybot.mergeduser'),
         ),
+        migrations.AddField(
+            model_name='mergeduser',
+            name='obsolete',
+            field=models.BooleanField(default=False),
+        ),
+        migrations.AlterField(
+            model_name='tsuser',
+            name='merged_user',
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='tsusers',
+                                    to='spybot.mergeduser'),
+        ),
         migrations.RunPython(create_merged_users)
     ]
