@@ -1,0 +1,29 @@
+{%  extends 'spybot/base/base.html' %}
+
+{%  block content %}
+<div class="row row-cards justify-content-md-center">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header row g-0">
+                <div class="col"><h3 class="card-title">Hall of fame</h3></div>
+                <div class="col">
+                    <div class="float-end">
+                        <form method="post">
+                            {% csrf_token %}
+                            {{ form }}
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if activity_by_user %}
+                    <div id="chart-timeline" class="chart-lg"></div>
+                {% else %}
+                    {% include 'spybot/util/empty.html' with title='No data for this time range' subtitle='Try adjusting the time interval or come back later' action='Reload page' only %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+Content will go here
+{%  endblock content %}

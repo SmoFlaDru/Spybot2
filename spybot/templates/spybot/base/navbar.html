@@ -56,6 +56,16 @@
                         </span>
                         </a>
                     </li>
+                    <li class="nav-item  {% if request.resolver_match.url_name == 'halloffame' %}active{% endif %}">
+                        <a class="nav-link" href="/halloffame">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            {% tabler_icon 'crown' %}
+                        </span>
+                        <span class="nav-link-title">
+                            Hall of fame
+                        </span>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
