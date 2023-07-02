@@ -1,7 +1,7 @@
 from ts3 import escape
 from django.utils import timezone
 
-from spybot.models import TSID, TSUser, TSUserActivity, TSChannel, QueuedClientMessage
+from spybot.models import TSID, TSUser, TSUserActivity, TSChannel, QueuedClientMessage, MergedUser
 from spybot.recorder.ts import TS
 
 
@@ -50,7 +50,9 @@ class Client:
         except TSID.DoesNotExist as e:
             print(f"did not find TSID for user {e}")
             # create new TSUser and TSID for this client
-            u = TSUser(name=client_nickname, client_id=client_id)
+            mu = MergedUser(name=client_nickname)
+            mu.save()
+            u = TSUser(name=client_nickname, client_id=client_id, merged_user=mu)
             u.save()
             tsid = TSID(tsuser_id=u.id, ts_id=client_unique_identifier)
             tsid.save()
