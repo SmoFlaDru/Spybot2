@@ -11,7 +11,13 @@
               <div class="card-header">
                 <h3 class="card-title">{{user.name}}</h3>
               </div>
+                <p>Is currently {% if is_online %}<span class="text-success">online</span>{% else %}<span class="text-danger">offline</span>{% endif %}</p>
             </div>
+
+          <p>First seen on the {{ first_online }}</p>
+          {% if not is_online %}
+          <p>Most recently seen on the {{ last_online }}</p>
+          {% endif %}
           </div>
         </div>
 

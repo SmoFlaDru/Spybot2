@@ -3,10 +3,10 @@
 from django.db import migrations, models
 import django.db.models.deletion
 
-from spybot.models import TSUser, MergedUser
-
 
 def create_merged_users(apps, schema_editor):
+    TSUser = apps.get_model("spybot", "TSUser")
+    MergedUser = apps.get_model("spybot", "MergedUser")
     for user in TSUser.objects.all():
         merged = MergedUser(name=user.name)
         merged.save()

@@ -193,5 +193,20 @@ def halloffame(request):
 
 
 def user(request, user_id: int):
+    # name, first_online, is_online | last_online, aliase, total_time, afk_time
     user = get_object_or_404(MergedUser, pk=user_id)
-    return render(request, 'spybot/user.html', {'user': user})
+    is_online = any(u.online for u in user.tsusers.all())
+
+    last_online_dates = []
+    first_online_dates = []
+
+    for u in user.tsusers.all():
+        last_online_dates.append(TSUserActivity.objects.filter(tsuser=u).order_by('-end_time')[0].end_time)
+        first_online_dates.append(TSUserActivity.objects.filter(tsuser=u).order_by('start_time')[0].start_time)
+
+    return render(request, 'spybot/user.html', {
+        'user': user,
+        'is_online': is_online,
+        'last_online': max(last_online_dates),
+        'first_online': min(first_online_dates),
+    })

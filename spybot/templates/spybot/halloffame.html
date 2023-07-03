@@ -14,7 +14,7 @@
                     <a href="/u/{{ user.user_id }}" class="list-group-item text-decoration-none">
                         <div class="row align-items-center">
                             <div class="col-auto">
-                                <span class="avatar bg-medal medal-bronze">
+                                <span class="avatar bg-medal {% if forloop.counter0 < 5 %}medal-gold{% elif forloop.counter0 < 10 %}medal-silver{% elif forloop.counter0 < 15 %}medal-bronze{% endif %}">
                                     {{ forloop.counter }}
 <!--                                    {% tabler_icon 'trophy' %}-->
                                 </span>
@@ -37,4 +37,21 @@
     </div>
 </div>
 
+<style>
+    .bg-medal {
+        --text-opacity: 1;
+        --bg-opacity: 0.1;
+        color: rgba(var(--icon-color), var(--text-opacity)) !important;
+        background-color: rgba(var(--icon-color),var(--bg-opacity)) !important;
+    }
+    .medal-gold {
+        --icon-color: 201, 176, 55;
+    }
+    .medal-silver {
+        --icon-color: 150, 150, 150;
+    }
+    .medal-bronze {
+        --icon-color: 127, 67, 6;
+    }
+</style>
 {%  endblock content %}
