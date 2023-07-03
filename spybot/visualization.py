@@ -203,14 +203,16 @@ def user_hall_of_fame():
         cursor.execute("""
             WITH total_time AS (
                 SELECT
+                    spybot_mergeduser.id as user_id,
                     spybot_mergeduser.name as user,
                     SUM(TIMESTAMPDIFF(SECOND, TSUserActivity.startTime, COALESCE(TSUserActivity.endTime, UTC_TIMESTAMP()))) as time
                 FROM TSUserActivity, TSUser, spybot_mergeduser
                 WHERE TSUserActivity.tsUserID = TSUser.id
-               AND spybot_mergeduser.id = TSUser.merged_user_id
-               GROUP BY TSUser.merged_user_id
+                AND spybot_mergeduser.id = TSUser.merged_user_id
+                GROUP BY TSUser.merged_user_id
             )
             SELECT
+                user_id,
                 user,
                 time
             FROM total_time
