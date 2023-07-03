@@ -4,13 +4,13 @@ from datetime import timedelta
 
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.template import loader
 from django.utils import timezone
 
 from spybot import visualization
 from spybot.forms import TimeRangeForm
-from spybot.models import TSChannel, TSUserActivity, NewsEvent
+from spybot.models import TSChannel, TSUserActivity, NewsEvent, MergedUser
 from spybot.templatetags import ts_filters
 
 
@@ -187,7 +187,11 @@ def timeline(request):
 
 
 def halloffame(request):
-    print("before")
     context = {'top_users': visualization.user_hall_of_fame()}
     print(context)
     return render(request, 'spybot/halloffame.html', context)
+
+
+def user(request, user_id: int):
+    user = get_object_or_404(MergedUser, pk=user_id)
+    return render(request, 'spybot/user.html', {'user': user})
