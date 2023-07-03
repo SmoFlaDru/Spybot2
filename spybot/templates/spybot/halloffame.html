@@ -1,6 +1,7 @@
 {%  extends 'spybot/base/base.html' %}
 {% load util %}
 {% load tabler_icons %}
+{% load ts_filters %}
 
 {%  block content %}
 <div class="row row-cards justify-content-md-center">
@@ -19,16 +20,16 @@
 <!--                                    {% tabler_icon 'trophy' %}-->
                                 </span>
                             </div>
-                            <div class="col text-truncate">
-                                <span class="text-reset d-block">{{ user.user }}</span>
-                                <div class="d-block text-muted text-truncate mt-n1">{{ user.time|duration_format }}
-                                </div>
+
+                            <div class="col-auto text-truncate">
+                                <span class="text-reset d-block">{{ user.user|replace_ts_special_chars }}</span>
                             </div>
-                            <div class="col-auto">
-                                <span href="#" class="list-group-item-actions">
-                                    {% tabler_icon 'star' %}
-                                </span>
+                            <div class="col">
+                                <span class="text-muted me-2">{{ user.num_gold_awards }} {% tabler_icon 'award' class="golden" %}</span>
+                                <span class="text-muted me-2">{{ user.num_silver_awards }} {% tabler_icon 'medal' class="silver" %}</span>
+                                <span class="text-muted">{{ user.num_bronze_awards }} {% tabler_icon 'military-award' class="bronze" %}</span>
                             </div>
+                            <div class="col-auto flex-row-reverse text-muted text-truncate mt-n1">{{ user.time|duration_format }}</div>
                         </div>
                     </a>
                 {% endfor %}
@@ -38,6 +39,16 @@
 </div>
 
 <style>
+    .golden {
+        color: rgb(201, 176, 55);
+    }
+    .silver {
+        color: rgb(150, 150, 150);
+    }
+    .bronze {
+        color: rgb(127, 67, 6);
+    }
+
     .bg-medal {
         --text-opacity: 1;
         --bg-opacity: 0.1;

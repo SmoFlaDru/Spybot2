@@ -9,6 +9,7 @@ from django.template import loader
 from django.utils import timezone
 
 from spybot import visualization
+
 from spybot.forms import TimeRangeForm
 from spybot.models import TSChannel, TSUserActivity, NewsEvent, MergedUser
 from spybot.templatetags import ts_filters
@@ -187,8 +188,26 @@ def timeline(request):
 
 
 def halloffame(request):
-    context = {'top_users': visualization.user_hall_of_fame()}
-    print(context)
+    users = visualization.user_hall_of_fame()
+
+    for merged_user in users:
+        awards_gold = []
+        awards_silver = []
+        awards_bronze = []
+        mu = MergedUser.objects.get(id=merged_user['user_id'])
+        for u in mu.tsusers.all():
+            for a in u.awards.all():
+                if a.points == 3:
+                    awards_gold.append(a)
+                elif a.points == 2:
+                    awards_silver.append(a)
+                elif a.points == 1:
+                    awards_bronze.append(a)
+        merged_user['num_gold_awards'] = len(awards_gold)
+        merged_user['num_silver_awards'] = len(awards_silver)
+        merged_user['num_bronze_awards'] = len(awards_bronze)
+
+    context = {'top_users': users}
     return render(request, 'spybot/halloffame.html', context)
 
 
@@ -199,14 +218,25 @@ def user(request, user_id: int):
 
     last_online_dates = []
     first_online_dates = []
+    awards_gold = []
 
     for u in user.tsusers.all():
-        last_online_dates.append(TSUserActivity.objects.filter(tsuser=u).order_by('-end_time')[0].end_time)
-        first_online_dates.append(TSUserActivity.objects.filter(tsuser=u).order_by('start_time')[0].start_time)
+        last_online_activity = TSUserActivity.objects.filter(tsuser=u, end_time__isnull=False).order_by('-end_time')
+        if len(last_online_activity) > 0:
+            last_online_dates.append(last_online_activity[0].end_time)
+
+        first_online_activity = TSUserActivity.objects.filter(tsuser=u).order_by('start_time')
+        if len(first_online_activity) > 0:
+            first_online_dates.append(first_online_activity[0].start_time)
+
+        for a in u.awards.all():
+            if a.points == 3:
+                awards_gold.append(a)
 
     return render(request, 'spybot/user.html', {
         'user': user,
         'is_online': is_online,
         'last_online': max(last_online_dates),
         'first_online': min(first_online_dates),
+        'num_gold_awards': str(len(awards_gold)),
     })
