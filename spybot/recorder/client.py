@@ -43,7 +43,7 @@ class Client:
 
             print("Get client info...")
             ci = self.ts.get_client_info(client_id)
-            print(ci._parsed)
+            print(getattr(ci, "_parsed", None))
 
             print(f"found existing TSID for user: {tsuser.name} with id={tsid}")
             self.__client_start_session(tsuser, channel_id, client_id, joined=True)

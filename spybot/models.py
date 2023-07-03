@@ -128,7 +128,7 @@ class Award(DebuggableModel):
     class AwardType(models.TextChoices):
         USER_OF_WEEK = 'USER_OF_WEEK', 'User of the week'
 
-    tsuser = models.ForeignKey(TSUser, models.CASCADE, blank=False, null=False)
+    tsuser = models.ForeignKey(TSUser, models.CASCADE, blank=False, null=False, related_name="awards")
     date = models.DateTimeField(auto_now_add=True)
     type = models.CharField(max_length=64, choices=AwardType.choices, default=AwardType.USER_OF_WEEK, null=False)
     points = models.IntegerField(blank=False, null=False)
