@@ -2,6 +2,7 @@ from typing import List, Set
 from django.contrib import admin, messages
 from django.contrib.admin import ModelAdmin
 from django.db.models import QuerySet
+from django.db import models
 from django.http import HttpRequest
 
 from spybot.models import NewsEvent, TSUser, MergedUser
@@ -45,12 +46,29 @@ class TSUserAdmin(ModelAdmin):
     actions = [merge_users_action]
     list_display = ('id', 'name', 'merged_user', 'last_login_time')
     list_max_show_all = 2000
+
     def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request):
         return False
 
 
 @admin.register(MergedUser)
 class MergedUserAdmin(ModelAdmin):
-    list_display = ('id', 'name', 'merged_user_names', 'obsolete')
+    list_display = ('id', 'name', 'merged_user_names', 'obsolete', 'number_of_tsusers')
+
+    def get_queryset(self, request):
+        query_set = super(MergedUserAdmin, self).get_queryset(request)
+        query_set = query_set.annotate(number_of_tsusers=models.Count('tsusers'))
+        return query_set
+
+    def number_of_tsusers(self, mu: MergedUser):
+        return mu.number_of_tsusers
+    number_of_tsusers.admin_order_field = 'number_of_tsusers'
+
     def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request):
         return False
