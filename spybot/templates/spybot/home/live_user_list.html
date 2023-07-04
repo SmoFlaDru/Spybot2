@@ -21,17 +21,17 @@
                 </div>
                 {% for client in clients %}
                     {% if channel.id == client.channel_id|add:"0" %}
-                        <div id="user" class="list-group-item py-1">
+                        <a href="/u/{{client.merged_user_id}}" id="user" class="list-group-item py-1 text-decoration-none">
                             <div class="row align-items-center">
                                 <div class="col-auto">
                                     <span class="{% if channel.id == 7 or channel.id == 13 %}
                                     badge bg-red{% else %}badge bg-green{% endif %}"></span>
                                 </div>
                                 <div id="list_text" class="col text-truncate">
-                                    <a href="#" class="text-reset d-block">{{ client.name }}</a>
+                                    <span class="text-reset d-block">{{ client.name }}</span>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     {% endif %}
                 {% endfor %}
             {% endif %}
