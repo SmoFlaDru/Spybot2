@@ -45,7 +45,11 @@ class TSUserAdmin(ModelAdmin):
     actions = [merge_users_action]
     list_display = ('id', 'name', 'merged_user', 'last_login_time')
     list_max_show_all = 2000
+
     def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request):
         return False
 
 
@@ -53,4 +57,7 @@ class TSUserAdmin(ModelAdmin):
 class MergedUserAdmin(ModelAdmin):
     list_display = ('id', 'name', 'merged_user_names', 'obsolete')
     def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request):
         return False
