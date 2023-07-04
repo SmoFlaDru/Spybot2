@@ -38,7 +38,8 @@ def home(request):
     for session in sessions:
         channel_id = session.channel.id
         user_name = session.tsuser.name
-        clients.append({'channel_id': channel_id, 'name': user_name})
+        merged_user_id = session.tsuser.merged_user_id
+        clients.append({'channel_id': channel_id, 'name': user_name, 'merged_user_id': merged_user_id})
     context['clients'] = clients
     context['channels'] = channels
 
