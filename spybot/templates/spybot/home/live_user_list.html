@@ -15,23 +15,23 @@
                         </span>
 
                         <div class="col text-truncate">
-                            <a href="#" class="text-reset d-block">{{ channel.name|replace_ts_special_chars }}</a>
+                            <span class="text-reset d-block">{{ channel.name|replace_ts_special_chars }}</span>
                         </div>
                     </div>
                 </div>
                 {% for client in clients %}
                     {% if channel.id == client.channel_id|add:"0" %}
-                        <a href="/u/{{client.merged_user_id}}" id="user" class="list-group-item py-1 text-decoration-none">
+                        <div id="user" class="list-group-item py-1">
                             <div class="row align-items-center">
                                 <div class="col-auto">
                                     <span class="{% if channel.id == 7 or channel.id == 13 %}
                                     badge bg-red{% else %}badge bg-green{% endif %}"></span>
                                 </div>
                                 <div id="list_text" class="col text-truncate">
-                                    <span class="text-reset d-block">{{ client.name }}</span>
+                                    <a href="/u/{{ client.merged_user_id }}" class="text-reset d-block">{{ client.name }}</a>
                                 </div>
                             </div>
-                        </a>
+                        </div>
                     {% endif %}
                 {% endfor %}
             {% endif %}
@@ -42,8 +42,8 @@
 
 <style>
     .list-group-item {
-        padding-bottom: 4px;
-        padding-top: 4px;
+        padding-bottom: 2px;
+        padding-top: 2px;
     }
     #user {
         padding-left: 50px;

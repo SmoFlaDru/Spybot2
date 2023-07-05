@@ -222,3 +222,44 @@ def user_hall_of_fame():
 
         return dictfetchall(cursor)
 
+
+def user(user_id: int):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            WITH user_time AS (
+                SELECT
+                    TSUserActivity.startTime as start,
+                    TSUserActivity.endTime as end,
+                    TSUserActivity.cID as channel,
+                    tsUserID as user_ID
+                FROM TSUserActivity JOIN TSUser on TSUserActivity.tsUserID = TSUser.id
+                WHERE TSUser.merged_user_id = %s
+            ),
+            awards as (
+                SELECT
+                    spybot_award.tsuser_id,
+                    TU.isCurrentlyOnline,
+                    SUM(IF(points=1, 1, 0)) as bronze,
+                    SUM(IF(points=2, 1, 0)) as silver,
+                    SUM(IF(points=3, 1, 0)) as gold
+                FROM spybot_award JOIN TSUser TU on spybot_award.tsuser_id = TU.id
+                WHERE TU.merged_user_id = %s
+            ),
+            name as (
+                SELECT name as user_name
+                FROM spybot_mergeduser
+                WHERE id = %s
+            )
+            SELECT
+                SUM(IF(channel in (7, 13), TIMESTAMPDIFF(SECOND, start, COALESCE(end, UTC_TIMESTAMP())), 0)) / 3600 as afk_time,
+                SUM(IF(channel not in (7, 13), TIMESTAMPDIFF(SECOND, start, COALESCE(end, UTC_TIMESTAMP())), 0)) / 3600 as online_time,
+                MAX(end) as last_seen,
+                MIN(start) as first_seen,
+                bronze,
+                silver,
+                gold,
+                isCurrentlyOnline as online,
+                user_name
+            FROM user_time, awards, name;""", [user_id, user_id, user_id])
+
+        return dictfetchall(cursor)
