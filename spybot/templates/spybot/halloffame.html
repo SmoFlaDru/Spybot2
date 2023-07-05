@@ -1,68 +1,117 @@
-{%  extends 'spybot/base/base.html' %}
+{% extends 'spybot/base/base.html' %}
 {% load util %}
 {% load tabler_icons %}
 {% load ts_filters %}
 
-{%  block content %}
-<div class="row row-cards justify-content-md-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header row g-0">
-                <h3 class="card-title">Top Users</h3>
-            </div>
-            <div class="list-group list-group-flush list-group-hoverable">
-                {% for user in top_users %}
-                    <a href="/u/{{ user.user_id }}" class="list-group-item text-decoration-none">
-                        <div class="row align-items-center">
-                            <div class="col-auto">
-                                <span class="avatar bg-medal {% if forloop.counter0 < 5 %}medal-gold{% elif forloop.counter0 < 10 %}medal-silver{% elif forloop.counter0 < 15 %}medal-bronze{% endif %}">
-                                    {{ forloop.counter }}
-<!--                                    {% tabler_icon 'trophy' %}-->
-                                </span>
-                            </div>
+{% block content %}
+    <div class="row row-cards justify-content-md-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header row g-0">
+                    <h3 class="card-title">Top Users</h3>
+                </div>
+                <div class="list-group list-group-flush list-group-hoverable">
+                    {% for user in top_users %}
+                        <a href="/u/{{ user.user_id }}" class="list-group-item text-decoration-none shaker">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <span class="avatar bg-medal {% if forloop.counter0 < 5 %}medal-gold{% elif forloop.counter0 < 10 %}medal-silver{% elif forloop.counter0 < 15 %}medal-bronze{% endif %}">
+                                        {{ forloop.counter }}
+                                        {% if forloop.counter0 == 0 %}
+                                        {% tabler_icon 'trophy' %}
+                                        {% endif %}
+                                    </span>
+                                </div>
 
-                            <div class="col-auto text-truncate">
-                                <span class="text-reset d-block">{{ user.user|replace_ts_special_chars }}</span>
+                                <div class="col-auto text-truncate">
+                                    <span class="text-reset d-block">{{ user.user|replace_ts_special_chars }}</span>
+                                </div>
+                                <div class="col">
+                                    <span class="text-muted me-2">{{ user.num_gold_awards }} {% tabler_icon 'award' class="golden" %}</span>
+                                    <span class="text-muted me-2">{{ user.num_silver_awards }} {% tabler_icon 'medal' class="silver" %}</span>
+                                    <span class="text-muted">{{ user.num_bronze_awards }} {% tabler_icon 'military-award' class="bronze" %}</span>
+                                </div>
+                                <div class="col-auto flex-row-reverse text-muted text-truncate mt-n1">{{ user.time|duration_format }}</div>
                             </div>
-                            <div class="col">
-                                <span class="text-muted me-2">{{ user.num_gold_awards }} {% tabler_icon 'award' class="golden" %}</span>
-                                <span class="text-muted me-2">{{ user.num_silver_awards }} {% tabler_icon 'medal' class="silver" %}</span>
-                                <span class="text-muted">{{ user.num_bronze_awards }} {% tabler_icon 'military-award' class="bronze" %}</span>
-                            </div>
-                            <div class="col-auto flex-row-reverse text-muted text-truncate mt-n1">{{ user.time|duration_format }}</div>
-                        </div>
-                    </a>
-                {% endfor %}
+                        </a>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<style>
-    .golden {
-        color: rgb(201, 176, 55);
-    }
-    .silver {
-        color: rgb(150, 150, 150);
-    }
-    .bronze {
-        color: rgb(127, 67, 6);
-    }
+    <style>
+        .golden {
+            scale: .5;
+            color: rgb(201, 176, 55);
+            animation: medals .5s ease-out forwards;
+        }
 
-    .bg-medal {
-        --text-opacity: 1;
-        --bg-opacity: 0.1;
-        color: rgba(var(--icon-color), var(--text-opacity)) !important;
-        background-color: rgba(var(--icon-color),var(--bg-opacity)) !important;
-    }
-    .medal-gold {
-        --icon-color: 201, 176, 55;
-    }
-    .medal-silver {
-        --icon-color: 150, 150, 150;
-    }
-    .medal-bronze {
-        --icon-color: 127, 67, 6;
-    }
-</style>
-{%  endblock content %}
+        .silver {
+            scale: .5;
+            color: rgb(150, 150, 150);
+            animation: medals .5s ease-out forwards;
+            animation-delay: .25s;
+        }
+
+        .bronze {
+            scale: .5;
+            color: rgb(127, 67, 6);
+            animation: medals .5s ease-out forwards;
+            animation-delay: .5s;
+        }
+
+        .shaker:hover .bronze {
+            animation: shake .5s;
+            animation-iteration-count: infinite;
+        }
+        .shaker:hover .silver {
+            animation: shake .5s;
+            animation-iteration-count: infinite;
+        }
+        .shaker:hover .golden {
+            animation: shake .5s;
+            animation-iteration-count: infinite;
+        }
+
+        @keyframes shake {
+            0%, 50%, 100% {
+                transform: rotate(0deg);
+            }
+            25% {
+                transform: rotate(15deg);
+            }
+            75% {
+                transform: rotate(-15deg);
+            }
+        }
+
+        @keyframes medals {
+            0% {
+                transform: scale(1);
+            }
+            100% {
+                transform: scale(2);
+            }
+        }
+
+        .bg-medal {
+            --text-opacity: 1;
+            --bg-opacity: 0.1;
+            color: rgba(var(--icon-color), var(--text-opacity)) !important;
+            background-color: rgba(var(--icon-color), var(--bg-opacity)) !important;
+        }
+
+        .medal-gold {
+            --icon-color: 201, 176, 55;
+        }
+
+        .medal-silver {
+            --icon-color: 150, 150, 150;
+        }
+
+        .medal-bronze {
+            --icon-color: 127, 67, 6;
+        }
+    </style>
+{% endblock content %}
