@@ -35,7 +35,9 @@
                 </div>
                 <div class="col">
                     <div class="text-truncate">
-                        {{ top_users_data.0.user_name }}
+                        <a href="/u/{{ top_users_data.0.user_id }}" class="text-reset d-block">
+                            {{ top_users_data.0.user_name }}
+                        </a>
                     </div>
                     <div class="text-muted">{{ top_users_data.0.time|floatformat }} hours this week</div>
                 </div>
@@ -64,7 +66,9 @@
                 </div>
                 <div class="col">
                     <div class="text-truncate">
-                        {{ top_users_data.1.user_name }}
+                        <a href="/u/{{ top_users_data.1.user_id }}" class="text-reset d-block">
+                            {{ top_users_data.1.user_name }}
+                        </a>
                     </div>
                     <div class="text-muted">{{ top_users_data.1.time|floatformat }} hours this week</div>
                 </div>
@@ -79,7 +83,9 @@
                 </div>
                 <div class="col">
                     <div class="text-truncate">
-                        {{ top_users_data.2.user_name }}
+                        <a href="/u/{{ top_users_data.2.user_id }}" class="text-reset d-block">
+                            {{ top_users_data.2.user_name }}
+                        </a>
                     </div>
                     <div class="text-muted">{{ top_users_data.2.time|floatformat }} hours this week</div>
                 </div>

@@ -222,5 +222,6 @@ def user(request, user_id: int):
     return render(request, 'spybot/user.html', {
         'user': u,
         'total_time': afk_time + online_time,
-        'data': [afk_time, online_time]
+        'data': [afk_time, online_time],
+        'names': str(u.get('names')).split(",")
     })
