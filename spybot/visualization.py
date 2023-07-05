@@ -255,7 +255,7 @@ def user(user_id: int):
                 silver,
                 gold,
                 online,
-                merged_username as name,
+                merged_username as user_name,
                 names
             FROM user_time,
                  awards;""", [user_id, user_id])

@@ -86,8 +86,18 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 d-flex align-items-center">
+                    <div class="col-md-6 d-flex flex-column justify-content-center align-items-center">
                         <div id="online-pie" class="chart-lg"></div>
+
+                        <div class="d-flex flex-column">
+                            <h4>Former Names</h4>
+                            {% if u.names|length > 0 %}
+                            Not Former Names known
+                            {% endif %}
+                            {% for name in names %}
+                                <span class="text-muted"> > {{ name }}</span>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -100,7 +110,7 @@
                 chart: {
                     type: "pie",
                     fontFamily: 'inherit',
-                    height: "50%",
+                    width: "100%",
                     sparkline: {
                         enabled: true
                     },
