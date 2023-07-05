@@ -233,7 +233,7 @@ def user(user_id: int):
                     TSUserActivity.cID as channel,
                     tsUserID as user_ID
                 FROM TSUserActivity JOIN TSUser on TSUserActivity.tsUserID = TSUser.id
-                WHERE TSUser.merged_user_id = {id}
+                WHERE TSUser.merged_user_id = %s
             ),
             awards as (
                 SELECT
@@ -243,12 +243,12 @@ def user(user_id: int):
                     SUM(IF(points=2, 1, 0)) as silver,
                     SUM(IF(points=3, 1, 0)) as gold
                 FROM spybot_award JOIN TSUser TU on spybot_award.tsuser_id = TU.id
-                WHERE TU.merged_user_id = {id}
+                WHERE TU.merged_user_id = %s
             ),
             name as (
                 SELECT name as user_name
                 FROM spybot_mergeduser
-                WHERE id = {id}
+                WHERE id = %s
             )
             SELECT
                 SUM(IF(channel in (7, 13), TIMESTAMPDIFF(SECOND, start, COALESCE(end, UTC_TIMESTAMP())), 0)) / 3600 as afk_time,
@@ -260,6 +260,6 @@ def user(user_id: int):
                 gold,
                 isCurrentlyOnline as online,
                 user_name
-            FROM user_time, awards, name;""".format(id=user_id))
+            FROM user_time, awards, name;""", [user_id, user_id, user_id])
 
         return dictfetchall(cursor)
