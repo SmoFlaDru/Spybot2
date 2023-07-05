@@ -233,22 +233,19 @@ def user(user_id: int):
                     tsUserID as user_ID
                 FROM TSUserActivity JOIN TSUser on TSUserActivity.tsUserID = TSUser.id
                 WHERE TSUser.merged_user_id = %s
-            ),
-            awards as (
-                SELECT
-                    spybot_award.tsuser_id,
-                    TU.isCurrentlyOnline,
-                    SUM(IF(points=1, 1, 0)) as bronze,
-                    SUM(IF(points=2, 1, 0)) as silver,
-                    SUM(IF(points=3, 1, 0)) as gold
-                FROM spybot_award JOIN TSUser TU on spybot_award.tsuser_id = TU.id
-                WHERE TU.merged_user_id = %s
-            ),
-            name as (
-                SELECT name as user_name
-                FROM spybot_mergeduser
-                WHERE id = %s
-            )
+                ),
+                awards as (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT TU.name) as names,
+                        sm.name as merged_username,
+                        MAX(TU.isCurrentlyOnline) as online,
+                        SUM(IF(points=1, 1, 0)) as bronze,
+                        SUM(IF(points=2, 1, 0)) as silver,
+                        SUM(IF(points=3, 1, 0)) as gold
+                    FROM spybot_award RIGHT JOIN TSUser TU on spybot_award.tsuser_id = TU.id
+                    JOIN spybot_mergeduser sm on TU.merged_user_id = sm.id
+                    WHERE TU.merged_user_id = %s
+                )
             SELECT
                 SUM(IF(channel in (7, 13), TIMESTAMPDIFF(SECOND, start, COALESCE(end, UTC_TIMESTAMP())), 0)) / 3600 as afk_time,
                 SUM(IF(channel not in (7, 13), TIMESTAMPDIFF(SECOND, start, COALESCE(end, UTC_TIMESTAMP())), 0)) / 3600 as online_time,
@@ -257,8 +254,10 @@ def user(user_id: int):
                 bronze,
                 silver,
                 gold,
-                isCurrentlyOnline as online,
-                user_name
-            FROM user_time, awards, name;""", [user_id, user_id, user_id])
+                online,
+                merged_username as name,
+                names
+            FROM user_time,
+                 awards;""", [user_id, user_id])
 
         return dictfetchall(cursor)
