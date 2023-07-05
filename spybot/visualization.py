@@ -72,14 +72,13 @@ def top_users_of_week() -> List[TopUserResult]:
                 SELECT DATE_ADD(UTC_DATE(), INTERVAL(-WEEKDAY(UTC_DATE())) DAY) AS date
             )
             SELECT
-                SUM(TIMESTAMPDIFF(SECOND, startTime, endTime)) / 3600 AS time,
+                SUM(TIMESTAMPDIFF(SECOND, startTime, COALESCE(endTime, UTC_TIMESTAMP()))) / 3600 AS time,
                 MU.name AS user_name,
                 MU.id AS user_id
             FROM startOfWeek, TSUserActivity
             INNER JOIN TSUser TU ON tsUserID = TU.id
             INNER JOIN spybot_mergeduser MU ON TU.merged_user_id = MU.id
             WHERE startTime > startOfWeek.date
-                AND endTime IS NOT NULL
             GROUP BY MU.id
             ORDER BY time DESC
             LIMIT 3;
