@@ -16,10 +16,13 @@ def tabler_icon(name, **kwargs):
     :param **kwargs:
     """
     url = settings.STATIC_URL + "tabler-sprite.svg"
+    size = kwargs.get('size', 24)
     return format_html(textwrap.dedent("""\
-        <svg width="24" height="24" class="{}">
+        <svg width="{}" height="{}" class="{}">
             <use xlink:href="{}#tabler-{}"/>
         </svg>"""),
+        size,
+        size,
         kwargs.get("class", ""),
         url,
         name
