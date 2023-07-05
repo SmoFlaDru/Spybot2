@@ -4,7 +4,7 @@
 
 {% block content %}
     <div class="row row-cards justify-content-center align-items-center">
-        <div class="col-md-6">
+        <div class="col-md-6 col-lg-4">
             <div class="card">
                 <div class="card-header justify-content-md-center">
                     <h3 class="card-title ">{{ user.user_name }}</h3>
@@ -15,19 +15,20 @@
                             <div class="datagrid">
                                 <div class="datagrid-item">
                                     <div class="datagrid-title">
-                                        Current Status
+                                        <span>Current Status</span>
                                     </div>
                                     <div class="datagrid-content">
-                                        <p>{% if user.online %}
-                                            <span class="text-success">online</span>{% else %}
-                                            <span class="text-danger">offline</span>{% endif %}
-                                        </p>
+                                        {% if user.online %}
+                                            <span class="text-success">online</span>
+                                        {% else %}
+                                            <span class="text-danger">offline</span>
+                                        {% endif %}
                                     </div>
                                 </div>
 
                                 <div class="datagrid-item">
                                     <div class="datagrid-title">
-                                        Medals
+                                        <span>Medals</span>
                                     </div>
                                     <div class="datagrid-content">
                                         <span>{% tabler_icon 'medal' class="medal gold" %}{{ user.gold }}</span>
@@ -42,7 +43,7 @@
                                             Last Seen
                                         </div>
                                         <div class="datagrid-content">
-                                            <p>{{ user.last_seen }}</p>
+                                            <span>{{ user.last_seen }}</span>
                                         </div>
                                     </div>
                                 {% endif %}
@@ -52,7 +53,7 @@
                                         First Seen
                                     </div>
                                     <div class="datagrid-content">
-                                        <p>{{ user.first_seen }}</p>
+                                        <span>{{ user.first_seen }}</span>
                                     </div>
                                 </div>
 
@@ -79,7 +80,7 @@
                                         AFK Time
                                     </div>
                                     <div class="datagrid-item">
-                                        {{ user.afk_time|floatformat:0 }}h
+                                        <span>{{ user.afk_time|floatformat:0 }}h</span>
                                     </div>
                                 </div>
                             </div>
@@ -141,7 +142,7 @@
     </script>
     <style>
         .medal {
-            scale: .5;
+            scale: .25;
             animation: medals 1s ease-out forwards;
         }
 
@@ -164,7 +165,7 @@
                 transform: scale(1);
             }
             100% {
-                transform: scale(2);
+                transform: scale(4);
             }
         }
     </style>
