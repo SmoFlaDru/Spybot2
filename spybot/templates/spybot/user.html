@@ -61,7 +61,7 @@
                                     <div class="datagrid-title">
                                         Total Time
                                     </div>
-                                    <div class="datagrid-item">
+                                    <div class="datagrid-content">
                                         {{ total_time }}h
                                     </div>
                                 </div>
@@ -70,7 +70,7 @@
                                     <div class="datagrid-title">
                                         Online Time
                                     </div>
-                                    <div class="datagrid-item">
+                                    <div class="datagrid-content">
                                         {{ user.online_time|floatformat:0 }}h
                                     </div>
                                 </div>
@@ -79,25 +79,54 @@
                                     <div class="datagrid-title">
                                         AFK Time
                                     </div>
-                                    <div class="datagrid-item">
+                                    <div class="datagrid-content">
                                         <span>{{ user.afk_time|floatformat:0 }}h</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 d-flex flex-column justify-content-center align-items-center">
-                        <div id="online-pie" class="chart-lg"></div>
 
-                        <div class="d-flex flex-column">
-                            <h4>Former Names</h4>
-                            {% if u.names|length > 0 %}
-                            Not Former Names known
-                            {% endif %}
-                            {% for name in names %}
-                                <span class="text-muted"> > {{ name }}</span>
-                            {% endfor %}
-                        </div>
+                    <div class="col-md-6 d-flex flex-column justify-content-center align-items-center">
+                        <datagrid class="mt-auto">
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">
+                                    Former Names
+                                </div>
+
+                                <div class="datagrid-content">
+                                    {% if u.names|length > 0 %}
+                                    Not Former Names known
+                                    {% endif %}
+
+                                    <ul style="overflow: scroll">
+                                    {% for name in names %}
+                                        <li>
+                                            <span class="small">{{ name }}</span>
+                                        </li>
+                                    {% endfor %}
+                                    </ul>
+                                </div>
+
+                            </div>
+
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">
+                                    Currently Playing
+                                </div>
+                                <div class="datagrid-content">
+                                    {% if game_id == 0 %}
+                                        Not in Game
+                                    {% else %}
+                                        <p class="small">
+                                            {% tabler_icon 'tank' %}{{ game_name }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                        </datagrid>
+
+                        <div id="online-pie" class="chart-lg d-flex mt-auto"></div>
                     </div>
                 </div>
             </div>

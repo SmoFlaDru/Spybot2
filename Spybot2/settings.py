@@ -39,6 +39,9 @@ TS_IP = env('TS_IP')
 TS_PORT = env('TS_PORT')
 SERVER_IP = env('SERVER_IP')
 
+# Steam API Key
+STEAM_API_KEY = env('STEAM_API_KEY')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', False)
 
