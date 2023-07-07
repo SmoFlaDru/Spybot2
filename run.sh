@@ -27,7 +27,7 @@ python manage.py crontab add
 python manage.py crontab add
 
 # run django app
-PYTHONUNBUFFERED=1 python manage.py runserver 127.0.0.1:8000
+NEW_RELIC_CONFIG_FILE=newrelic.ini PYTHONUNBUFFERED=1 newrelic-admin run-program python manage.py runserver 127.0.0.1:8000
 
 # exit poetry-activated shell
 exit
