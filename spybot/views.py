@@ -225,10 +225,9 @@ def user(request, user_id: int):
     steam_api_key = settings.STEAM_API_KEY
     game_name = ""
     game_id = 0
-    #steam_id = u.steam_id
-    steam_id = 7
+    steam_id = u.get('steam_id')
 
-    if not steam_api_key == "" or not steam_id:
+    if not steam_api_key == "" and not steam_id == 0:
         req = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={key}&steamids={id}"\
             .format(key=steam_api_key, id=steam_id)
 
