@@ -68,6 +68,6 @@ def duration_format(td):
 
     #days_str = f'{days}d ' if days else ''
     hours_str = f'{hours} hours ' if hours else ''
-    minutes_str = f'{minutes} minutes ' if minutes else ''
+    minutes_str = f'{minutes} min ' if minutes else ''
 
     return f'{hours_str}{minutes_str}'

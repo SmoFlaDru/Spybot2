@@ -1,33 +1,182 @@
-{%  extends 'spybot/base/base.html' %}
+{% extends 'spybot/base/base.html' %}
+{% load tabler_icons %}
 {% load util %}
 
-{%  block content %}
-<div class="row row-cards justify-content-md-center">
-    <div class="col-md-12">
-
-        <div class="row row-cards">
-          <div class="col-6">
+{% block content %}
+    <div class="row row-cards justify-content-center align-items-center">
+        <div class="col-md-6 col-lg-4">
             <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">{{user.name}}</h3>
-              </div>
-                <div class="card-body">
-                    <p>Is currently {% if is_online %}<span class="text-success">online</span>{% else %}<span class="text-danger">offline</span>{% endif %}</p>
-
-                  <p>First seen on the {{ first_online }}</p>
-                  {% if not is_online %}
-                  <p>Most recently seen on the {{ last_online }}</p>
-                  {% endif %}
-
+                <div class="card-header justify-content-md-center">
+                    <h3 class="card-title ">{{ user.user_name }}</h3>
                 </div>
+                <div class="row row0 justify-content-center">
+                    <div class="col-md-6">
+                        <div class="card-body">
+                            <div class="datagrid">
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">
+                                        <span>Current Status</span>
+                                    </div>
+                                    <div class="datagrid-content">
+                                        {% if user.online %}
+                                            <span class="text-success">online</span>
+                                        {% else %}
+                                            <span class="text-danger">offline</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
 
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">
+                                        <span>Medals</span>
+                                    </div>
+                                    <div class="datagrid-content">
+                                        <span>{% tabler_icon 'medal' class="medal gold" %}{{ user.gold }}</span>
+                                        <span>{% tabler_icon 'medal' class="medal silver" %}{{ user.silver }}</span>
+                                        <span>{% tabler_icon 'medal' class="medal bronze" %}{{ user.bronze }}</span>
+                                    </div>
+                                </div>
 
+                                {% if not user.online %}
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">
+                                            Last Seen
+                                        </div>
+                                        <div class="datagrid-content">
+                                            <span>{{ user.last_seen }}</span>
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">
+                                        First Seen
+                                    </div>
+                                    <div class="datagrid-content">
+                                        <span>{{ user.first_seen }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">
+                                        Total Time
+                                    </div>
+                                    <div class="datagrid-item">
+                                        {{ total_time }}h
+                                    </div>
+                                </div>
+
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">
+                                        Online Time
+                                    </div>
+                                    <div class="datagrid-item">
+                                        {{ user.online_time|floatformat:0 }}h
+                                    </div>
+                                </div>
+
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">
+                                        AFK Time
+                                    </div>
+                                    <div class="datagrid-item">
+                                        <span>{{ user.afk_time|floatformat:0 }}h</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 d-flex flex-column justify-content-center align-items-center">
+                        <div id="online-pie" class="chart-lg"></div>
+
+                        <div class="d-flex flex-column">
+                            <h4>Former Names</h4>
+                            {% if u.names|length > 0 %}
+                            Not Former Names known
+                            {% endif %}
+                            {% for name in names %}
+                                <span class="text-muted"> > {{ name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-
-
     </div>
-</div>
 
-{%  endblock content %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            window.ApexCharts && (new ApexCharts(document.getElementById('online-pie'), {
+                chart: {
+                    type: "pie",
+                    fontFamily: 'inherit',
+                    height: "50%",
+                    sparkline: {
+                        enabled: true
+                    },
+                    animations: {
+                        enabled: true,
+                        easing: 'easein',
+                        speed: 1000,
+                        animateGradually: {
+                            enabled: true,
+                            delay: 150
+                        },
+                        dynamicAnimation: {
+                            enabled: true,
+                            speed: 750
+                        }
+                    },
+                },
+                fill: {
+                    opacity: 1,
+                },
+                series: {{ data }},
+                labels: ["AFK", "ONLINE"],
+                dataLabels: {
+                    enabled: true,
+                },
+                tooltip: {
+                    theme: 'dark'
+                },
+                grid: {
+                    strokeDashArray: 4,
+                },
+                colors: [tabler.getColor("red", 0.8), tabler.getColor("green", 0.8)],
+                legend: {
+                    show: true,
+                    position: 'bottom',
+                },
+            })).render();
+        });
+    </script>
+    <style>
+        .medal {
+            scale: .25;
+            animation: medals 1s ease-out forwards;
+        }
+
+        .gold {
+            color: rgb(201, 176, 55);
+        }
+
+        .silver {
+            color: rgb(150, 150, 150);
+            animation-delay: .25s;
+        }
+
+        .bronze {
+            color: rgb(127, 67, 6);;
+            animation-delay: .5s;
+        }
+
+        @keyframes medals {
+            0% {
+                transform: scale(1);
+            }
+            100% {
+                transform: scale(4);
+            }
+        }
+    </style>
+{% endblock content %}

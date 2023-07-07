@@ -38,7 +38,8 @@ def home(request):
     for session in sessions:
         channel_id = session.channel.id
         user_name = session.tsuser.name
-        clients.append({'channel_id': channel_id, 'name': user_name})
+        merged_user_id = session.tsuser.merged_user_id
+        clients.append({'channel_id': channel_id, 'name': user_name, 'merged_user_id': merged_user_id})
     context['clients'] = clients
     context['channels'] = channels
 
@@ -213,30 +214,14 @@ def halloffame(request):
 
 def user(request, user_id: int):
     # name, first_online, is_online | last_online, aliase, total_time, afk_time
-    user = get_object_or_404(MergedUser, pk=user_id)
-    is_online = any(u.online for u in user.tsusers.all())
 
-    last_online_dates = []
-    first_online_dates = []
-    awards_gold = []
-
-    for u in user.tsusers.all():
-        last_online_activity = TSUserActivity.objects.filter(tsuser=u, end_time__isnull=False).order_by('-end_time')
-        if len(last_online_activity) > 0:
-            last_online_dates.append(last_online_activity[0].end_time)
-
-        first_online_activity = TSUserActivity.objects.filter(tsuser=u).order_by('start_time')
-        if len(first_online_activity) > 0:
-            first_online_dates.append(first_online_activity[0].start_time)
-
-        for a in u.awards.all():
-            if a.points == 3:
-                awards_gold.append(a)
+    u = visualization.user(user_id)[0]
+    afk_time = int(u.get('afk_time'))
+    online_time = int(u.get('online_time'))
 
     return render(request, 'spybot/user.html', {
-        'user': user,
-        'is_online': is_online,
-        'last_online': max(last_online_dates),
-        'first_online': min(first_online_dates),
-        'num_gold_awards': str(len(awards_gold)),
+        'user': u,
+        'total_time': afk_time + online_time,
+        'data': [afk_time, online_time],
+        'names': str(u.get('names')).split(",")
     })
