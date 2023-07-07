@@ -227,7 +227,7 @@ def user(request, user_id: int):
     game_id = 0
     steam_id = u.get('steam_id')
 
-    if not steam_api_key == "" and not steam_id == 0:
+    if not steam_api_key == "" and not steam_id == 0 and u.get('online') == 1:
         req = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={key}&steamids={id}"\
             .format(key=steam_api_key, id=steam_id)
 
