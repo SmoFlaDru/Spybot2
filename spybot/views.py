@@ -30,18 +30,6 @@ def home(request):
                'daily_afk_values': list(afk_values)
                }
 
-    # live view
-    sessions = TSUserActivity.objects.filter(end_time=None)
-    channels = TSChannel.objects.order_by('order')
-    clients = []
-
-    for session in sessions:
-        channel_id = session.channel.id
-        user_name = session.tsuser.name
-        merged_user_id = session.tsuser.merged_user_id
-        clients.append({'channel_id': channel_id, 'name': user_name, 'merged_user_id': merged_user_id})
-    context['clients'] = clients
-    context['channels'] = channels
 
     # time of day histogram
     tod_data = visualization.time_of_day_histogram()
@@ -225,3 +213,18 @@ def user(request, user_id: int):
         'data': [afk_time, online_time],
         'names': str(u.get('names')).split(",")
     })
+
+
+def live_fragment(request):
+    # live view
+    sessions = TSUserActivity.objects.filter(end_time=None)
+    channels = TSChannel.objects.order_by('order')
+    clients = []
+
+    for session in sessions:
+        channel_id = session.channel.id
+        user_name = session.tsuser.name
+        merged_user_id = session.tsuser.merged_user_id
+        clients.append({'channel_id': channel_id, 'name': user_name, 'merged_user_id': merged_user_id})
+    context = {'clients': clients, 'channels': channels}
+    return render(request, 'spybot/home/live_fragment.html', context)

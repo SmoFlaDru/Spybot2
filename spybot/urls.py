@@ -11,5 +11,6 @@ urlpatterns = [
     path('timeline', views.timeline, name='timeline'),
     path('halloffame', views.halloffame, name='halloffame'),
     path('u/<int:user_id>', views.user, name='user'),
+    path('live_fragment', views.live_fragment, name='live_fragment'),
 ]
 
