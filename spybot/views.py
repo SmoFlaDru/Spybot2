@@ -18,11 +18,6 @@ from Spybot2 import settings
 import requests
 
 
-def helloworld(request):
-    template = loader.get_template('spybot/helloworld.html')
-    return HttpResponse(template.render({}, request))
-
-
 def home(request):
     # activity chart
     data = visualization.daily_activity()
@@ -96,10 +91,6 @@ def live(request):
         clients.append({'channel_id': channel_id, 'name': user_name})
 
     return render(request, 'spybot/live.html', {'clients': clients, 'channels': channels})
-
-
-def spybot(request):
-    return render(request, 'spybot/base/navbar.html')
 
 
 def widget_legacy(request):
