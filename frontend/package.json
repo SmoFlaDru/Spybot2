@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@tabler/core": "^1.0.0-beta17",
+    "@tabler/core": "1.0.0-beta17",
     "apexcharts": "^3.41.0",
     "htmx.org": "^1.9.2"
   },
