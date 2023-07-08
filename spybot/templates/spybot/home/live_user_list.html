@@ -21,16 +21,19 @@
                 </div>
                 {% for client in clients %}
                     {% if channel.id == client.channel_id|add:"0" %}
-                        <div id="user" class="list-group-item py-1">
-                            <div class="row align-items-center">
-                                <div class="col-auto">
-                                    <span class="{% if channel.id == 7 or channel.id == 13 %}
-                                    badge bg-red{% else %}badge bg-green{% endif %}"></span>
-                                </div>
-                                <div id="list_text" class="col text-truncate">
-                                    <a href="/u/{{ client.merged_user_id }}" class="text-reset d-block">{{ client.name }}</a>
-                                </div>
+                        <div class="list-group-item py-1 d-flex flex-row align-items-center">
+
+                            <span class="ms-2 me-1 {% if channel.id == 7 or channel.id == 13 %}red{% else %}green{% endif %}">
+                                {% tabler_icon 'arrow-badge-right' size=20 %}
+                            </span>
+
+                            <div class="flex-column d-flex">
+                                <a href="/u/{{ client.merged_user_id }}"
+                                   class="text-reset">{{ client.name }}</a>
+
+                                <span class="text-muted small">{{ client.game }}</span>
                             </div>
+
                         </div>
                     {% endif %}
                 {% endfor %}
@@ -41,18 +44,10 @@
 
 
 <style>
-    .list-group-item {
-        padding-bottom: 2px;
-        padding-top: 2px;
+    .red {
+        color: rgb(214, 57, 57);
     }
-    #user {
-        padding-left: 50px;
-    }
-    #list_text{
-        padding-left: 0;
-    }
-    .card-header {
-        padding-bottom: 6px;
-        padding-top: 6px;
+    .green {
+        color: rgb(38, 114, 12);
     }
 </style>
