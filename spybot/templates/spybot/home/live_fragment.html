@@ -1,0 +1,36 @@
+{% load ts_filters %}
+{% load tabler_icons %}
+<div class="list-group list-group-flush list-group-hoverable">
+    {% for channel in channels %}
+        {% if 'spacer' not in channel.name and channel.order < 100 %}
+            <div class="list-group-item py-2">
+                <div class="row align-items-center">
+                    <span class="nav-link-icon d-inline-block">
+                        {% tabler_icon 'home-2' %}
+                    </span>
+
+                    <div class="col text-truncate">
+                        <span class="text-reset d-block">{{ channel.name|replace_ts_special_chars }}</span>
+                    </div>
+                </div>
+            </div>
+            {% for client in clients %}
+                {% if channel.id == client.channel_id|add:"0" %}
+                    <div class="list-group-item py-1 d-flex flex-row align-items-center">
+
+                         <span class="ms-2 me-1 {% if channel.id == 7 or channel.id == 13 %}red{% else %}green{% endif %}">
+                             {% tabler_icon 'arrow-badge-right' size=20 %}
+                         </span>
+
+                         <div class="flex-column d-flex">
+                             <a href="/u/{{ client.merged_user_id }}"
+                                class="text-reset">{{ client.name }}</a>
+
+                             <span class="text-muted small">{{ client.game }}</span>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+</div>

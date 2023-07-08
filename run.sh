@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# install frontend dependencies
+cd frontend
+npm install
+npm run package
+cd ..
+
 # activate venv
 source venv/bin/activate
 

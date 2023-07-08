@@ -28,23 +28,6 @@ def home(request):
                'daily_afk_values': list(afk_values)
                }
 
-    # live view
-    sessions = TSUserActivity.objects.filter(end_time=None)
-    channels = TSChannel.objects.order_by('order')
-    clients = []
-
-    for session in sessions:
-        channel_id = session.channel.id
-        user_name = session.tsuser.name
-        merged_user_id = session.tsuser.merged_user_id
-
-        mu = MergedUser.objects.get(id=merged_user_id)
-        game_id, game_name = get_steam_game(mu.steam_id)
-        clients.append({'channel_id': channel_id, 'name': user_name,
-                        'merged_user_id': merged_user_id, 'game': game_name})
-    context['clients'] = clients
-    context['channels'] = channels
-
     # time of day histogram
     tod_data = visualization.time_of_day_histogram()
     context['tod_data'] = list(tod_data)
@@ -231,6 +214,26 @@ def user(request, user_id: int):
         'game_id': game_id,
         'game_name': game_name
     })
+
+
+def live_fragment(request):
+    # live view
+    sessions = TSUserActivity.objects.filter(end_time=None)
+    channels = TSChannel.objects.order_by('order')
+    clients = []
+
+    for session in sessions:
+        channel_id = session.channel.id
+        user_name = session.tsuser.name
+        merged_user_id = session.tsuser.merged_user_id
+
+        mu = MergedUser.objects.get(id=merged_user_id)
+        game_id, game_name = get_steam_game(mu.steam_id)
+        clients.append({'channel_id': channel_id, 'name': user_name,
+                        'merged_user_id': merged_user_id, 'game': game_name})
+
+    context = {'clients': clients, 'channels': channels}
+    return render(request, 'spybot/home/live_fragment.html', context)
 
 
 def get_steam_game(steam_id):
