@@ -14,10 +14,8 @@ from spybot.forms import TimeRangeForm
 from spybot.models import TSChannel, TSUserActivity, NewsEvent, MergedUser
 from spybot.templatetags import ts_filters
 
-
-def helloworld(request):
-    template = loader.get_template('spybot/helloworld.html')
-    return HttpResponse(template.render({}, request))
+from Spybot2 import settings
+import requests
 
 
 def home(request):
@@ -29,7 +27,6 @@ def home(request):
                'daily_active_values': list(active_values),
                'daily_afk_values': list(afk_values)
                }
-
 
     # time of day histogram
     tod_data = visualization.time_of_day_histogram()
@@ -77,10 +74,6 @@ def live(request):
         clients.append({'channel_id': channel_id, 'name': user_name})
 
     return render(request, 'spybot/live.html', {'clients': clients, 'channels': channels})
-
-
-def spybot(request):
-    return render(request, 'spybot/base/navbar.html')
 
 
 def widget_legacy(request):
@@ -207,11 +200,19 @@ def user(request, user_id: int):
     afk_time = int(u.get('afk_time'))
     online_time = int(u.get('online_time'))
 
+    game_name = ""
+    game_id = 0
+
+    if u.get('online') == 1:
+        game_id, game_name = get_steam_game(u.get('steam_id'))
+
     return render(request, 'spybot/user.html', {
         'user': u,
         'total_time': afk_time + online_time,
         'data': [afk_time, online_time],
-        'names': str(u.get('names')).split(",")
+        'names': str(u.get('names')).split(","),
+        'game_id': game_id,
+        'game_name': game_name
     })
 
 
@@ -225,6 +226,26 @@ def live_fragment(request):
         channel_id = session.channel.id
         user_name = session.tsuser.name
         merged_user_id = session.tsuser.merged_user_id
-        clients.append({'channel_id': channel_id, 'name': user_name, 'merged_user_id': merged_user_id})
+
+        mu = MergedUser.objects.get(id=merged_user_id)
+        game_id, game_name = get_steam_game(mu.steam_id)
+        clients.append({'channel_id': channel_id, 'name': user_name,
+                        'merged_user_id': merged_user_id, 'game': game_name})
+
     context = {'clients': clients, 'channels': channels}
     return render(request, 'spybot/home/live_fragment.html', context)
+
+
+def get_steam_game(steam_id):
+    if steam_id == 0:
+        return 0, ""
+
+    steam_api_key = settings.STEAM_API_KEY
+    req = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={key}&steamids={id}" \
+        .format(key=steam_api_key, id=steam_id)
+
+    steam_data = requests.get(req)
+    steam_info = steam_data.json().get('response').get('players')[0]
+    game_id = steam_info.get('gameid', 0)
+    game_name = steam_info.get('gameextrainfo', "")
+    return game_id, game_name

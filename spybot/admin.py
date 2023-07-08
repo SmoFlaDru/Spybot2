@@ -40,7 +40,6 @@ def merge_users_action(admin: ModelAdmin, request: HttpRequest, queryset: QueryS
             user.save()
 
 
-
 @admin.register(TSUser)
 class TSUserAdmin(ModelAdmin):
     actions = [merge_users_action]
@@ -56,7 +55,7 @@ class TSUserAdmin(ModelAdmin):
 
 @admin.register(MergedUser)
 class MergedUserAdmin(ModelAdmin):
-    list_display = ('id', 'name', 'merged_user_names', 'obsolete', 'number_of_tsusers')
+    list_display = ('id', 'name', 'merged_user_names', 'obsolete', 'steam_id', 'number_of_tsusers')
 
     def get_queryset(self, request):
         query_set = super(MergedUserAdmin, self).get_queryset(request)
