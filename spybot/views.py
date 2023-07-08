@@ -42,7 +42,11 @@ def home(request):
         channel_id = session.channel.id
         user_name = session.tsuser.name
         merged_user_id = session.tsuser.merged_user_id
-        clients.append({'channel_id': channel_id, 'name': user_name, 'merged_user_id': merged_user_id})
+
+        mu = MergedUser.objects.get(id=merged_user_id)
+        game_id, game_name = get_steam_game(mu.steam_id)
+        clients.append({'channel_id': channel_id, 'name': user_name,
+                        'merged_user_id': merged_user_id, 'game': game_name})
     context['clients'] = clients
     context['channels'] = channels
 
@@ -222,19 +226,11 @@ def user(request, user_id: int):
     afk_time = int(u.get('afk_time'))
     online_time = int(u.get('online_time'))
 
-    steam_api_key = settings.STEAM_API_KEY
     game_name = ""
     game_id = 0
-    steam_id = u.get('steam_id')
 
-    if not steam_api_key == "" and not steam_id == 0 and u.get('online') == 1:
-        req = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={key}&steamids={id}"\
-            .format(key=steam_api_key, id=steam_id)
-
-        steam_data = requests.get(req)
-        steam_info = steam_data.json().get('response').get('players')[0]
-        game_id = steam_info.get('gameid', 0)
-        game_name = steam_info.get('gameextrainfo', "error")
+    if u.get('online') == 1:
+        game_id, game_name = get_steam_game(u.get('steam_id'))
 
     return render(request, 'spybot/user.html', {
         'user': u,
@@ -244,3 +240,18 @@ def user(request, user_id: int):
         'game_id': game_id,
         'game_name': game_name
     })
+
+
+def get_steam_game(steam_id):
+    if steam_id == 0:
+        return 0, ""
+
+    steam_api_key = settings.STEAM_API_KEY
+    req = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={key}&steamids={id}" \
+        .format(key=steam_api_key, id=steam_id)
+
+    steam_data = requests.get(req)
+    steam_info = steam_data.json().get('response').get('players')[0]
+    game_id = steam_info.get('gameid', 0)
+    game_name = steam_info.get('gameextrainfo', "")
+    return game_id, game_name
