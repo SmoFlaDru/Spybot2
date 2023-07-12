@@ -1,0 +1,30 @@
+{% load util %}
+{% load tabler_icons %}
+
+{% for event in data.events %}
+    <div>
+        <a href="{{ event.website_link }}" class="text-reset text-decoration-none">
+            <div class="row">
+                <div class="col-auto">
+                    <span class="avatar">{{ event.text|make_list|first }}</span>
+                </div>
+                <div class="col">
+                    {{ event.text|safe }}
+                    <div class="text-muted" title="{{event.date}}">{{ event.date|relative_time }}</div>
+                </div>
+                {% if event.is_recent %}
+                <div class="col-auto align-self-center">
+                    <div class="badge bg-primary"></div>
+                </div>
+                {% endif %}
+            </div>
+        </a>
+    </div>
+{% endfor %}
+{% if data.has_more %}
+    <div class="row" hx-trigger="intersect once" hx-get="/recent_events_fragment?start={{data.start}}" hx-swap="outerHTML">
+        <div class="text-center">
+            Loading more events...
+        </div>
+    </div>
+{% endif %}

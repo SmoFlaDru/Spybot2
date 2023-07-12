@@ -10,5 +10,6 @@ urlpatterns = [
     path('halloffame', views.halloffame, name='halloffame'),
     path('u/<int:user_id>', views.user, name='user'),
     path('live_fragment', views.live_fragment, name='live_fragment'),
+    path('recent_events_fragment', views.recent_events_fragment, name='recent_events_fragment'),
 ]
 
