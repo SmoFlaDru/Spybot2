@@ -52,13 +52,24 @@ def home(request):
     context["channel_data"] = channel_popularity
 
     # recent events
-    recent_events = NewsEvent.objects.order_by("-date")[:10].values()
-    for event in recent_events:
-        is_recent = timezone.now() - event["date"] < datetime.timedelta(weeks=1)
-        event["is_recent"] = is_recent
-    context["recent_events"] = recent_events
+    context["recent_events"] = get_recent_events()
 
     return render(request, 'spybot/home/home.html', context)
+
+
+def get_recent_events(start = 0):
+    query_result = NewsEvent.objects.order_by("-date")[start:start + 11].values()
+    has_more = len(query_result) == 11
+    events = query_result[:10]
+
+    for event in events:
+        is_recent = timezone.now() - event["date"] < datetime.timedelta(weeks=1)
+        event["is_recent"] = is_recent
+    return {
+        'events': events,
+        'has_more': has_more,
+        'start': start + len(events)
+    }
 
 
 # TODO load live view separately and poll with javascript
@@ -249,3 +260,12 @@ def get_steam_game(steam_id):
     game_id = steam_info.get('gameid', 0)
     game_name = steam_info.get('gameextrainfo', "")
     return game_id, game_name
+
+
+def recent_events_fragment(request):
+    start_string = request.GET.get('start', '')
+    start = int(start_string) if start_string.isdecimal() else 0
+
+    data = get_recent_events(start)
+
+    return render(request, 'spybot/home/recent_events/fragment.html', {'data': data})
