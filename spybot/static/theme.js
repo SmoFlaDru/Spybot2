@@ -32,6 +32,11 @@ function configureTheme() {
 
 	document.body.classList.remove('theme-dark', 'theme-light');
 	document.body.classList.add(`theme-${selectedTheme}`);
+	if (selectedTheme === 'dark') {
+        document.body.setAttribute("data-bs-theme", selectedTheme)
+    } else {
+        document.body.removeAttribute("data-bs-theme")
+    }
 }
 
 window.matchMedia("(prefers-color-scheme: dark)").onchange = configureTheme
