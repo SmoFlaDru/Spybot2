@@ -54,10 +54,14 @@ class PositiveAutoField(AutoFieldMixin, PositiveIntegerField):
 class MergedUser(DebuggableModel):
     name = models.CharField(max_length=128, blank=False, null=False)
     obsolete = models.BooleanField(default=False)
-    steam_id = models.BigIntegerField(default=0)
 
     def merged_user_names(self):
         return list(TSUser.objects.values_list('name', flat=True).filter(merged_user=self))
+
+
+class SteamID(DebuggableModel):
+    steam_id = models.BigIntegerField(default=0)
+    merged_user = models.ForeignKey(MergedUser, on_delete=models.CASCADE, related_name="steamids")
 
 
 class TSUser(DebuggableModel):
