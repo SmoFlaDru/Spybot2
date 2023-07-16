@@ -61,6 +61,7 @@ class MergedUser(DebuggableModel):
 
 class SteamID(DebuggableModel):
     steam_id = models.BigIntegerField(default=0)
+    account_name = models.CharField(max_length=128, blank=True, null=True)
     merged_user = models.ForeignKey(MergedUser, on_delete=models.CASCADE, related_name="steamids")
 
 
