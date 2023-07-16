@@ -255,7 +255,7 @@ def get_steam_game(mu: MergedUser):
 
     for sid in steam_ids:
         steam_id = sid.steam_id
-        print(f"Trying steamID {steam_id} for user {mu.name}")
+        #print(f"Trying steamID {steam_id} for user {mu.name}")
         steam_api_key = settings.STEAM_API_KEY
         req = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={key}&steamids={id}" \
             .format(key=steam_api_key, id=steam_id)
