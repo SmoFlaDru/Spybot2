@@ -67,6 +67,7 @@ class MergedUserAdmin(ModelAdmin):
     def get_queryset(self, request):
         query_set = super(MergedUserAdmin, self).get_queryset(request)
         query_set = query_set.annotate(number_of_tsusers=models.Count('tsusers'))
+        query_set = query_set.order_by('-number_of_tsusers')
         return query_set
 
     def number_of_tsusers(self, mu: MergedUser):
