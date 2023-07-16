@@ -14,3 +14,11 @@
 .col-height-50 {
     height: calc(50% - var(--tblr-gutter-y))
 }
+
+.apexcharts-canvas > svg {
+    background-color: transparent !important;
+}
+
+body {
+    --tblr-card-height: 360px;
+}

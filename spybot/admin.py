@@ -5,7 +5,7 @@ from django.db.models import QuerySet
 from django.db import models
 from django.http import HttpRequest
 
-from spybot.models import NewsEvent, TSUser, MergedUser
+from spybot.models import NewsEvent, TSUser, MergedUser, SteamID
 
 
 # Register your models here.
@@ -53,13 +53,21 @@ class TSUserAdmin(ModelAdmin):
         return False
 
 
+class SteamIDInlineAdmin(admin.TabularInline):
+    model = SteamID
+
+
 @admin.register(MergedUser)
 class MergedUserAdmin(ModelAdmin):
-    list_display = ('id', 'name', 'merged_user_names', 'obsolete', 'steam_id', 'number_of_tsusers')
+    list_display = ('id', 'name', 'merged_user_names', 'obsolete', 'number_of_tsusers')
+    inlines = [
+        SteamIDInlineAdmin,
+    ]
 
     def get_queryset(self, request):
         query_set = super(MergedUserAdmin, self).get_queryset(request)
         query_set = query_set.annotate(number_of_tsusers=models.Count('tsusers'))
+        query_set = query_set.order_by('-number_of_tsusers')
         return query_set
 
     def number_of_tsusers(self, mu: MergedUser):
