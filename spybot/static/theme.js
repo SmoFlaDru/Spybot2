@@ -8,31 +8,31 @@ const themeStorageKey = 'tablerTheme'
 let selectedTheme
 
 function configureTheme() {
-	console.log("configuring theme")
-	// https://stackoverflow.com/a/901144
-	const params = new Proxy(new URLSearchParams(window.location.search), {
-		get: (searchParams, prop) => searchParams.get(prop),
-	});
+    console.log("configuring theme")
+    // https://stackoverflow.com/a/901144
+    const params = new Proxy(new URLSearchParams(window.location.search), {
+        get: (searchParams, prop) => searchParams.get(prop),
+    });
 
-	const isSystemDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-	const defaultTheme = isSystemDark ? 'dark' : 'light'
+    const isSystemDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+    const defaultTheme = isSystemDark ? 'dark' : 'light'
 
-	if (!!params.theme) {
-		isParamDark = params.theme === 'dark'
+    if (!!params.theme) {
+        isParamDark = params.theme === 'dark'
 
-		if (isParamDark !== isSystemDark)
-			localStorage.setItem(themeStorageKey, params.theme)
-		else
-			localStorage.removeItem(themeStorageKey)
-		selectedTheme = params.theme
-	} else {
-		const storedTheme = localStorage.getItem(themeStorageKey)
-		selectedTheme = storedTheme ? storedTheme : defaultTheme
-	}
+        if (isParamDark !== isSystemDark)
+            localStorage.setItem(themeStorageKey, params.theme)
+        else
+            localStorage.removeItem(themeStorageKey)
+        selectedTheme = params.theme
+    } else {
+        const storedTheme = localStorage.getItem(themeStorageKey)
+        selectedTheme = storedTheme ? storedTheme : defaultTheme
+    }
 
-	document.body.classList.remove('theme-dark', 'theme-light');
-	document.body.classList.add(`theme-${selectedTheme}`);
-	if (selectedTheme === 'dark') {
+    document.body.classList.remove('theme-dark', 'theme-light');
+    document.body.classList.add(`theme-${selectedTheme}`);
+    if (selectedTheme === 'dark') {
         document.body.setAttribute("data-bs-theme", selectedTheme)
     } else {
         document.body.removeAttribute("data-bs-theme")
