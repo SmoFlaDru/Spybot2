@@ -215,7 +215,7 @@ def user(request, user_id: int):
     game_id = 0
 
     if u.get('online') == 1:
-        game_id, game_name = get_steam_game(u)
+        game_id, game_name = get_steam_game(MergedUser.objects.get(id=user_id))
 
     return render(request, 'spybot/user.html', {
         'user': u,
