@@ -27,21 +27,23 @@
     <div class="card-body">
         <div class="divide-y">
             {% if top_users_data|length > 0 %}
-            <div class="row">
-                <div class="col-auto">
-                    <span class="avatar bg-medal medal-gold">
-                        {% tabler_icon 'trophy' %}
-                    </span>
-                </div>
-                <div class="col">
-                    <div class="text-truncate">
-                        <a href="/u/{{ top_users_data.0.user_id }}" class="text-reset d-block">
-                            {{ top_users_data.0.user_name }}
-                        </a>
+            <a href="/u/{{ top_users_data.0.user_id }}" class="text-decoration-none text-reset d-block">
+                <div class="row">
+                    <div class="col-auto">
+                        <span class="avatar bg-medal medal-gold">
+                            {% tabler_icon 'trophy' %}
+                        </span>
                     </div>
-                    <div class="text-muted">{{ top_users_data.0.time|floatformat }} hours this week</div>
+                    <div class="col">
+                        <div class="text-truncate">
+                            <span>
+                                {{ top_users_data.0.user_name }}
+                            </span>
+                        </div>
+                        <div class="text-muted">{{ top_users_data.0.time|floatformat }} hours this week</div>
+                    </div>
                 </div>
-            </div>
+            </a>
             {% else %}
             <div class="row">
                 <div class="col-auto">
@@ -58,38 +60,42 @@
             </div>
             {% endif %}
             {% if top_users_data|length > 1 %}
-            <div class="row">
-                <div class="col-auto">
-                    <span class="avatar bg-medal medal-silver">
-                        {% tabler_icon 'trophy' %}
-                    </span>
-                </div>
-                <div class="col">
-                    <div class="text-truncate">
-                        <a href="/u/{{ top_users_data.1.user_id }}" class="text-reset d-block">
-                            {{ top_users_data.1.user_name }}
-                        </a>
+            <a href="/u/{{ top_users_data.1.user_id }}" class="text-decoration-none text-reset d-block">
+                <div class="row">
+                    <div class="col-auto">
+                        <span class="avatar bg-medal medal-silver">
+                            {% tabler_icon 'trophy' %}
+                        </span>
                     </div>
-                    <div class="text-muted">{{ top_users_data.1.time|floatformat }} hours this week</div>
+                    <div class="col">
+                        <div class="text-truncate">
+                            <span>
+                                {{ top_users_data.1.user_name }}
+                            </span>
+                        </div>
+                        <div class="text-muted">{{ top_users_data.1.time|floatformat }} hours this week</div>
+                    </div>
                 </div>
-            </div>
+            </a>
             {% endif %}
             {% if top_users_data|length > 2 %}
-            <div class="row">
-                <div class="col-auto">
-                    <span class="avatar bg-medal medal-bronze">
-                        {% tabler_icon 'trophy' %}
-                    </span>
-                </div>
-                <div class="col">
-                    <div class="text-truncate">
-                        <a href="/u/{{ top_users_data.2.user_id }}" class="text-reset d-block">
-                            {{ top_users_data.2.user_name }}
-                        </a>
+            <a href="/u/{{ top_users_data.2.user_id }}" class="text-decoration-none text-reset d-block">
+                <div class="row">
+                    <div class="col-auto">
+                        <span class="avatar bg-medal medal-bronze">
+                            {% tabler_icon 'trophy' %}
+                        </span>
                     </div>
-                    <div class="text-muted">{{ top_users_data.2.time|floatformat }} hours this week</div>
+                    <div class="col">
+                        <div class="text-truncate">
+                            <span>
+                                {{ top_users_data.2.user_name }}
+                            </span>
+                        </div>
+                        <div class="text-muted">{{ top_users_data.2.time|floatformat }} hours this week</div>
+                    </div>
                 </div>
-            </div>
+            </a>
             {% endif %}
         </div>
     </div>

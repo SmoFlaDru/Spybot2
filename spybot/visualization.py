@@ -238,7 +238,6 @@ def user(user_id: int):
                     SELECT
                         GROUP_CONCAT(DISTINCT TU.name) as names,
                         sm.name as merged_username,
-                        sm.steam_id as steam_id,
                         MAX(TU.isCurrentlyOnline) as online,
                         SUM(IF(points=1, 1, 0)) as bronze,
                         SUM(IF(points=2, 1, 0)) as silver,
@@ -257,7 +256,6 @@ def user(user_id: int):
                 gold,
                 online,
                 merged_username as user_name,
-                steam_id,
                 names
             FROM user_time,
                  awards;""", [user_id, user_id])
