@@ -3,7 +3,7 @@
         <h3 class="card-title my-2">Live View</h3>
     </div>
 
-    <div hx-get="/live_fragment" hx-trigger="load, every 3s"></div>
+    <div hx-get="/live_fragment" hx-trigger="load, every 3s [!document.hidden]"></div>
 </div>
 
 
