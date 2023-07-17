@@ -1,9 +1,17 @@
-<div class="card h-100">
-    <div class="card-header">
-        <h3 class="card-title my-2">Live View</h3>
-    </div>
+{% load static %}
 
-    <div hx-get="/live_fragment" hx-trigger="load, every 3s [!document.hidden]"></div>
+<div class="card h-100">
+    <div class="card-header" id="live_spinner_container">
+        <div class="row w-100">
+            <div class="col">
+                <h3 class="card-title my-2">Live View</h3>
+            </div>
+            <div class="col-auto align-self-center px-0">
+                <img class="htmx-indicator float-end lightmode-inverted-color" src="{% static 'loading_oval.svg' %}" width="20">
+            </div>
+        </div>
+    </div>
+    <div hx-get="/live_fragment" hx-trigger="load, every 5s [!document.hidden]" hx-indicator="#live_spinner_container"></div>
 </div>
 
 
@@ -13,5 +21,11 @@
     }
     .green {
         color: rgb(38, 114, 12);
+    }
+    [data-bs-theme=dark] .lightmode-inverted-color {
+        filter: none;
+    }
+    .lightmode-inverted-color {
+        filter: invert(1);
     }
 </style>
