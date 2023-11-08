@@ -174,7 +174,7 @@ class Client:
         return clients
 
     def send_queued_messages(self, client_id: int, user: TSUser):
-        msgs = QueuedClientMessage.objects.filter(tsuser=user).order_by("-date").all()
+        msgs = QueuedClientMessage.objects.filter(tsuser__in=user.merged_user.tsusers).order_by("-date").all()
 
         for message in msgs:
             self.ts.poke_client(client_id, "You got an important message from Spybot! Check out my private message "
