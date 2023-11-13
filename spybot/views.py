@@ -34,7 +34,7 @@ def home(request):
     dates, active_values, afk_values = zip(*data) if len(data) > 0 else ((), (), ())
     # convert tuples back to lists when passing to template
     context['daily_dates'] = list(dates)
-    context['daily_active_values'] = list(active_values),
+    context['daily_active_values'] = list(active_values)
     context['daily_afk_values'] = list(afk_values)
 
     # time of day histogram
