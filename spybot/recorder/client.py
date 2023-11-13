@@ -182,7 +182,7 @@ class Client:
             message.delete()
 
     def send_login_link(self, client_id: int, user: TSUser):
-        link = LoginLink(user=user)
+        link = LoginLink(user=user.merged_user)
         link.save()
         message = "Log into your account on Spybot: https://spybot.bensge.com/auth?code=" + quote_plus(link.code)
         self.ts.send_text_message(client_id, message)
