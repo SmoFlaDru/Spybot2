@@ -32,6 +32,21 @@
                     {% tabler_icon 'sun' %}
                 </a>
             </div>
+            {% if user != None %}
+            <div class="nav-item dropdown">
+                <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
+<!--                    <span class="avatar avatar-sm" style="background-image: url(./static/avatars/000m.jpg)"></span>-->
+                    <div class="d-none d-xl-block ps-2">
+                        <div class="mb-1 small text-secondary">Logged in as</div>
+                        <div>{{user.name}}</div>
+                    </div>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                    <a href="/profile" class="dropdown-item">Profile</a>
+                    <a href="/logout" class="dropdown-item">Logout</a>
+                </div>
+            </div>
+            {% endif %}
         </div>
         <div class="collapse navbar-collapse" id="navbar-menu">
             <div class="d-flex flex-column flex-md-row flex-fill align-items-stretch align-items-md-center">

@@ -18,15 +18,24 @@ from Spybot2 import settings
 import requests
 
 
+def get_user(request):
+    return request.user if isinstance(request.user, MergedUser) else None
+
+
 def home(request):
+    context = {}
+
+    # logged in user
+    user = get_user(request)
+    context["user"] = user
+
     # activity chart
     data = visualization.daily_activity()
     dates, active_values, afk_values = zip(*data) if len(data) > 0 else ((), (), ())
     # convert tuples back to lists when passing to template
-    context = {'daily_dates': list(dates),
-               'daily_active_values': list(active_values),
-               'daily_afk_values': list(afk_values)
-               }
+    context['daily_dates'] = list(dates)
+    context['daily_active_values'] = list(active_values),
+    context['daily_afk_values'] = list(afk_values)
 
     # time of day histogram
     tod_data = visualization.time_of_day_histogram()
@@ -277,3 +286,8 @@ def recent_events_fragment(request):
     data = get_recent_events(start)
 
     return render(request, 'spybot/home/recent_events/fragment.html', {'data': data})
+
+
+def profile(request):
+    user = get_user(request)
+    return render(request, 'spybot/profile.html', {'user': user})
