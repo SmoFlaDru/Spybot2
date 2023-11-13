@@ -1,7 +1,9 @@
+from urllib.parse import quote_plus
+
 from ts3 import escape
 from django.utils import timezone
 
-from spybot.models import TSID, TSUser, TSUserActivity, TSChannel, QueuedClientMessage, MergedUser
+from spybot.models import TSID, TSUser, TSUserActivity, TSChannel, QueuedClientMessage, MergedUser, LoginLink
 from spybot.recorder.ts import TS
 
 
@@ -41,13 +43,10 @@ class Client:
                 tsuser.name = client_nickname
                 tsuser.save()
 
-            print("Get client info...")
-            ci = self.ts.get_client_info(client_id)
-            print(getattr(ci, "_parsed", None))
-
             print(f"found existing TSID for user: {tsuser.name} with id={tsid}")
             self.__client_start_session(tsuser, channel_id, client_id, joined=True)
 
+            self.send_login_link(client_id, tsuser)
             self.send_queued_messages(client_id, tsuser)
 
         except TSID.DoesNotExist as e:
@@ -181,3 +180,9 @@ class Client:
                                            "for details")
             self.ts.send_text_message(client_id, message.text)
             message.delete()
+
+    def send_login_link(self, client_id: int, user: TSUser):
+        link = LoginLink(user=user)
+        link.save()
+        message = "Log into your account on Spybot: https://spybot.bensge.com/auth?code=" + quote_plus(link.code)
+        self.ts.send_text_message(client_id, message)
