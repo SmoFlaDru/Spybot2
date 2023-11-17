@@ -220,6 +220,9 @@ def user(request, user_id: int):
     afk_time = int(u.get('afk_time'))
     online_time = int(u.get('online_time'))
 
+    streak = visualization.user_longest_streak(user_id)[0]
+
+
     game_name = ""
     game_id = 0
 

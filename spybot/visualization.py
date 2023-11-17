@@ -261,3 +261,80 @@ def user(user_id: int):
                  awards;""", [user_id, user_id])
 
         return dictfetchall(cursor)
+
+
+def user_longest_streak(merged_user_id: int):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            WITH dates AS (
+                SELECT DISTINCT
+                    spybot_mergeduser.name,
+                    CAST(TSUserActivity.startTime AS DATE) AS day
+                FROM TSUserActivity
+                    INNER JOIN TSUser ON tsUserID = TSUser.id
+                    INNER JOIN spybot_mergeduser ON TSUser.merged_user_id = spybot_mergeduser.id
+                WHERE merged_user_id = %s
+            ),
+            cte AS (
+                SELECT
+                    day,
+                    IFNULL(DATE(day) > DATE(LAG(day, 1) OVER (ORDER BY day)) + INTERVAL 1 DAY, 1) AS startsStreak
+                FROM dates
+            ),
+            result AS (
+                SELECT
+                    dates.day AS start_day,
+                    SUM(startsStreak) AS streakGroup,
+                    ROW_NUMBER() OVER (PARTITION BY SUM(startsStreak) ORDER BY dates.day) AS runningStreakLength,
+                    COUNT(*) OVER (PARTITION BY SUM(startsStreak)) AS totalStreakLength
+                FROM
+                    dates
+                    JOIN cte ON dates.day >= cte.day AND cte.startsStreak = 1
+                GROUP BY dates.day
+                ORDER BY dates.day
+            )
+            SELECT
+            start_day,
+            DATE_ADD(start_day, INTERVAL (totalStreakLength - 1) DAY) AS end_day,
+            totalStreakLength AS streak_length
+            FROM result
+            WHERE runningStreakLength = 1
+            ORDER BY totalStreakLength DESC, start_day DESC
+            LIMIT 1;
+        """, [merged_user_id])
+        return dictfetchall(cursor)
+
+
+#
+# WITH dates AS (
+#     SELECT DISTINCT
+#         CAST(TSUserActivity.startTime AS DATE) AS day
+#     FROM TSUserActivity
+#     ORDER BY day DESC
+# ),
+# cte AS (
+#     SELECT
+#         day,
+#         IFNULL(DATE(day) > DATE(LAG(day, 1) OVER (ORDER BY day)) + INTERVAL 1 DAY, 1) AS startsStreak
+#     FROM dates
+# ),
+# result AS (
+#     SELECT
+#         dates.day AS start_day,
+#         SUM(startsStreak) AS streakGroup,
+#         ROW_NUMBER() OVER (PARTITION BY SUM(startsStreak) ORDER BY dates.day) AS runningStreakLength,
+#         COUNT(*) OVER (PARTITION BY SUM(startsStreak)) AS totalStreakLength
+#     FROM
+#         dates
+#         JOIN cte ON dates.day >= cte.day AND cte.startsStreak = 1
+#     GROUP BY dates.day
+#     ORDER BY dates.day
+# )
+# SELECT
+# start_day,
+# DATE_ADD(start_day, INTERVAL (totalStreakLength - 1) DAY) AS end_day,
+# totalStreakLength AS streak_length
+# FROM result
+# WHERE runningStreakLength = 1
+# ORDER BY totalStreakLength DESC, start_day DESC
+# LIMIT 1;
