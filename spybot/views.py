@@ -22,8 +22,12 @@ def get_user(request):
     return request.user if isinstance(request.user, MergedUser) else None
 
 
+def get_context(request):
+    return {"logged_in_user": get_user(request)}
+
+
 def home(request):
-    context = {}
+    context = get_context(request)
 
     # logged in user
     user = get_user(request)
@@ -182,6 +186,7 @@ def timeline(request):
         first_user_object["data"] = new_first_user_series
 
     return render(request, 'spybot/timeline.html', {
+        **get_context(request),
         'activity_by_user': list(users.values()),
         'min': convert_to_jstime(cutoff),
         'max': convert_to_jstime(now_time),
@@ -209,7 +214,7 @@ def halloffame(request):
         merged_user['num_silver_awards'] = len(awards_silver)
         merged_user['num_bronze_awards'] = len(awards_bronze)
 
-    context = {'top_users': users}
+    context = {**get_context(request), 'top_users': users}
     return render(request, 'spybot/halloffame.html', context)
 
 
@@ -229,6 +234,7 @@ def user(request, user_id: int):
         game_id, game_name = get_steam_game(MergedUser.objects.get(id=user_id))
 
     return render(request, 'spybot/user.html', {
+        **get_context(request),
         'user': u,
         'total_time': afk_time + online_time,
         'data': [afk_time, online_time],
@@ -293,4 +299,4 @@ def recent_events_fragment(request):
 
 def profile(request):
     user = get_user(request)
-    return render(request, 'spybot/profile.html', {'user': user})
+    return render(request, 'spybot/profile.html', {**get_context(request), 'user': user})
