@@ -222,7 +222,6 @@ def user(request, user_id: int):
 
     streak = visualization.user_longest_streak(user_id)[0]
 
-
     game_name = ""
     game_id = 0
 
@@ -235,7 +234,8 @@ def user(request, user_id: int):
         'data': [afk_time, online_time],
         'names': str(u.get('names')).split(","),
         'game_id': game_id,
-        'game_name': game_name
+        'game_name': game_name,
+        'streak': streak,
     })
 
 
