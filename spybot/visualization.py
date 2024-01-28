@@ -296,7 +296,7 @@ def user_longest_streak(merged_user_id: int):
             SELECT
             start_day,
             DATE_ADD(start_day, INTERVAL (totalStreakLength - 1) DAY) AS end_day,
-            totalStreakLength AS streak_length
+            totalStreakLength AS length
             FROM result
             WHERE runningStreakLength = 1
             ORDER BY totalStreakLength DESC, start_day DESC
