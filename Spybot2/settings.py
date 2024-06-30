@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-
+from datetime import timedelta
 from pathlib import Path
 import environ
 import os
@@ -45,7 +45,10 @@ STEAM_API_KEY = env('STEAM_API_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', False)
 
-ALLOWED_HOSTS = [SERVER_IP, TS_IP, 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = [SERVER_IP, TS_IP, 'localhost', '127.0.0.1', 'spybot.localhost.direct']
+
+CSRF_TRUSTED_ORIGINS = [f"https://{SERVER_IP}"]
+
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 CSRF_COOKIE_SECURE = not env.bool('INSECURE_COOKIES', False)
@@ -94,6 +97,17 @@ TEMPLATES = [
     },
 ]
 
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "spybot.auth.last_seen_middleware.middleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
+
 WSGI_APPLICATION = 'Spybot2.wsgi.application'
 
 
@@ -137,8 +151,13 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTH_USER_MODEL = 'spybot.MergedUser'
 
 AUTHENTICATION_BACKENDS = [
-    'spybot.auth.backend.LinkAuthBackend',
+    'django.contrib.auth.backends.ModelBackend',
+    'spybot.auth.backend.link_backend.LinkAuthBackend',
 ]
+
+# Passkeys
+FIDO_SERVER_NAME = "Spybot local"
+#KEY_ATTACHMENT = passkeys.Attachment.CROSS_PLATFORM
 
 
 # Internationalization

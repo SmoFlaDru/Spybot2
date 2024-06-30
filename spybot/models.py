@@ -5,6 +5,7 @@
 #   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
+from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.db.models.fields import AutoFieldMixin, PositiveIntegerField, AutoField
@@ -74,6 +75,13 @@ class MergedUser(DebuggableModel, AbstractBaseUser):
     @property
     def is_staff(self):
         return self.is_superuser
+
+    @property
+    def username(self):
+        return str(self.id)
+
+    def get_full_name(self):
+        return self.name
 
     def get_user_permissions(self, obj=None):
         print('get_user_permissions: ', obj)
@@ -190,3 +198,15 @@ class NewsEvent(DebuggableModel):
 class LoginLink(DebuggableModel):
     user = models.ForeignKey(MergedUser, models.CASCADE, blank=False, null=False, related_name="loginlinks")
     code = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+
+
+class UserPasskey(models.Model):
+    user_model = get_user_model()
+    user = models.ForeignKey(user_model,on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    enabled = models.BooleanField(default=True)
+    platform = models.CharField(max_length=255,default='')
+    added_on = models.DateTimeField(auto_now_add=True)
+    last_used = models.DateTimeField(null=True,default=None)
+    credential_id = models.CharField(max_length=255, unique=True)
+    token = models.CharField(max_length=255, null=False)

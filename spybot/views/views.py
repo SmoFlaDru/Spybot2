@@ -1,29 +1,28 @@
 import datetime
 import time
 from datetime import timedelta
+from typing import List
 
 from django.db.models import Q
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render, get_object_or_404
-from django.template import loader
+from django.http import JsonResponse
+from django.shortcuts import render
 from django.utils import timezone
 
 from spybot import visualization
 
 from spybot.forms import TimeRangeForm
-from spybot.models import TSChannel, TSUserActivity, NewsEvent, MergedUser
+from spybot.views.fragments.activity_chart import activity_chart_data
+from spybot.models import TSChannel, TSUserActivity, NewsEvent, MergedUser, UserPasskey
 from spybot.templatetags import ts_filters
 
 from Spybot2 import settings
 import requests
 
-
-def get_user(request):
-    return request.user if isinstance(request.user, MergedUser) else None
+from spybot.views.common import get_user, get_context
 
 
-def get_context(request):
-    return {"logged_in_user": get_user(request)}
+def get_passkeys(user: MergedUser) -> List[UserPasskey]:
+    return UserPasskey.objects.filter(user=user).all()
 
 
 def home(request):
@@ -34,12 +33,7 @@ def home(request):
     context["user"] = user
 
     # activity chart
-    data = visualization.daily_activity()
-    dates, active_values, afk_values = zip(*data) if len(data) > 0 else ((), (), ())
-    # convert tuples back to lists when passing to template
-    context['daily_dates'] = list(dates)
-    context['daily_active_values'] = list(active_values)
-    context['daily_afk_values'] = list(afk_values)
+    context = {**context, **activity_chart_data(request)}
 
     # time of day histogram
     tod_data = visualization.time_of_day_histogram()
@@ -70,7 +64,7 @@ def home(request):
     return render(request, 'spybot/home/home.html', context)
 
 
-def get_recent_events(start = 0):
+def get_recent_events(start=0):
     query_result = NewsEvent.objects.order_by("-date")[start:start + 11].values()
     has_more = len(query_result) == 11
     events = query_result[:10]
@@ -299,4 +293,15 @@ def recent_events_fragment(request):
 
 def profile(request):
     user = get_user(request)
-    return render(request, 'spybot/profile.html', {**get_context(request), 'user': user})
+    passkeys = get_passkeys(user)
+    return render(request, 'spybot/profile.html', {**get_context(request), 'user': user, 'passkeys': passkeys})
+
+
+def login(request):
+    user = get_user(request)
+    return render(request, 'spybot/login.html', {**get_context(request), 'user': user})
+
+
+def login_teamspeak(request):
+    user = get_user(request)
+    return render(request, 'spybot/login_teamspeak.html', {**get_context(request), 'user': user})

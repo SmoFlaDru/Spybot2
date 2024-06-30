@@ -3,6 +3,7 @@ from urllib.parse import quote_plus
 from ts3 import escape
 from django.utils import timezone
 
+from Spybot2 import settings
 from spybot.models import TSID, TSUser, TSUserActivity, TSChannel, QueuedClientMessage, MergedUser, LoginLink
 from spybot.recorder.ts import TS
 
@@ -184,5 +185,5 @@ class Client:
     def send_login_link(self, client_id: int, user: TSUser):
         link = LoginLink(user=user.merged_user)
         link.save()
-        message = "Log into your account on Spybot: https://spybot.bensge.com/link_auth?code=" + quote_plus(str(link.code))
+        message = f"Log into your account on Spybot: https://{settings.SERVER_IP}/link_auth?code=" + quote_plus(str(link.code))
         self.ts.send_text_message(client_id, message)
