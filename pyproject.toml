@@ -8,7 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-Django = "^4.2.3"
+Django = "^4.2.7"
 ts3 = "2.0.0b3"
 django-environ = "^0.10.0"
 mysqlclient = "^2.2.0"
