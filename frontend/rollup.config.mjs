@@ -6,7 +6,8 @@ export default {
   input: 'main.js',
   output: {
     dir: 'output',
-    format: 'iife'
+    format: 'iife',
+    name: 'jsbundle',
   },
   plugins: [nodeResolve(), css({'output': 'main.css'})]
 };

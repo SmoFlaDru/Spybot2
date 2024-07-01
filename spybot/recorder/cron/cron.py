@@ -2,6 +2,7 @@ from datetime import timedelta, datetime
 
 from django.db import connection
 from num2words import num2words
+from ts3 import escape
 
 from Spybot2 import settings
 from spybot import visualization
@@ -99,9 +100,10 @@ def _generate_news_event_for_top_user_of_week(user: TSUser, idx: int, points: in
             num_overall = num2words(overall, to='ordinal')
             end = f", {num_overall} award overall."
 
-    second_line = f"This is {previous_times_specifier} {user.name} won {metal_type_specifier} award{end}"
+    user_name_unescaped = escape.unescape(user.name)
+    second_line = f"This is {previous_times_specifier} <em>{user_name_unescaped}</em> won {metal_type_specifier} award{end}"
 
-    message = f"{user.name} earned the {metal} award for being the{specifier} most active user of week&nbsp;{week_of_year} " \
+    message = f"<em>{user_name_unescaped}</em> earned the {metal} award for being the{specifier} most active user of week&nbsp;{week_of_year} " \
               f"in {year}. Congratulations! {second_line}"
 
     n = NewsEvent(text=message, website_link=link)

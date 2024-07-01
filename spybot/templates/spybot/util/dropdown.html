@@ -1,0 +1,9 @@
+<div class="dropdown" hx-target="{{ target }}" hx-swap="outerHTML">
+    <a class="dropdown-toggle text-secondary" href="#" data-bs-toggle="dropdown" aria-haspopup="true"
+       aria-expanded="false">{{ active_option_text }}</a>
+    <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow" style="">
+    {% for option in options %}
+        <button class="dropdown-item{% if option.active %} active{% endif %}" hx-get="{{ url }}?{{ parameter }}={{ option.value }}">{{ option.text }}</button>
+    {% endfor %}
+    </div>
+</div>

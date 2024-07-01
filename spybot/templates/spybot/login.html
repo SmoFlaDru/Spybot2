@@ -1,0 +1,42 @@
+{% extends 'spybot/base/base.html' %}
+{% load util %}
+{% load tabler_icons %}
+{% load ts_filters %}
+
+{% block content %}
+    <div class="page page-center">
+      <div class="container container-tight py-4">
+        <div class="card card-md">
+          <div class="card-body">
+            <h2 class="h2 text-center mb-4">Log in to your account</h2>
+            <form action="./" method="get" autocomplete="on" novalidate="">
+              <div class="mb-3">
+                <label class="form-label">Passkey</label>
+                <input type="email" class="form-control" placeholder="Your passkey" autocomplete="username webauthn">
+              </div>
+              <div class="form-footer">
+                <button type="submit" class="btn btn-primary w-100">Sign in</button>
+              </div>
+            </form>
+          </div>
+          <div class="hr-text">or</div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col"><a href="login_teamspeak" class="btn w-100">
+                  {% tabler_icon 'microphone' class="icon" %}
+                  Log in with Teamspeak
+                </a></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock content %}
+
+{% block header %}
+<script defer>
+window.addEventListener("load", () => {
+    passkeys.autocomplete()
+});
+</script>
+{% endblock header %}

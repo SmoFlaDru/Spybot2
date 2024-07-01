@@ -1,114 +1,126 @@
-<div class="card h-100">
-    <div class="card-header">
-        <h3 class="card-title my-2">Time spent last month</h3>
+<div class="card h-100" id="activity_fragment">
+    <div class="card-header d-flex justify-content-between">
+        <h3 class="card-title my-2">Recent activity</h3>
+        <div class="lh-1">
+            {% include 'spybot/util/dropdown.html' with url="/activity_fragment" parameter="timespan" target="#activity_fragment" options=options %}
+        </div>
     </div>
     <div class="card-body ps-2">
         <div id="chart-mentions" class="h-100"></div>
     </div>
+    <script>
+        var renderActivityChart = () => {
+            window.ApexCharts && (new ApexCharts(document.getElementById('chart-mentions'), {
+                chart: {
+                    height: "100%",
+                    type: "bar",
+                    fontFamily: 'inherit',
+                    parentHeightOffset: 0,
+                    toolbar: {
+                        show: false,
+                    },
+                    zoom: {enabled: false},
+                    animations: {
+                        enabled: true,
+                        easing: 'easein',
+                        speed: 1000,
+                        animateGradually: {
+                            enabled: true,
+                            delay: 150
+                        },
+                        dynamicAnimation: {
+                            enabled: true,
+                            speed: 550
+                        }
+                    },
+                    stacked: true,
+                },
+                plotOptions: {
+                    bar: {
+                        columnWidth: '50%',
+                        borderRadius: 2,
+                        borderRadiusApplication: "end",
+                    }
+                },
+                dataLabels: {
+                    enabled: false,
+                },
+                fill: {
+                    opacity: 1,
+                },
+                series: [{
+                    name: "Talking",
+                    data: {{ daily_active_values|safe }}
+                }, {
+                    name: "Idling",
+                    data: {{ daily_afk_values|safe }}
+                }],
+                tooltip: {
+                    theme: 'dark',
+                    x: {
+                        format: 'dd MMMM',
+                    },
+                    shared: true,
+                    intersect: false,
+                    followCursor: false,
+                },
+                grid: {
+                    padding: {
+                        top: -20,
+                        right: 0,
+                        left: 4,
+                        bottom: -4
+                    },
+                    strokeDashArray: 4,
+                    xaxis: {
+                        lines: {
+                            show: true
+                        }
+                    },
+                },
+                xaxis: {
+                    labels: {
+                        padding: 0,
+                        datetimeFormatter: {
+                            day: 'dd.',
+                        },
+                    },
+                    tooltip: {
+                        enabled: false
+                    },
+                    axisBorder: {
+                        show: false,
+                    },
+                    type: 'datetime',
+                },
+                yaxis: {
+                    title: {
+                        text: "Cumulative hours",
+                        offsetX: 0,
+                        style: {fontWeight: 500},
+                    },
+                    labels: {
+                        padding: 20,
+                        formatter: (value) => {
+                            return value.toFixed(0)
+                        }
+                    }
+                },
+                labels: {{ daily_dates|safe }},
+                colors: [tabler.getColor("primary"), tabler.getColor("red", 0.8), tabler.getColor("green", 0.8)],
+                legend: {
+                    show: false,
+                },
+            })).render();
+        }
+
+        console.log("checking document loading state")
+        if (document.readyState === "loading") {
+            console.log("loading");
+            document.addEventListener("DOMContentLoaded", renderActivityChart);
+        } else {
+            console.log("already loaded");
+            renderActivityChart();
+        }
+    </script>
 </div>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    window.ApexCharts && (new ApexCharts(document.getElementById('chart-mentions'), {
-        chart: {
-            height: "100%",
-            type: "bar",
-            fontFamily: 'inherit',
-            parentHeightOffset: 0,
-            toolbar: {
-                show: false,
-            },
-            zoom: {enabled: false},
-            animations: {
-                enabled: true,
-                easing: 'easein',
-                speed: 1000,
-                animateGradually: {
-                    enabled: true,
-                    delay: 150
-                },
-                dynamicAnimation: {
-                    enabled: true,
-                    speed: 550
-                }
-            },
-            stacked: true,
-        },
-        plotOptions: {
-            bar: {
-                columnWidth: '50%',
-                borderRadius: 2,
-                borderRadiusApplication: "end",
-            }
-        },
-        dataLabels: {
-            enabled: false,
-        },
-        fill: {
-            opacity: 1,
-        },
-        series: [{
-            name: "Talking",
-            data: {{ daily_active_values|safe }}
-        },{
-            name: "Idling",
-            data: {{ daily_afk_values|safe }}
-        }],
-        tooltip: {
-            theme: 'dark',
-            x: {
-                format: 'dd MMMM',
-            },
-            shared: true,
-            intersect: false,
-            followCursor: false,
-        },
-        grid: {
-            padding: {
-                top: -20,
-                right: 0,
-                left: 4,
-                bottom: -4
-            },
-            strokeDashArray: 4,
-            xaxis: {
-                lines: {
-                    show: true
-                }
-            },
-        },
-        xaxis: {
-            labels: {
-                padding: 0,
-                datetimeFormatter: {
-                    day: 'dd.',
-                },
-            },
-            tooltip: {
-                enabled: false
-            },
-            axisBorder: {
-                show: false,
-            },
-            type: 'datetime',
-        },
-        yaxis: {
-            title: {
-                text: "Cumulative hours",
-                offsetX: 0,
-                style: {fontWeight: 500},
-            },
-            labels: {
-                padding: 20,
-                formatter: (value) => {
-                    return value.toFixed(0)
-                }
-            }
-        },
-        labels: {{ daily_dates|safe }},
-        colors: [tabler.getColor("primary"), tabler.getColor("red", 0.8), tabler.getColor("green", 0.8)],
-        legend: {
-            show: false,
-        },
-    })).render();
-  });
-</script>

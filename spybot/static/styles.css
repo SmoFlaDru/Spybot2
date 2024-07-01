@@ -18,3 +18,15 @@
 .apexcharts-canvas > svg {
     background-color: transparent !important;
 }
+
+body[data-spybot-theme]:not([data-spybot-theme="light"]) .spybot-light-theme-only {
+    display: none;
+}
+
+body[data-spybot-theme]:not([data-spybot-theme="dark"]) .spybot-dark-theme-only {
+    display: none;
+}
+
+body[data-spybot-theme]:not([data-spybot-theme="auto"]) .spybot-auto-theme-only {
+    display: none;
+}
