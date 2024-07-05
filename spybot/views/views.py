@@ -3,9 +3,10 @@ import time
 from datetime import timedelta
 from typing import List
 
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from django.http import JsonResponse
-from django.shortcuts import render
+from django.http import JsonResponse, HttpResponse, Http404, HttpResponseForbidden
+from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 
 from spybot import visualization
@@ -305,3 +306,16 @@ def login(request):
 def login_teamspeak(request):
     user = get_user(request)
     return render(request, 'spybot/login_teamspeak.html', {**get_context(request), 'user': user})
+
+
+@login_required
+def profile_passkey(request, id: str):
+    if request.method == "DELETE":
+        print(f"trying to delete passkey with id {id}")
+        passkey = get_object_or_404(UserPasskey, id=id)
+        if passkey.user != request.user:
+            return HttpResponseForbidden()
+
+        passkey.delete()
+        return HttpResponse('')
+    return None

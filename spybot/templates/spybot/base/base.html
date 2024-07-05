@@ -16,7 +16,7 @@
         {% block header %}
         {%  endblock %}
     </head>
-    <body>
+    <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
         <script src="{% static 'theme.js' %}"></script>
         <div class="page">
             {% include 'spybot/base/navbar.html' %}

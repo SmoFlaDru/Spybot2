@@ -23,7 +23,7 @@ fido2.features.webauthn_json_mapping.enabled = True
 
 def get_server(request=None):
     """Get Server Info from settings and returns a Fido2Server"""
-    fido_server_id = settings.SERVER_IP
+    fido_server_id = settings.SERVER_IP.split(':')[0]
     fido_server_name = settings.FIDO_SERVER_NAME
 
     rp = PublicKeyCredentialRpEntity(id=fido_server_id, name=fido_server_name)
@@ -37,19 +37,9 @@ def get_user_credentials(user: MergedUser):
     return [AttestedCredentialData(websafe_decode(uk.token)) for uk in UserPasskey.objects.filter(**filter_args)]
 
 
-def get_current_platform(request):
+def user_agent_info(request):
     ua = user_agent_parse(request.META["HTTP_USER_AGENT"])
-    if 'Safari' in ua.browser.family:
-        return "Apple"
-    elif 'Chrome' in ua.browser.family and ua.os.family == "Mac OS X":
-        return "Chrome on Apple"
-    elif 'Android' in ua.os.family:
-        return "Google"
-    elif "Windows" in ua.os.family:
-        return "Microsoft"
-    else:
-        return "Key"
-
+    return ua.get_device(), ua.get_os(), ua.get_browser()
 
 def generate_authentication_options(request):
     server = get_server(request)
@@ -72,7 +62,7 @@ def generate_registration_options(request):
     auth_attachment = getattr(settings, 'KEY_ATTACHMENT', None)
     registration_data, state = server.register_begin(
         PublicKeyCredentialUserEntity(
-            name=request.user.get_username(),
+            name=request.user.get_full_name(),
             id=urlsafe_b64encode(request.user.username.encode("utf8")),
             display_name=request.user.get_full_name()
         ),
@@ -91,19 +81,18 @@ def verify_registration(request):
         if not "fido2_state" in request.session:
             return JsonResponse({'status': 'ERR', "message": "FIDO Status can't be found, please try again"})
         data = json.loads(request.body)
-        name = data.pop("key_name", '')
+        user_agent_fields = user_agent_info(request)
+        name = user_agent_fields[0]
         server = get_server(request)
         auth_data = server.register_complete(request.session.pop("fido2_state"), response=data)
         encoded = websafe_encode(auth_data.credential_data)
-        platform = get_current_platform(request)
-        if name == "":
-            name = platform
+        platform = f"{user_agent_fields[2]} on {user_agent_fields[1]}"
         uk = UserPasskey(user=request.user, token=encoded, name=name, platform=platform)
         if data.get("id"):
             uk.credential_id = data.get('id')
 
         uk.save()
-        return JsonResponse({'status': 'OK'})
+        return JsonResponse({'status': 'OK', 'verified': True})
     except Exception as exp:
         print(traceback.format_exc())
         return JsonResponse({'status': 'ERR', "message": "Error on server, please try again later"})
@@ -145,7 +134,7 @@ def verify_authentication(request):
         if key:
             key.last_used = timezone.now()
             request.session["passkey"] = {'passkey': True, 'name': key.name, "id": key.id, "platform": key.platform,
-                                          'cross_platform': get_current_platform(request) != key.platform}
+                                          'cross_platform': user_agent_info(request)[1] != key.platform}
             key.save()
 
             login(request, key.user, 'django.contrib.auth.backends.ModelBackend')
