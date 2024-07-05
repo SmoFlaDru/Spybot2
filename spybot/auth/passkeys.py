@@ -1,4 +1,5 @@
 import json
+import logging
 import traceback
 from base64 import urlsafe_b64encode
 
@@ -14,6 +15,8 @@ from user_agents.parsers import parse as user_agent_parse
 
 from Spybot2 import settings
 from spybot.models import UserPasskey, MergedUser
+
+log = logging.getLogger(__name__)
 
 fido2.features.webauthn_json_mapping.enabled = True
 
@@ -133,9 +136,11 @@ def verify_authentication(request):
             cred = server.authenticate_complete(
                 request.session.pop('fido2_state'), credentials=credentials, response=data
             )
-        except ValueError:  # pragma: no cover
+        except ValueError as exception:  # pragma: no cover
+            log.error("valueerror in verify_authentication: %s", exception)
             return None  # pragma: no cover
         except Exception as exception:  # pragma: no cover
+            log.error("exception in verify_authentication: %s", exception)
             raise Exception(exception)  # pragma: no cover
         if key:
             key.last_used = timezone.now()
@@ -146,4 +151,5 @@ def verify_authentication(request):
             login(request, key.user, 'django.contrib.auth.backends.ModelBackend')
 
             return JsonResponse({'verified': True, 'user': key.user.id})
+    log.error("no credentials found")
     return None  # pragma: no cover
