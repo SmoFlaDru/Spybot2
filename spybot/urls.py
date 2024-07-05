@@ -16,6 +16,7 @@ urlpatterns = [
     path('activity_fragment', activity_chart.fragment, name='activity_fragment'),
     path('recent_events_fragment', views.recent_events_fragment, name='recent_events_fragment'),
     path('profile', views.profile, name='profile'),
+    path('profile/passkey/<str:id>', views.profile_passkey, name='profile_passkey'),
     path('login', views.login, name='login'),
     path('login_teamspeak', views.login_teamspeak, name='login_teamspeak'),
     path('link_auth', auth.link_login, name='link_login'),

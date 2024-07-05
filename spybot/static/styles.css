@@ -30,3 +30,8 @@ body[data-spybot-theme]:not([data-spybot-theme="dark"]) .spybot-dark-theme-only 
 body[data-spybot-theme]:not([data-spybot-theme="auto"]) .spybot-auto-theme-only {
     display: none;
 }
+
+tr.htmx-swapping td {
+  opacity: 0;
+  transition: opacity 1s ease-out;
+}
