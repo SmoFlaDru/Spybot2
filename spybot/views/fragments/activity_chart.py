@@ -25,4 +25,4 @@ def activity_chart_data(request):
 
 
 def fragment(request):
-    return render(request, 'spybot/home/activity_chart.html', activity_chart_data(request))
+    return render(request, 'spybot/home/activity_fragment.html', activity_chart_data(request))
