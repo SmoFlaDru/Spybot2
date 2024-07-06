@@ -51,9 +51,10 @@
 {% block header %}
     <script>
         window.addEventListener("load", () => {
-            document.querySelector('#addPasskeyButton').addEventListener("click", () => {
+            document.querySelector('#addPasskeyButton').addEventListener("click", async () => {
                 console.log("creating...");
-                passkeys.create();
+                await passkeys.create();
+                window.location.reload();
             });
         });
     </script>

@@ -209,4 +209,4 @@ class UserPasskey(models.Model):
     added_on = models.DateTimeField(auto_now_add=True)
     last_used = models.DateTimeField(null=True,default=None)
     credential_id = models.CharField(max_length=255, unique=True)
-    token = models.CharField(max_length=255, null=False)
+    token = models.CharField(max_length=1024, null=False)
