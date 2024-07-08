@@ -101,9 +101,9 @@ def _generate_news_event_for_top_user_of_week(user: TSUser, idx: int, points: in
             end = f", {num_overall} award overall."
 
     user_name_unescaped = escape.unescape(user.name)
-    second_line = f"This is {previous_times_specifier} <em>{user_name_unescaped}</em> won {metal_type_specifier} award{end}"
+    second_line = f"This is {previous_times_specifier} <strong>{user_name_unescaped}</strong> won {metal_type_specifier} award{end}"
 
-    message = f"<em>{user_name_unescaped}</em> earned the {metal} award for being the{specifier} most active user of week&nbsp;{week_of_year} " \
+    message = f"<strong>{user_name_unescaped}</strong> earned the {metal} award for being the{specifier} most active user of week&nbsp;{week_of_year} " \
               f"in {year}. Congratulations! {second_line}"
 
     n = NewsEvent(text=message, website_link=link)
