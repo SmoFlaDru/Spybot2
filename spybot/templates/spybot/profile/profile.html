@@ -1,0 +1,71 @@
+{% extends 'spybot/base/base.html' %}
+{% load util %}
+{% load tabler_icons %}
+{% load ts_filters %}
+
+{% block content %}
+    <div class="row row-cards justify-content-md-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header row g-0">
+                    <h3 class="card-title">Logged in as {{ logged_in_user.name }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">Passkeys</div>
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Platform</th>
+                            <th>Last used</th>
+                            <th>Created</th>
+                            <th class="w-1"></th>
+                        </tr>
+                        </thead>
+                        <tbody hx-confirm="Are you sure you want to delete the passkey?" hx-target="closest tr"
+                               hx-swap="outerHTML swap:1s">
+                        {% for key in passkeys %}
+                            <tr>
+                                <td>{{ key.name }}</td>
+                                <td class="text-secondary">{{ key.platform }}</td>
+                                <td class="text-secondary">{{ key.last_used }}</td>
+                                <td class="text-secondary">{{ key.added_on }}</td>
+                                <td><a href="#" hx-delete="/profile/passkey/{{ key.id }}">Delete</a></td>
+                            </tr>
+                            </tbody>
+                        {% endfor %}
+                    </table>
+                </div>
+                <div class="card-body">
+                    <button id="addPasskeyButton" class="btn btn-primary">Add a new
+                        passkey
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8" hx-trigger="steamids_changed from:body" hx-get="{% url 'profile_steamids_fragment' %}" hx-target="this">
+            {% include 'spybot/profile/steamids_fragment.html' %}
+        </div>
+    </div>
+    <!-- -->
+{% endblock content %}
+
+{% block content_body_end %}
+
+{% endblock content_body_end %}
+
+{% block header %}
+    <script>
+        window.addEventListener("load", () => {
+            document.querySelector('#addPasskeyButton').addEventListener("click", async () => {
+                console.log("creating...");
+                await passkeys.create();
+                window.location.reload();
+            });
+        });
+    </script>
+{% endblock header %}
