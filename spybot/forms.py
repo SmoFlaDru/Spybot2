@@ -1,5 +1,12 @@
 from django import forms
+from django.core.exceptions import ValidationError
+from django.forms.renderers import TemplatesSetting
 
+from spybot.remote.steam_api import get_steam_user_playing_info, get_steam_account_info
+
+
+class CustomFormRenderer(TemplatesSetting):
+    form_template_name = 'spybot/form_snippet.html'
 
 class TimeRangeForm(forms.Form):
     RANGES = (
@@ -25,3 +32,42 @@ class TimeRangeForm(forms.Form):
                     cleaned_data[name] = field.initial
 
         return cleaned_data
+
+
+class AddSteamIDForm(forms.Form):
+    steamid = forms.CharField(label="Account ID (what comes after https://steamcommunity.com/profiles/)", initial="123456", required=True)
+    name = forms.CharField(label="Account name")
+
+    def clean_steamid(self):
+        cleaned_data = super().clean()
+        steamid = cleaned_data.get("steamid")
+        name = cleaned_data.get("name")
+
+        steam_info = get_steam_account_info(steamid)
+        if steam_info is None:
+            raise ValidationError("Can't load steam information for this user")
+
+        return cleaned_data
+
+
+    """
+    <label class="form-label">Account URL</label>
+        <div class="input-group input-group-flat">
+            <span class="input-group-text">
+              https://steamcommunity.com/profiles/
+            </span>
+            <input type="text" class="form-control ps-0" name="steamid" placeholder="123456" required pattern="[0-9]*" autocomplete="off">
+        </div>
+    </div>
+</div>
+</div>
+</div>
+<div class="modal-body">
+<div class="row">
+<div class="col-lg-12">
+    <div class="mb-3">
+        <label class="form-label">Account name</label>
+        <input type="text" name="name" class="form-control">
+    </div>
+</div>
+    """

@@ -6,7 +6,7 @@
         <a href="{{ event.website_link }}" class="text-reset text-decoration-none">
             <div class="row">
                 <div class="col-auto">
-                    <span class="avatar">{{ event.text|make_list|first }}</span>
+                    <span class="avatar">{{ event.text|striptags|make_list|first }}</span>
                 </div>
                 <div class="col">
                     {{ event.text|safe }}

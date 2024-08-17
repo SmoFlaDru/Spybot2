@@ -66,6 +66,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.forms',
+    'bootstrap4',
 ]
 
 MIDDLEWARE = [
@@ -218,3 +220,11 @@ TEST_OUTPUT_FILE_NAME = 'tests_result.xml'
 #         'handlers': ['console'],
 #     }
 # }
+
+FORM_RENDERER = 'spybot.forms.CustomFormRenderer'
+
+BOOTSTRAP4 = {
+    'include_jquery': False,
+    'javascript_in_head': False,
+    'label_class': 'form-label',
+}
