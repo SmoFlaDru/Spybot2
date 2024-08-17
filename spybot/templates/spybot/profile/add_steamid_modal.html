@@ -1,56 +1,22 @@
 {% load tabler_icons %}
-{% load bootstrap4 %}
+{% load django_bootstrap5 %}
 
-        <form hx-post="{{ request.path }}" class="modal-content">
-            {% csrf_token %}
-            <div class="modal-header">
-                <h5 class="modal-title">Add linked Steam account</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-{#                <div class="row">#}
-{#                    <div class="col-lg-12">#}
-{#                        <div class="mb-3">#}
-{#                            <label class="form-label">Account URL</label>#}
-{#                            <div class="input-group input-group-flat">#}
-{#                                <span class="input-group-text">#}
-{#                                  https://steamcommunity.com/profiles/#}
-{#                                </span>#}
-{#                                <input type="text" class="form-control ps-0" name="steamid" placeholder="123456" required pattern="[0-9]*" autocomplete="off">#}
-{#                            </div>#}
-{#                        </div>#}
-{#                    </div>#}
-{#                </div>#}
-{#                <div class="row">#}
-{#                    <div class="col-lg-12">#}
-{#                        <div class="mb-3">#}
-{#                            <label class="form-label">Account name</label>#}
-{#                            <input type="text" name="name" class="form-control">#}
-{#                        </div>#}
-{#                    </div>#}
-{#                </div>#}
-                {% bootstrap_form_errors form type='non_fields' %}
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="mb-3">
-                            {% bootstrap_field form.steamid label_class='form-label' %}
-                        </div>
-                    </div>
-                    <div class="col-lg-12">
-                        <div class="mb-3">
-                            {% bootstrap_field form.name label_class='form-label' %}
-                        </div>
-                    </div>
-                </div>
-{#                {% bootstrap_form form %}#}
-            </div>
-            <div class="modal-footer">
-                <a href="#" class="btn btn-link link-secondary" data-bs-dismiss="modal">
-                    Cancel
-                </a>
-                <button href="#" class="btn btn-primary ms-auto" type="submit">
-                    {% tabler_icon 'plus' class="icon" %}
-                    Link account
-                </button>
-            </div>
-        </form>
+<form hx-post="{{ request.path }}" class="modal-content">
+    {% csrf_token %}
+    <div class="modal-header">
+        <h5 class="modal-title">Add linked Steam account</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        {% bootstrap_form form %}
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-bs-dismiss="modal">
+            Cancel
+        </a>
+        <button href="#" class="btn btn-primary ms-auto" type="submit">
+            {% tabler_icon 'plus' class="icon" %}
+            Link account
+        </button>
+    </div>
+</form>
