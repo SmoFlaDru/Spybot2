@@ -41,13 +41,12 @@ class AddSteamIDForm(forms.Form):
     def clean_steamid(self):
         cleaned_data = super().clean()
         steamid = cleaned_data.get("steamid")
-        name = cleaned_data.get("name")
 
         steam_info = get_steam_account_info(steamid)
         if steam_info is None:
             raise ValidationError("Can't load steam information for this user")
 
-        return cleaned_data
+        return steamid
 
 
     """
