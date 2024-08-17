@@ -36,8 +36,7 @@ class AddSteamIDForm(forms.Form):
     name = forms.CharField(label="Account name")
 
     def clean_steamid(self):
-        cleaned_data = super().clean()
-        steamid = cleaned_data.get("steamid")
+        steamid = self.cleaned_data.get("steamid")
 
         steam_info = get_steam_account_info(steamid)
         if steam_info is None:
