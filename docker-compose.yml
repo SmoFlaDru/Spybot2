@@ -1,0 +1,4 @@
+services:
+  uv-build-test:
+    build:
+      context: .

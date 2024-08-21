@@ -10,14 +10,11 @@ cd ..
 source venv/bin/activate
 
 # install project python deps
-pip install poetry
-poetry install
-
-# enter shell with configured poetry environment
-poetry shell
+pip install uv
+uv sync
 
 # copy static files to directory for http server
-python manage.py collectstatic --noinput
+uv run manage.py collectstatic --noinput
 
 # create django superuser if necessary.
 # Set the env vars DJANGO_SUPERUSER_{PASSWORD,USERNAME,EMAIL} when running this script
