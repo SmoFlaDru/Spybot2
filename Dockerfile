@@ -1,20 +1,11 @@
-FROM python:3.11-slim
-
-RUN apt-get update
-
-RUN apt-get update && apt-get install -y \
-    curl \
-    pkg-config \
-    gcc \
-    mariadb-client \
-    libmariadb-dev-compat \
-    libmariadb-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN pip install uv
+FROM python:3.12.5-bookworm
 
 WORKDIR /app
 
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+RUN pip install uv
 COPY pyproject.toml pyproject.toml
 RUN uv sync
+COPY . .
