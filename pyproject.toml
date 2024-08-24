@@ -25,3 +25,6 @@ dependencies = [
 
 [tool.uv]
 dev-dependencies = ["unittest-xml-reporting ~=3.2"]
+
+[tool.setuptools]
+py-modules = []
