@@ -13,6 +13,7 @@ from datetime import timedelta
 from pathlib import Path
 import environ
 import os
+import sentry_sdk
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -41,6 +42,9 @@ SERVER_IP = env('SERVER_IP')
 
 # Steam API Key
 STEAM_API_KEY = env('STEAM_API_KEY')
+
+# Sentry SDK
+SENTRY_DSN = env('SENTRY_DSN')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', False)
@@ -225,3 +229,14 @@ BOOTSTRAP5 = {
     'include_jquery': False,
     'javascript_in_head': False,
 }
+
+sentry_sdk.init(
+    dsn=SENTRY_DSN,
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for tracing.
+    traces_sample_rate=1.0,
+    # Set profiles_sample_rate to 1.0 to profile 100%
+    # of sampled transactions.
+    # We recommend adjusting this value in production.
+    profiles_sample_rate=1.0,
+)

@@ -20,6 +20,7 @@ dependencies = [
     "fido2 ~=1.1",
     "user-agents ~=2.2",
     "django-bootstrap5 ~=24.2",
+    "sentry-sdk>=2.13.0",
 ]
 
 
