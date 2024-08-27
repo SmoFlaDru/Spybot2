@@ -1,4 +1,7 @@
 from django import forms
+from django.core.exceptions import ValidationError
+
+from spybot.remote.steam_api import get_steam_account_info
 
 
 class TimeRangeForm(forms.Form):
@@ -25,3 +28,18 @@ class TimeRangeForm(forms.Form):
                     cleaned_data[name] = field.initial
 
         return cleaned_data
+
+
+class AddSteamIDForm(forms.Form):
+    steamid = forms.CharField(label="Account ID Number", required=True,
+                              widget=forms.TextInput(attrs={'addon_before': "https://steamcommunity.com/profiles/"}))
+    name = forms.CharField(label="Account name")
+
+    def clean_steamid(self):
+        steamid = self.cleaned_data.get("steamid")
+
+        steam_info = get_steam_account_info(steamid)
+        if steam_info is None:
+            raise ValidationError("Can't load steam information for this user")
+
+        return steamid

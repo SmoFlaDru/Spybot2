@@ -3,6 +3,8 @@
 from django.db import migrations, models
 import django.db.models.deletion
 
+from spybot.models import MergedUserManager
+
 
 class Migration(migrations.Migration):
 
@@ -12,6 +14,26 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.SeparateDatabaseAndState(
+            state_operations=[
+                migrations.CreateModel(
+                    name="MergedUser",
+                    fields=[
+                        (
+                            "id",
+                            models.AutoField(
+                                auto_created=True,
+                                primary_key=True,
+                                serialize=False,
+                                verbose_name="ID",
+                            ),
+                        )
+                    ],
+                    options={"db_table": "auth_user"},
+                    managers=[("objects", MergedUserManager())],
+                )
+            ]
+        ),
         migrations.CreateModel(
             name='TSChannel',
             fields=[

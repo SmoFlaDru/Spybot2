@@ -5,38 +5,50 @@
  */
 
 const themeStorageKey = 'tablerTheme'
-let selectedTheme
 
-function configureTheme() {
+function configureTheme(wantedTheme) {
+    function readTheme(wantedTheme, urlParams, allowedValues) {
+        if (allowedValues.has(wantedTheme)) {
+            localStorage.setItem(themeStorageKey, wantedTheme)
+            return wantedTheme;
+        }
+        else if (!!urlParams.theme && allowedValues.has(urlParams.theme)) {
+            const t = urlParams.theme
+            localStorage.setItem(themeStorageKey, t)
+            return t;
+        } else if (allowedValues.has(localStorage.getItem(themeStorageKey))) {
+            return localStorage.getItem(themeStorageKey)
+        } else {
+            return "auto"
+        }
+    }
+
+    function applyTheme(theme) {
+        let realTheme = theme
+        if (realTheme === "auto") {
+            realTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+        }
+        document.body.classList.remove('theme-dark', 'theme-light');
+        document.body.classList.add(`theme-${realTheme}`);
+        if (realTheme === 'dark') {
+            document.body.setAttribute("data-bs-theme", realTheme)
+        } else {
+            document.body.removeAttribute("data-bs-theme")
+        }
+
+        document.body.setAttribute("data-spybot-theme", theme)
+    }
+
     console.log("configuring theme")
     // https://stackoverflow.com/a/901144
-    const params = new Proxy(new URLSearchParams(window.location.search), {
+    const urlParams = new Proxy(new URLSearchParams(window.location.search), {
         get: (searchParams, prop) => searchParams.get(prop),
     });
 
-    const isSystemDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-    const defaultTheme = isSystemDark ? 'dark' : 'light'
+    const allowedValues = new Set(["light", "dark", "auto"])
 
-    if (!!params.theme) {
-        isParamDark = params.theme === 'dark'
-
-        if (isParamDark !== isSystemDark)
-            localStorage.setItem(themeStorageKey, params.theme)
-        else
-            localStorage.removeItem(themeStorageKey)
-        selectedTheme = params.theme
-    } else {
-        const storedTheme = localStorage.getItem(themeStorageKey)
-        selectedTheme = storedTheme ? storedTheme : defaultTheme
-    }
-
-    document.body.classList.remove('theme-dark', 'theme-light');
-    document.body.classList.add(`theme-${selectedTheme}`);
-    if (selectedTheme === 'dark') {
-        document.body.setAttribute("data-bs-theme", selectedTheme)
-    } else {
-        document.body.removeAttribute("data-bs-theme")
-    }
+    const theme = readTheme(wantedTheme, urlParams, allowedValues);
+    applyTheme(theme);
 }
 
 window.matchMedia("(prefers-color-scheme: dark)").onchange = configureTheme

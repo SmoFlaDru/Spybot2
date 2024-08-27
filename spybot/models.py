@@ -5,7 +5,8 @@
 #   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
-from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth import get_user_model
+from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.db.models.fields import AutoFieldMixin, PositiveIntegerField, AutoField
 from django.utils import timezone
@@ -53,11 +54,55 @@ class PositiveAutoField(AutoFieldMixin, PositiveIntegerField):
         return PositiveIntegerField().db_type(connection=connection)
 
 
+class MergedUserManager(BaseUserManager):
+    def create_user(self, email, date_of_birth, password=None):
+        return None
+
+    def create_superuser(self, email, date_of_birth, password=None):
+        return None
+
+
 class MergedUser(DebuggableModel, AbstractBaseUser):
     name = models.CharField(max_length=128, blank=False, null=False)
     obsolete = models.BooleanField(default=False)
 
+    is_superuser = models.BooleanField(default=False)
+
     USERNAME_FIELD = 'id'
+
+    objects = MergedUserManager()
+
+    @property
+    def is_staff(self):
+        return self.is_superuser
+
+    @property
+    def username(self):
+        return str(self.id)
+
+    def get_full_name(self):
+        return self.name
+
+    def get_user_permissions(self, obj=None):
+        print('get_user_permissions: ', obj)
+        return None
+
+    def get_group_permissions(self, obj=None):
+        print('get_group_permissions: ', obj)
+        return None
+
+    def get_all_permissions(self, obj=None):
+        print('get_all_permissions: ', obj)
+        return None
+
+    def has_perm(self, perm, obj=None):
+        return self.is_superuser
+
+    def has_perms(self, perm_list, obj=None):
+        return self.is_superuser
+
+    def has_module_perms(self, package_name):
+        return self.is_superuser
 
     def merged_user_names(self):
         return list(TSUser.objects.values_list('name', flat=True).filter(merged_user=self))
@@ -153,3 +198,15 @@ class NewsEvent(DebuggableModel):
 class LoginLink(DebuggableModel):
     user = models.ForeignKey(MergedUser, models.CASCADE, blank=False, null=False, related_name="loginlinks")
     code = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+
+
+class UserPasskey(models.Model):
+    user_model = get_user_model()
+    user = models.ForeignKey(user_model,on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    enabled = models.BooleanField(default=True)
+    platform = models.CharField(max_length=255,default='')
+    added_on = models.DateTimeField(auto_now_add=True)
+    last_used = models.DateTimeField(null=True,default=None)
+    credential_id = models.CharField(max_length=255, unique=True)
+    token = models.CharField(max_length=1024, null=False)

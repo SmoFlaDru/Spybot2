@@ -1,6 +1,6 @@
 from django.test import TestCase, override_settings
 
-from spybot.models import TSUserActivity, TSUser
+from spybot.models import TSUserActivity, TSUser, MergedUser
 
 @override_settings(DEBUG=False)
 class TSUserTestCase(TestCase):

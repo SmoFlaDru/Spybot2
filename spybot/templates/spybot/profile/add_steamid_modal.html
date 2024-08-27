@@ -1,0 +1,22 @@
+{% load tabler_icons %}
+{% load django_bootstrap5 %}
+
+<form hx-post="{{ request.path }}" class="modal-content">
+    {% csrf_token %}
+    <div class="modal-header">
+        <h5 class="modal-title">Add linked Steam account</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        {% bootstrap_form form %}
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-bs-dismiss="modal">
+            Cancel
+        </a>
+        <button href="#" class="btn btn-primary ms-auto" type="submit">
+            {% tabler_icon 'plus' class="icon" %}
+            Link account
+        </button>
+    </div>
+</form>

@@ -1,0 +1,29 @@
+{% with data=profile_steamids %}
+    <div class="card">
+        <div class="card-header">Linked Steam Accounts</div>
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table">
+                <thead>
+                <tr>
+                    <th>Account Name</th>
+                    <th>Steam ID</th>
+                    <th class="w-1"></th>
+                </tr>
+                </thead>
+                <tbody hx-confirm="Are you sure you want to delete the passkey?" hx-target="closest tr"
+                       hx-swap="outerHTML swap:1s">
+                {% for sid in data.steamids %}
+                    <tr>
+                        <td>{{ sid.account_name }}</td>
+                        <td class="text-secondary">{{ sid.steam_id }}</td>
+                        <td><a href="#" hx-delete="/profile/steamid/{{ sid.id }}">Delete</a></td>
+                    </tr>
+                    </tbody>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="card-body">
+            <button class="btn btn-primary" hx-get="{% url 'profile_add_steamid' %}" hx-target="#dialog">Link new Steam Account</button>
+        </div>
+    </div>
+{% endwith %}

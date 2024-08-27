@@ -14,7 +14,10 @@ class LinkAuthBackend:
         """
         Overrides the authenticate method to allow users to log in using their email address.
         """
-        code = request.GET["code"]
+        code = request.GET.get("code", None)
+        if code is None:
+            return None
+
         try:
             link = LoginLink.objects.get(code=code)
             return link.user

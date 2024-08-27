@@ -11,17 +11,19 @@ def dictfetchall(cursor):
     ]
 
 
-def daily_activity():
+def daily_activity(days: int):
+    date_format = "%Y-%m-%d"
+
     with connection.cursor() as cursor:
         cursor.execute("""
             WITH active_data AS (
                 SELECT
-                    DATE_FORMAT(CAST(startTime AS date), '%Y-%m-%d') AS date,
+                    DATE_FORMAT(CAST(startTime AS date), %(date_format)s) AS date,
                     SUM(TIMESTAMPDIFF(SECOND, startTime, endTime)) / 3600 AS time_hours
                 FROM TSUserActivity
                 INNER JOIN TSChannel channel on TSUserActivity.cID = channel.id
                 WHERE
-                    startTime > DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+                    startTime > DATE_SUB(CURDATE(), INTERVAL %(days)s DAY)
                     AND endTime IS NOT NULL
                     AND channel.name NOT IN ('bei\\\sBedarf\\\sanstupsen', 'AFK')
                 GROUP BY date
@@ -29,12 +31,12 @@ def daily_activity():
             ),
             afk_data AS (
                 SELECT
-                    DATE_FORMAT(CAST(startTime AS date), '%Y-%m-%d') AS date,
+                    DATE_FORMAT(CAST(startTime AS date), %(date_format)s) AS date,
                     SUM(TIMESTAMPDIFF(SECOND, startTime, endTime)) / 3600 AS time_hours
                 FROM TSUserActivity
                 INNER JOIN TSChannel channel on TSUserActivity.cID = channel.id
                 WHERE
-                    startTime > DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+                    startTime > DATE_SUB(CURDATE(), INTERVAL %(days)s DAY)
                     AND endTime IS NOT NULL
                     AND channel.name IN ('bei\\\sBedarf\\\sanstupsen', 'AFK')
                 GROUP BY date
@@ -45,7 +47,7 @@ def daily_activity():
                 COALESCE(CAST(afk_data.time_hours AS DOUBLE), 0) AS afk_hours
             FROM active_data
             LEFT OUTER JOIN afk_data ON active_data.date = afk_data.date;
-        """)
+        """, {"days": days, "date_format": date_format})
         return cursor.fetchall()
 
 

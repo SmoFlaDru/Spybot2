@@ -1,25 +1,31 @@
-[tool.poetry]
+[project]
 name = "spybot2"
 version = "0.1.0"
 description = ""
-authors = ["Benno <bensge@me.com>", "Justus <justus.fab@gmail.com>"]
-license = "MIT"
+authors = [
+    { name = "Benno", email = "bensge@me.com" },
+    { name = "Justus", email = "justus.fab@gmail.com" },
+]
+classifiers = ["License :: OSI Approved :: MIT License"]
 readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "Django ~=4.2",
+    "ts3 ~=2.0.0b3",
+    "django-environ ~=0.11.2",
+    "mysqlclient ~=2.2",
+    "django-crontab ~=0.7.1",
+    "num2words ~=0.5.12",
+    "requests ~=2.31",
+    "fido2 ~=1.1",
+    "user-agents ~=2.2",
+    "django-bootstrap5 ~=24.2",
+    "sentry-sdk>=2.13.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-Django = "^4.2.3"
-ts3 = "2.0.0b3"
-django-environ = "^0.10.0"
-mysqlclient = "^2.2.0"
-django-crontab = "^0.7.1"
-num2words = "^0.5.12"
-requests = "^2.31.0"
 
+[tool.uv]
+dev-dependencies = ["unittest-xml-reporting ~=3.2"]
 
-[tool.poetry.group.test.dependencies]
-unittest-xml-reporting = "^3.2.0"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.setuptools]
+py-modules = []

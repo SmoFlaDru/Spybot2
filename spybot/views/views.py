@@ -1,29 +1,31 @@
 import datetime
 import time
 from datetime import timedelta
+from typing import List
 
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse, HttpResponse, Http404, HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404
-from django.template import loader
 from django.utils import timezone
 
 from spybot import visualization
 
-from spybot.forms import TimeRangeForm
-from spybot.models import TSChannel, TSUserActivity, NewsEvent, MergedUser
+from spybot.forms import TimeRangeForm, AddSteamIDForm
+from spybot.remote.steam_api import get_steam_user_playing_info
+from spybot.views.fragments.activity_chart import activity_chart_data
+from spybot.models import TSChannel, TSUserActivity, NewsEvent, MergedUser, UserPasskey, SteamID
 from spybot.templatetags import ts_filters
 
 from Spybot2 import settings
 import requests
 
+from spybot.views.common import get_user, get_context
+from spybot.views.fragments.profile_steamids import profile_steamids_data
 
-def get_user(request):
-    return request.user if isinstance(request.user, MergedUser) else None
 
-
-def get_context(request):
-    return {"logged_in_user": get_user(request)}
+def get_passkeys(user: MergedUser) -> List[UserPasskey]:
+    return UserPasskey.objects.filter(user=user).all()
 
 
 def home(request):
@@ -34,12 +36,7 @@ def home(request):
     context["user"] = user
 
     # activity chart
-    data = visualization.daily_activity()
-    dates, active_values, afk_values = zip(*data) if len(data) > 0 else ((), (), ())
-    # convert tuples back to lists when passing to template
-    context['daily_dates'] = list(dates)
-    context['daily_active_values'] = list(active_values)
-    context['daily_afk_values'] = list(afk_values)
+    context = {**context, **activity_chart_data(request)}
 
     # time of day histogram
     tod_data = visualization.time_of_day_histogram()
@@ -70,7 +67,7 @@ def home(request):
     return render(request, 'spybot/home/home.html', context)
 
 
-def get_recent_events(start = 0):
+def get_recent_events(start=0):
     query_result = NewsEvent.objects.order_by("-date")[start:start + 11].values()
     has_more = len(query_result) == 11
     events = query_result[:10]
@@ -273,18 +270,9 @@ def get_steam_game(mu: MergedUser):
 
     for sid in steam_ids:
         steam_id = sid.steam_id
-        #print(f"Trying steamID {steam_id} for user {mu.name}")
-        steam_api_key = settings.STEAM_API_KEY
-        req = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={key}&steamids={id}" \
-            .format(key=steam_api_key, id=steam_id)
-
-        steam_data = requests.get(req)
-        steam_info = steam_data.json().get('response').get('players')[0]
-        game_id = steam_info.get('gameid', 0)
-        game_name = steam_info.get('gameextrainfo', "")
-        if game_id != 0:
+        game_id, game_name = get_steam_user_playing_info(steam_id)
+        if game_id is not None:
             return game_id, game_name
-
     return 0, ""
 
 
@@ -299,4 +287,67 @@ def recent_events_fragment(request):
 
 def profile(request):
     user = get_user(request)
-    return render(request, 'spybot/profile.html', {**get_context(request), 'user': user})
+    passkeys = get_passkeys(user)
+    steamids = profile_steamids_data(request)
+    return render(request, 'spybot/profile/profile.html', {**steamids, **get_context(request), 'user': user, 'passkeys': passkeys})
+
+def login(request):
+    user = get_user(request)
+    return render(request, 'spybot/login.html', {**get_context(request), 'user': user})
+
+
+def login_teamspeak(request):
+    user = get_user(request)
+    return render(request, 'spybot/login_teamspeak.html', {**get_context(request), 'user': user})
+
+
+@login_required
+def profile_passkey(request, id: str):
+    if request.method == "DELETE":
+        print(f"trying to delete passkey with id {id}")
+        passkey = get_object_or_404(UserPasskey, id=id)
+        if passkey.user != request.user:
+            return HttpResponseForbidden()
+
+        passkey.delete()
+        return HttpResponse('')
+    return None
+
+
+def create_steamid(user: MergedUser, steam_id: str, account_name:str):
+    sid = SteamID(steam_id=int(steam_id), account_name=account_name, merged_user=user)
+    sid.save()
+
+
+@login_required
+def profile_add_steamid(request):
+    user = get_user(request)
+    if request.method == "POST":
+        form = AddSteamIDForm(request.POST)
+        if form.is_valid():
+            create_steamid(user, form.cleaned_data['steamid'], form.cleaned_data['name'])
+            return HttpResponse(status=204, headers={'HX-Trigger': 'steamids_changed'})
+    else:
+        form = AddSteamIDForm()
+    return render(request,
+                  'spybot/profile/add_steamid_modal.html',
+                  {**get_context(request), 'user': user, 'form': form}
+                  )
+
+
+def profile_delete_steamid(request, id):
+    if request.method == "DELETE":
+        print(f"trying to delete steamid with id {id}")
+        steamid = get_object_or_404(SteamID, id=id)
+        if steamid.merged_user != request.user:
+            return HttpResponseForbidden()
+
+        steamid.delete()
+        return HttpResponse(status=200, headers={'HX-Trigger': 'steamids_changed'})
+    return None
+
+
+def profile_steamids_fragment(request):
+    user = get_user(request)
+    steamids = profile_steamids_data(request)
+    return render(request, 'spybot/profile/steamids_fragment.html', {**steamids, **get_context(request), 'user': user})

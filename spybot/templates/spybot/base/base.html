@@ -16,7 +16,7 @@
         {% block header %}
         {%  endblock %}
     </head>
-    <body>
+    <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
         <script src="{% static 'theme.js' %}"></script>
         <div class="page">
             {% include 'spybot/base/navbar.html' %}
@@ -31,5 +31,10 @@
                 {% include 'spybot/base/footer.html' %}
             </div>
         </div>
+        <div id="modal" class="modal modal-blur fade">
+            <div id="dialog" class="modal-dialog modal-lg modal-dialog-centered" role="document" hx-target="this"></div>
+        </div>
+        {% block content_body_end %}
+        {% endblock %}
     </body>
 </html>
