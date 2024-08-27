@@ -44,7 +44,7 @@ SERVER_IP = env('SERVER_IP')
 STEAM_API_KEY = env('STEAM_API_KEY')
 
 # Sentry SDK
-SENTRY_ENABLED = env('SENTRY_ENABLED', False)
+SENTRY_ENABLED = env.bool('SENTRY_ENABLED', False)
 SENTRY_DSN = env('SENTRY_DSN')
 
 # SECURITY WARNING: don't run with debug turned on in production!
