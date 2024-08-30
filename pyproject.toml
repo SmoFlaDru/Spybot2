@@ -25,7 +25,10 @@ dependencies = [
 
 
 [tool.uv]
-dev-dependencies = ["unittest-xml-reporting ~=3.2"]
+dev-dependencies = [
+    "unittest-xml-reporting ~=3.2",
+    "testcontainers[mysql]>=4.8.0",
+]
 
 [tool.setuptools]
 py-modules = []
