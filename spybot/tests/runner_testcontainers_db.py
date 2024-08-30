@@ -9,7 +9,7 @@ class TestContainerRunner(XMLTestRunner):
     mysql_container: MySqlContainer = None
 
     def setup_databases(self, **kwargs):
-        self.mysql_container = MySqlContainer(image="mysql:8.0")
+        self.mysql_container = MySqlContainer(image="mariadb:11.0")
         self.mysql_container.start()
 
         db_connection_settings = {
