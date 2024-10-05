@@ -140,7 +140,19 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="card">
+                <div class="card-header justify-content-md-center">
+                    <h3 class="card-title ">Monthly activity chart</h3>
+                </div>
+                <div class="card-body">
+                    <div id="activity-months-heatmap" class="chart-lg d-flex mt-auto"></div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    {{ months|json_script:"months_data" }}
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -185,6 +197,53 @@
                     show: true,
                     position: 'bottom',
                 },
+            })).render();
+
+            const rawMonthData = JSON.parse(document.querySelector('#months_data').textContent)
+            const transformedMonthData = rawMonthData.reduce((acc, { year, month, activity }) => {
+                if (!acc[year]) {
+                    acc[year] = [];
+                }
+                acc[year].push(activity);
+                return acc;
+            }, {});
+            console.log(transformedMonthData)
+            const graphData = Object.entries(transformedMonthData).map(v => { return { name: v[0], data: v[1] }})
+            console.log(graphData)
+
+            const clamp = (num, min, max) => Math.min(Math.max(num, min), max)
+
+            window.ApexCharts && (new ApexCharts(document.getElementById('activity-months-heatmap'), {
+                series: graphData.reverse(),
+                chart: {
+                    height: 350,
+                    type: 'heatmap',
+                    zoom: {enabled: false},
+
+                },
+                xaxis: {
+                    labels: {
+                        formatter: (value) => { return ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][clamp(Math.floor(value), 0, 11)][0] },
+                    },
+                    tickPlacement: 'on',
+                    tickAmount: 11,
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                tooltip: {
+                    {#enabled: false,#}
+                    theme: 'dark',
+                },
+                theme: {
+                    mode: "dark",
+                },
+                fontFamily: 'inherit',
+                parentHeightOffset: 0,
+                legend: {
+                    show: false,
+                },
+                colors: ["#008FFB"],
             })).render();
         });
     </script>
