@@ -11,67 +11,78 @@
 function getCSSVar(name) {
     return getComputedStyle(document.body).getPropertyValue(name)
 }
-document.addEventListener("DOMContentLoaded", function () {
-    if (!window.ApexCharts) return
+onChartReady(() => {
     const raw_data = JSON.parse(document.querySelector('#channel-data').textContent)
-    new ApexCharts(document.querySelector("#chart-channel-tree-map"), {
-        chart: {
-            type: 'treemap',
-            toolbar: {
+
+    const chartOptions = () => {
+        return {
+            chart: {
+                type: 'treemap',
+                toolbar: {
+                    show: false,
+                },
+                zoom: {enabled: false},
+                height: '100%',
+                parentHeightOffset: 0,
+            },
+            series: [
+                {
+                    name: 'Talking',
+                    data: raw_data.filter(o => o.name !== "AFK" && o.name !== "bei Bedarf anstupsen")
+                        .map(o => { return {x: o.name, y: o.percentage}})
+                },
+                {
+                    name: 'Inactive',
+                    data: raw_data.filter(o => o.name === "AFK" || o.name === "bei Bedarf anstupsen")
+                        .map(o => { return {x: o.name, y: o.percentage}})
+                }
+            ],
+            plotOptions: {
+                treemap: {
+                    enableShades: true,
+                    shadeIntensity: 0.3,
+                }
+            },
+            stroke:{
+                width: 5,
+                colors: [getCSSVar('--tblr-bg-surface')],
+            },
+            colors: [tabler.getColor("primary"), tabler.getColor("red")],
+            dataLabels: {
+                enabled: true,
+                offsetY: -5,
+                formatter: function(text, op) {
+                    return [text, op.value.toFixed(1) + "%"]
+                },
+            },
+            grid: {
+                padding: {
+                    top: -20,
+                    right: 0,
+                    left: 0,
+                    bottom: 0
+                },
+            },
+            tooltip:{
+                theme: 'dark',
+                marker: {show: false},
+                y: {
+                    formatter: y => { return y.toFixed(1) + "%" },
+                },
+            },
+            legend: {
                 show: false,
             },
-            zoom: {enabled: false},
-            height: '100%',
-            parentHeightOffset: 0,
-        },
-        series: [
-            {
-                name: 'Talking',
-                data: raw_data.filter(o => o.name !== "AFK" && o.name !== "bei Bedarf anstupsen")
-                    .map(o => { return {x: o.name, y: o.percentage}})
-            },
-            {
-                name: 'Inactive',
-                data: raw_data.filter(o => o.name === "AFK" || o.name === "bei Bedarf anstupsen")
-                    .map(o => { return {x: o.name, y: o.percentage}})
-            }
-        ],
-        plotOptions: {
-            treemap: {
-                enableShades: true,
-                shadeIntensity: 0.3,
-            }
-        },
-        stroke:{
-            width: 5,
-            colors: [getCSSVar('--tblr-bg-surface')],
-        },
-        colors: [tabler.getColor("primary"), tabler.getColor("red")],
-        dataLabels: {
-            enabled: true,
-            offsetY: -5,
-            formatter: function(text, op) {
-                return [text, op.value.toFixed(1) + "%"]
-            },
-        },
-        grid: {
-            padding: {
-                top: -20,
-                right: 0,
-                left: 0,
-                bottom: 0
-            },
-        },
-        tooltip:{
-            theme: 'dark',
-            marker: {show: false},
-            y: {
-                formatter: y => { return y.toFixed(1) + "%" },
-            },
-        },
-        legend: {
-            show: false,
-        },
-    }).render()
+        };
+    }
+    let chart = null;
+
+    onChartRenderTrigger(true, () => {
+        if (chart !== null) {
+            chart.destroy();
+        }
+        chart = new ApexCharts(document.querySelector("#chart-channel-tree-map"), chartOptions())
+        chart.render();
+    });
 });
 </script>
