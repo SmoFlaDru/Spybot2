@@ -215,6 +215,7 @@ def halloffame(request):
     return render(request, 'spybot/halloffame.html', context)
 
 
+@login_required()
 def user(request, user_id: int):
     # name, first_online, is_online | last_online, aliase, total_time, afk_time
 
