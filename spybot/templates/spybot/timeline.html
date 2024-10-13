@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
             x: {
                 format: 'HH:mm:ss'
             },
-            theme: document.body.classList.contains("theme-dark") ? 'dark' : 'light'
+            theme: isDarkMode() ? 'dark' : 'light'
         },
         theme: {
             palette: 'palette2'

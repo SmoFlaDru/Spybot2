@@ -3,11 +3,32 @@
 {% load util %}
 
 {% block content %}
-    <div class="row row-cards justify-content-center align-items-center">
+    <div class="mt-2 d-flex align-items-center justify-content-center">
+        <span class="avatar">{{ user.user_name|make_list|first }}</span>
+        <span class="display-6 ms-3"><b>{{ user.user_name }}</b></span>
+    </div>
+    <div class="row row-cards justify-content-center mt-2">
         <div class="col-md-6 col-lg-4">
             <div class="card">
                 <div class="card-header justify-content-md-center">
-                    <h3 class="card-title ">{{ user.user_name }}</h3>
+                    <h3 class="card-title ">Awards</h3>
+                </div>
+                <div class="card-body align-self-center">
+                    <div class="datagrid-title">
+                        <span>Award of the week Medals</span>
+                    </div>
+                    <div class="datagrid-content py-2">
+                        <span class="h3 mx-2">{{ user.gold }} x {% tabler_icon 'medal' class="medal gold" %}</span>
+                        <span class="h3 mx-2">{{ user.silver }} x {% tabler_icon 'medal' class="medal silver" %}</span>
+                        <span class="h3 mx-2">{{ user.bronze }} x {% tabler_icon 'medal' class="medal bronze" %}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="card">
+                <div class="card-header justify-content-md-center">
+                    <h3 class="card-title ">Statistics</h3>
                 </div>
                 <div class="row row0 justify-content-center">
                     <div class="col-md-6">
@@ -23,17 +44,6 @@
                                         {% else %}
                                             <span class="text-danger">offline</span>
                                         {% endif %}
-                                    </div>
-                                </div>
-
-                                <div class="datagrid-item">
-                                    <div class="datagrid-title">
-                                        <span>Medals</span>
-                                    </div>
-                                    <div class="datagrid-content">
-                                        <span>{% tabler_icon 'medal' class="medal gold" %}{{ user.gold }}</span>
-                                        <span>{% tabler_icon 'medal' class="medal silver" %}{{ user.silver }}</span>
-                                        <span>{% tabler_icon 'medal' class="medal bronze" %}{{ user.bronze }}</span>
                                     </div>
                                 </div>
 
@@ -105,7 +115,7 @@
 
                                 <div class="datagrid-content">
                                     {% if u.names|length > 0 %}
-                                    Not Former Names known
+                                    No former names known
                                     {% endif %}
 
                                     <ul style="overflow: scroll">
@@ -140,57 +150,164 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="card">
+                <div class="card-header justify-content-md-center">
+                    <h3 class="card-title ">Monthly activity chart</h3>
+                </div>
+                <div class="card-body">
+                    <div id="activity-months-heatmap" class="chart-lg d-flex mt-auto"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
+    {{ months|json_script:"months_data" }}
+
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            window.ApexCharts && (new ApexCharts(document.getElementById('online-pie'), {
-                chart: {
-                    type: "pie",
-                    fontFamily: 'inherit',
-                    height: "50%",
-                    sparkline: {
-                        enabled: true
-                    },
-                    animations: {
-                        enabled: true,
-                        easing: 'easein',
-                        speed: 1000,
-                        animateGradually: {
-                            enabled: true,
-                            delay: 150
+        onChartReady(() => {
+            const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+
+            const onlinePieChartOptions = () => {
+                return {
+                    chart: {
+                        type: "pie",
+                        fontFamily: 'inherit',
+                        height: "50%",
+                        sparkline: {
+                            enabled: true
                         },
-                        dynamicAnimation: {
+                        animations: {
                             enabled: true,
-                            speed: 750
+                            easing: 'easein',
+                            speed: 1000,
+                            animateGradually: {
+                                enabled: true,
+                                delay: 150
+                            },
+                            dynamicAnimation: {
+                                enabled: true,
+                                speed: 750
+                            }
+                        },
+                    },
+                    fill: {
+                        opacity: 1,
+                    },
+                    series: {{ data }},
+                    labels: ["AFK", "ONLINE"],
+                    dataLabels: {
+                        enabled: true,
+                    },
+                    tooltip: {
+                        theme: 'dark'
+                    },
+                    grid: {
+                        strokeDashArray: 4,
+                    },
+                    colors: [tabler.getColor("red", 0.8), tabler.getColor("green", 0.8)],
+                    legend: {
+                        show: true,
+                        position: 'bottom',
+                    },
+                }
+            };
+            const onlinePieChart = new ApexCharts(document.getElementById('online-pie'), onlinePieChartOptions());
+            onlinePieChart.render();
+
+            const heatmapOptions = () => {
+                const rawMonthData = JSON.parse(document.querySelector('#months_data').textContent)
+                const transformedMonthData = rawMonthData.reduce((acc, { year, month, activity }) => {
+                    if (!acc[year]) {
+                        acc[year] = [];
+                    }
+                    acc[year].push(activity);
+                    return acc;
+                }, {});
+                const graphData = Object.entries(transformedMonthData).map(v => { return { name: v[0], data: v[1] }})
+
+                return {
+                    series: graphData.reverse(),
+                    chart: {
+                        height: 350,
+                        type: 'heatmap',
+                        zoom: {enabled: false},
+
+                    },
+                    xaxis: {
+                        labels: {
+                            formatter: (value) => { return ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][clamp(Math.floor(value)-1, 0, 11)].substring(0, 3) },
+                        },
+                        tickPlacement: 'on',
+                        tickAmount: 3,
+                    },
+                    dataLabels: {
+                        enabled: false
+                    },
+                    tooltip: {
+                        {#enabled: false,#}
+                        {#theme: 'dark',#}
+                    },
+                    theme: {
+                        mode: isDarkMode() ? 'dark' : 'light',
+                    },
+                    plotOptions: {
+                        heatmap: {
+                            radius: 0,
+                            shadeIntensity: 0,
+                            colorScale: {
+                                ranges: [{
+                                    from: 0,
+                                    to: 1,
+                                    color: isDarkMode() ? '#161B22' :  '#EBEDF0',
+                                },
+                                {
+                                    from: 1.00001,
+                                    to: 50,
+                                    color: '#9BE9A8',
+                                },
+                                {
+                                    from: 50.000001,
+                                    to: 100,
+                                    color: '#40C463',
+                                },
+                                {
+                                    from: 100.000001,
+                                    to: 150,
+                                    color: '#30A14E',
+                                },
+                                {
+                                    from: 150.000001,
+                                    to: 1000,
+                                    color: '#216e39',
+                                }]
+                            }
                         }
                     },
-                },
-                fill: {
-                    opacity: 1,
-                },
-                series: {{ data }},
-                labels: ["AFK", "ONLINE"],
-                dataLabels: {
-                    enabled: true,
-                },
-                tooltip: {
-                    theme: 'dark'
-                },
-                grid: {
-                    strokeDashArray: 4,
-                },
-                colors: [tabler.getColor("red", 0.8), tabler.getColor("green", 0.8)],
-                legend: {
-                    show: true,
-                    position: 'bottom',
-                },
-            })).render();
+                    stroke: {
+                        width: 1,
+                        colors: [isDarkMode() ? '#182433' : '#fdfdfd']
+                    },
+                    fontFamily: 'inherit',
+                    parentHeightOffset: 0,
+                    legend: {
+                        show: false,
+                    },
+                }
+            };
+            const heatmap = new ApexCharts(document.getElementById('activity-months-heatmap'), heatmapOptions());
+            heatmap.render();
+
+            onChartRenderTrigger(false, () => {
+                onlinePieChart.updateOptions(onlinePieChartOptions());
+                heatmap.updateOptions(heatmapOptions());
+            });
         });
+
     </script>
     <style>
         .medal {
-            scale: .25;
+            scale: .5;
             animation: medals 1s ease-out forwards;
         }
 

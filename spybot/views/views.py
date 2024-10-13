@@ -215,6 +215,7 @@ def halloffame(request):
     return render(request, 'spybot/halloffame.html', context)
 
 
+@login_required()
 def user(request, user_id: int):
     # name, first_online, is_online | last_online, aliase, total_time, afk_time
 
@@ -230,6 +231,8 @@ def user(request, user_id: int):
     if u.get('online') == 1:
         game_id, game_name = get_steam_game(MergedUser.objects.get(id=user_id))
 
+    months = visualization.user_month_activity(user_id)
+
     return render(request, 'spybot/user.html', {
         **get_context(request),
         'user': u,
@@ -239,6 +242,7 @@ def user(request, user_id: int):
         'game_id': game_id,
         'game_name': game_name,
         'streak': streak,
+        'months': months,
     })
 
 

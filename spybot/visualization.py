@@ -307,6 +307,36 @@ def user_longest_streak(merged_user_id: int):
         return dictfetchall(cursor)
 
 
+def user_month_activity(merged_user_id: int):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+        WITH data AS (
+            SELECT
+                YEAR(startTime) AS year,
+                MONTH(startTime) AS month,
+                SUM(TIMESTAMPDIFF(SECOND, startTime, endTime)) / 3600 AS time_hours
+            FROM TSUserActivity
+                       INNER JOIN TSChannel channel on TSUserActivity.cID = channel.id
+            INNER JOIN TSUser user ON TSUserActivity.tsUserID = user.id
+            WHERE startTime > MAKEDATE(2016,1)
+                AND endTime IS NOT NULL
+                AND channel.name NOT IN ('bei\\\sBedarf\\\sanstupsen', 'AFK')
+                AND user.merged_user_id = %s
+            GROUP BY year, month
+            ORDER BY year, month),
+        months AS (
+            WITH RECURSIVE nrows(date) AS (
+                SELECT MAKEDATE(2016,1) UNION ALL
+                SELECT DATE_ADD(date,INTERVAL 1 MONTH) FROM nrows WHERE date<=DATE_SUB(CURRENT_DATE, INTERVAL 1 MONTH)
+            )
+            SELECT date FROM nrows
+        )
+        SELECT MONTH(months.date) AS month, YEAR(months.date) AS year, COALESCE(data.time_hours, 0) AS activity FROM months
+        LEFT JOIN data ON YEAR(months.date) = data.year AND MONTH(months.date) = data.month;
+        """, [merged_user_id])
+        return dictfetchall(cursor)
+
+
 #
 # WITH dates AS (
 #     SELECT DISTINCT

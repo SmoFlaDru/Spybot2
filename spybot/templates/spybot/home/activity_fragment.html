@@ -114,12 +114,9 @@
             })).render();
         }
 
-        console.log("checking document loading state")
         if (document.readyState === "loading") {
-            console.log("loading");
             document.addEventListener("DOMContentLoaded", renderActivityChart);
         } else {
-            console.log("already loaded");
             renderActivityChart();
         }
     </script>

@@ -31,7 +31,9 @@ function configureTheme(wantedTheme) {
         document.body.classList.remove('theme-dark', 'theme-light');
         document.body.classList.add(`theme-${realTheme}`);
         if (realTheme === 'dark') {
-            document.body.setAttribute("data-bs-theme", realTheme)
+            if (document.body.getAttribute('data-bs-theme') !== realTheme) {
+                document.body.setAttribute("data-bs-theme", realTheme)
+            }
         } else {
             document.body.removeAttribute("data-bs-theme")
         }
@@ -51,6 +53,6 @@ function configureTheme(wantedTheme) {
     applyTheme(theme);
 }
 
-window.matchMedia("(prefers-color-scheme: dark)").onchange = configureTheme
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener('change', configureTheme)
 // configure theme now
 configureTheme()

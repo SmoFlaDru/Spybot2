@@ -75,16 +75,6 @@ INSTALLED_APPS = [
     'django_bootstrap5',
 ]
 
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
-
 ROOT_URLCONF = 'Spybot2.urls'
 
 TEMPLATES = [
@@ -158,6 +148,8 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'spybot.auth.backend.link_backend.LinkAuthBackend',
 ]
+
+LOGIN_URL = '/login'
 
 # Passkeys
 FIDO_SERVER_NAME = "Spybot local"

@@ -72,8 +72,8 @@ document.addEventListener("DOMContentLoaded", function () {
             type: "numeric",
             min: 0,
             max: 24,
-            tickAmount: 12,
-            labels: {formatter: x => x /*Math.round(x)*/},
+            tickAmount: 11,
+            labels: {formatter: x => `${x <= 12 ? x : x-12}${x < 12 ? 'am' : 'pm'}`},
             title: {
                 text: "Hours",
                 offsetY: 68,
