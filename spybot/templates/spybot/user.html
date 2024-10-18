@@ -221,6 +221,11 @@
                     if (!acc[year]) {
                         acc[year] = [];
                     }
+                    if (activity < 0.001 && activity > -0.001) {
+                        // map zero values to float close to zero
+                        // so that we circumvent bug in charting library for zero values
+                        activity = 0.001
+                    }
                     acc[year].push(activity);
                     return acc;
                 }, {});
@@ -259,39 +264,44 @@
                                 ranges: [{
                                     from: 0,
                                     to: 1,
-                                    color: isDarkMode() ? '#161B22' :  '#EBEDF0',
+                                    color: isDarkMode() ? '#182433' :  '#ffffff',
                                 },
                                 {
                                     from: 1.00001,
                                     to: 50,
-                                    color: '#9BE9A8',
+                                    color: isDarkMode() ? '#0e4429' : '#9BE9A8',
                                 },
                                 {
                                     from: 50.000001,
                                     to: 100,
-                                    color: '#40C463',
+                                    color: isDarkMode() ? '#006d32' : '#40C463',
                                 },
                                 {
                                     from: 100.000001,
                                     to: 150,
-                                    color: '#30A14E',
+                                    color: isDarkMode() ? '#26a641' : '#30A14E',
                                 },
                                 {
                                     from: 150.000001,
                                     to: 1000,
-                                    color: '#216e39',
+                                    color: isDarkMode() ? '#39d353' : '#216e39',
                                 }]
                             }
                         }
                     },
                     stroke: {
-                        width: 1,
+                        width: 6,
                         colors: [isDarkMode() ? '#182433' : '#fdfdfd']
                     },
                     fontFamily: 'inherit',
                     parentHeightOffset: 0,
                     legend: {
-                        show: false,
+                        show: true,
+                        formatter: (a, { seriesIndex }) => { return seriesIndex === 0 ? 'less' : (seriesIndex === 4 ? "<span class='ms-2'>more" : ''); },
+                        position: 'bottom',
+                        markers: {
+                            strokeWidth: 0,
+                        }
                     },
                 }
             };
