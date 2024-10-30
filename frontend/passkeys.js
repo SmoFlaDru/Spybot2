@@ -1,5 +1,10 @@
 import {startAuthentication, startRegistration} from '@simplewebauthn/browser'
 
+const isAllowedRedirectUrl = url => {
+    const regex = /^[A-Za-z0-9/]+$/;
+    return regex.test(str);
+}
+
 const sendToServerForVerificationAndLogin = async (response) => {
     try {
         console.log("sendToServerForVerificationAndLogin:", response);
@@ -17,7 +22,7 @@ const sendToServerForVerificationAndLogin = async (response) => {
             console.log("success")
             const urlParams = new URLSearchParams(window.location.search);
             let nextUrl = urlParams.get('next');
-            if (nextUrl === null) {
+            if (nextUrl === null || !isAllowedRedirectUrl(nextUrl)) {
                 nextUrl = '/profile';
             }
             window.location.href = nextUrl;
