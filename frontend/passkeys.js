@@ -15,7 +15,12 @@ const sendToServerForVerificationAndLogin = async (response) => {
         // Show UI appropriate for the `verified` status
         if (verificationJSON && verificationJSON.verified) {
             console.log("success")
-            window.location.href = '/profile';
+            const urlParams = new URLSearchParams(window.location.search);
+            let nextUrl = urlParams.get('next');
+            if (nextUrl === null) {
+                nextUrl = '/profile';
+            }
+            window.location.href = nextUrl;
         } else {
             console.log("error", verificationJSON);
         }
