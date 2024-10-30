@@ -195,9 +195,22 @@ class NewsEvent(DebuggableModel):
     date = models.DateTimeField(auto_now_add=True)
 
 
+# fix for Django 5 UUID column behavior change:
+# https://docs.djangoproject.com/en/5.0/releases/5.0/#migrating-existing-uuidfield-on-mariadb-10-7
+class Char32UUIDField(models.UUIDField):
+    def db_type(self, connection):
+        return "char(32)"
+
+    def get_db_prep_value(self, value, connection, prepared=False):
+        value = super().get_db_prep_value(value, connection, prepared)
+        if value is not None:
+            value = value.hex
+        return value
+
+
 class LoginLink(DebuggableModel):
     user = models.ForeignKey(MergedUser, models.CASCADE, blank=False, null=False, related_name="loginlinks")
-    code = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    code = Char32UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
 
 class UserPasskey(models.Model):
