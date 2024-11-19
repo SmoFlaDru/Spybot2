@@ -3,6 +3,10 @@ services:
     build:
       dockerfile: Dockerfile
     restart: unless-stopped
+    volumes:
+      - static_files:/spybot_static
+    expose:
+      - 8000
   caddy:
     image: 'caddy:2.8-alpine'
     restart: unless-stopped
@@ -10,14 +14,16 @@ services:
       - NET_ADMIN
     ports:
       - "80:80"
-      - "443:443"
-      - "443:443/udp"
+#      - "443:443"
+#      - "443:443/udp"
     volumes:
       - $PWD/Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+      - static_files:/spybot_static
 volumes:
   caddy_data:
   caddy_config:
+  static_files:
 
 
