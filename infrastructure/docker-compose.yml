@@ -13,7 +13,7 @@ services:
     cap_add:
       - NET_ADMIN
     ports:
-      - "80:80"
+      - "20001:20001"
     volumes:
       - $PWD/Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
