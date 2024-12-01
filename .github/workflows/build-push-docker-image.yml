@@ -58,12 +58,12 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       # This step generates an artifact attestation for the image, which is an unforgeable statement about where and how it was built. It increases supply chain security for people who consume the image. For more information, see "[AUTOTITLE](/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds)."
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v1
-        with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
-          subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
+#      - name: Generate artifact attestation
+#        uses: actions/attest-build-provenance@v1
+#        with:
+#          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+#          subject-digest: ${{ steps.push.outputs.digest }}
+#          push-to-registry: true
   deploy:
     name: Deploy to Server
     needs: build-push-deploy-image
@@ -71,14 +71,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: upload infrastructure files
-        uses: appleboy/scp-action@v0.1.3
+        uses: appleboy/scp-action@v0.1.8
         with:
           host: ${{ secrets.SSH_SECONDARY_HOST }}
           username: ${{ secrets.SSH_SECONDARY_USERNAME }}
           password: ${{ secrets.SSH_SECONDARY_PASSWORD }}
           port: ${{ secrets.SSH_SECONDARY_PORT }}
           source: infrastructure/*
-          target: .
+          target: spybot
+          strip_components: 1
       - name: execute remote ssh commands
         uses: appleboy/ssh-action@master
         env:
@@ -91,6 +92,6 @@ jobs:
           port: ${{ secrets.SSH_SECONDARY_PORT }}
           envs: SECRET,COMMIT_SHA
           script: |
-            cd Spybot2
+            cd spybot
             echo "$SECRET" > .env
             docker-compose -f docker-compose-deploy.yml up
