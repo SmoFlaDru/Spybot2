@@ -1,0 +1,16 @@
+{
+	auto_https off
+}
+:80 {
+    bind 0.0.0.0
+    # Serve requests to /static/* from a static files
+    handle_path /static/* {
+        root * /spybot_static/
+        file_server
+    }
+
+    # Reverse proxy all other requests to Django application
+    handle {
+        reverse_proxy spybot:8000
+    }
+}

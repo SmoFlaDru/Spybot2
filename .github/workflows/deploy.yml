@@ -1,26 +1,26 @@
-name: Deploy to staging
-
-on:
-  push:
-    branches: [ "master" ]
-  workflow_dispatch:
-jobs:
-  deploy:
-    name: Deploy to Server
-    runs-on: ubuntu-latest
-    steps:
-      - name: execute remote ssh commands
-        uses: appleboy/ssh-action@master
-        env:
-          SECRET: ${{ secrets.ENV_FILE }}
-        with:
-          host: ${{ secrets.LINUX_HOST }}
-          username: ${{ secrets.LINUX_USERNAME }}
-          password: ${{ secrets.LINUX_PASSWORD }}
-          port: ${{ secrets.LINUX_PORT }}
-          envs: SECRET
-          script: |
-            cd Spybot2
-            echo "$SECRET" > .env
-            chmod +x deploy.sh
-            ./deploy.sh
+#name: Deploy to staging
+#
+#on:
+#  push:
+#    branches: [ "master" ]
+#  workflow_dispatch:
+#jobs:
+#  deploy:
+#    name: Deploy to Server
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: execute remote ssh commands
+#        uses: appleboy/ssh-action@master
+#        env:
+#          SECRET: ${{ secrets.ENV_FILE }}
+#        with:
+#          host: ${{ secrets.LINUX_HOST }}
+#          username: ${{ secrets.LINUX_USERNAME }}
+#          password: ${{ secrets.LINUX_PASSWORD }}
+#          port: ${{ secrets.LINUX_PORT }}
+#          envs: SECRET
+#          script: |
+#            cd Spybot2
+#            echo "$SECRET" > .env
+#            chmod +x deploy.sh
+#            ./deploy.sh

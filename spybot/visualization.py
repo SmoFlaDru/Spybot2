@@ -25,7 +25,7 @@ def daily_activity(days: int):
                 WHERE
                     startTime > DATE_SUB(CURDATE(), INTERVAL %(days)s DAY)
                     AND endTime IS NOT NULL
-                    AND channel.name NOT IN ('bei\\\sBedarf\\\sanstupsen', 'AFK')
+                    AND channel.name NOT IN ('bei\\sBedarf\\sanstupsen', 'AFK')
                 GROUP BY date
                 ORDER BY date
             ),
@@ -38,7 +38,7 @@ def daily_activity(days: int):
                 WHERE
                     startTime > DATE_SUB(CURDATE(), INTERVAL %(days)s DAY)
                     AND endTime IS NOT NULL
-                    AND channel.name IN ('bei\\\sBedarf\\\sanstupsen', 'AFK')
+                    AND channel.name IN ('be\\sBedarf\\sanstupsen', 'AFK')
                 GROUP BY date
                 ORDER BY date
             )
@@ -320,7 +320,7 @@ def user_month_activity(merged_user_id: int):
             INNER JOIN TSUser user ON TSUserActivity.tsUserID = user.id
             WHERE startTime > MAKEDATE(2016,1)
                 AND endTime IS NOT NULL
-                AND channel.name NOT IN ('bei\\\sBedarf\\\sanstupsen', 'AFK')
+                AND channel.name NOT IN ('bei\\sBedarf\\sanstupsen', 'AFK')
                 AND user.merged_user_id = %s
             GROUP BY year, month
             ORDER BY year, month),

@@ -21,6 +21,7 @@ dependencies = [
     "user-agents ~=2.2",
     "django-bootstrap5 ~=24.2",
     "sentry-sdk>=2.13.0",
+    "gunicorn>=23.0.0",
 ]
 
 
