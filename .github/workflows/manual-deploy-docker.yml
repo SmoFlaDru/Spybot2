@@ -1,12 +1,10 @@
 name: Deploy to server via docker image
 
 on:
-  push:
-    branches: [ "master", "workflow_dispatch" ]
   workflow_dispatch:
 jobs:
   deploy:
-    name: Deploy to Server
+    name: Deploy to Server manually
     needs: build-push-deploy-image
     runs-on: ubuntu-latest
     steps:
