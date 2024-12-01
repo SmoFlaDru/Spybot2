@@ -1,7 +1,7 @@
 {
 	auto_https off
 }
-:80 {
+:20001 {
     bind 0.0.0.0
     # Serve requests to /static/* from a static files
     handle_path /static/* {
