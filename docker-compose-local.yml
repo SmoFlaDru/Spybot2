@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     volumes:
       - static_files:/spybot_static
-      - $PWD/.env:/.env
+      - $PWD/.env:/app/.env
     expose:
       - 8000
   caddy:
@@ -18,13 +18,26 @@ services:
 #      - "443:443"
 #      - "443:443/udp"
     volumes:
-      - $PWD/Caddyfile:/etc/caddy/Caddyfile
+      - $PWD/infrastructure/Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
       - static_files:/spybot_static
+  db:
+    image: postgres:17.2
+    restart: always
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    secrets:
+      - db_password
 volumes:
   caddy_data:
   caddy_config:
   static_files:
+  pg_data:
+secrets:
+  db_password:
+    file: secrets/db_password.txt
 
 

@@ -143,3 +143,5 @@ GitHub.sublime-settings
 # frontend
 node_modules/
 frontend/output
+
+secrets/

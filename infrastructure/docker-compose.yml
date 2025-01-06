@@ -19,9 +19,21 @@ services:
       - caddy_data:/data
       - caddy_config:/config
       - static_files:/spybot_static
+  db:
+    image: postgres:17.2
+    restart: always
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    volumes:
+      - spybot_pg_data:/var/lib/postgresql/data
+    secrets:
+      - db_password
 volumes:
   caddy_data:
   caddy_config:
   static_files:
+secrets:
+  db_password:
+    file: secrets/db_password.txt
 
 

@@ -15,11 +15,6 @@ class Recorder:
         self.ts = TS()
         self.client = Client(self.ts)
 
-    def start(self):
-        if settings.RECORDER_ENABLED:
-            thread = Thread(target=self.run, daemon=True)
-            thread.start()
-
     def run(self):
 
         while True:

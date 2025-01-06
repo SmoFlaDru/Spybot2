@@ -13,7 +13,6 @@ dependencies = [
     "Django ~=5.1",
     "ts3 ~=2.0.0b3",
     "django-environ ~=0.11.2",
-    "mysqlclient ~=2.2",
     "django-crontab ~=0.7.1",
     "num2words ~=0.5.12",
     "requests ~=2.31",
@@ -22,13 +21,14 @@ dependencies = [
     "django-bootstrap5 ~=24.2",
     "sentry-sdk>=2.13.0",
     "gunicorn>=23.0.0",
+    "psycopg2-binary>=2.9.10",
 ]
 
 
 [tool.uv]
 dev-dependencies = [
     "unittest-xml-reporting ~=3.2",
-    "testcontainers[mysql]>=4.8.0",
+    "testcontainers[postgres]>=4.9.0",
 ]
 
 [tool.setuptools]
