@@ -14,8 +14,6 @@ ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000
 
-# Install mysqlclient debian package dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends python3-dev default-libmysqlclient-dev build-essential pkg-config && rm -rf /var/lib/apt/lists/*
 RUN pip install uv
 COPY pyproject.toml pyproject.toml
 RUN uv sync

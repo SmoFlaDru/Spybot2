@@ -50,7 +50,7 @@ SENTRY_DSN = env('SENTRY_DSN', default="")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', False)
 
-ALLOWED_HOSTS = [SERVER_IP, TS_IP, 'localhost', '127.0.0.1', 'spybot.localhost.direct']
+ALLOWED_HOSTS = [SERVER_IP, TS_IP, 'localhost', '127.0.0.1', 'spybot.localhost.direct', '192.168.59.100']
 
 CSRF_TRUSTED_ORIGINS = [f"https://{SERVER_IP}"]
 
