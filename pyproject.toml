@@ -28,7 +28,7 @@ dependencies = [
 [tool.uv]
 dev-dependencies = [
     "unittest-xml-reporting ~=3.2",
-    "testcontainers[mysql]>=4.8.0",
+    "testcontainers[postgres]>=4.9.0",
 ]
 
 [tool.setuptools]
