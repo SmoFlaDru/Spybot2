@@ -85,7 +85,7 @@ class Migration(migrations.Migration):
             name='TSID',
             fields=[
                 ('ts_id', models.CharField(db_column='tsID', max_length=32, primary_key=True, serialize=False)),
-                ('tsuser', models.ForeignKey(blank=True, db_column='tsUserID', null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='spybot.tsuser')),
+                ('tsuser', models.ForeignKey(blank=True, db_column='tsuserid', null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='spybot.tsuser')),
             ],
             options={
                 'db_table': 'tsid',
@@ -159,7 +159,7 @@ class Migration(migrations.Migration):
                 ('joined', models.BooleanField(default=False)),
                 ('disconnect_id', models.IntegerField(blank=True, db_column='discID', null=True)),
                 ('channel', models.ForeignKey(db_column='cID', on_delete=django.db.models.deletion.DO_NOTHING, to='spybot.tschannel')),
-                ('tsuser', models.ForeignKey(blank=True, db_column='tsUserID', null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='spybot.tsuser')),
+                ('tsuser', models.ForeignKey(blank=True, db_column='tsuserid', null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='spybot.tsuser')),
             ],
             options={
                 'db_table': 'tsuseractivity',
