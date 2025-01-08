@@ -42,7 +42,7 @@ class TSChannel(DebuggableModel):
 
     class Meta:
         managed = True
-        db_table = 'TSChannel'
+        db_table = 'tschannel'
 
 
 # Django doesn't have an unsigned int auto (auto-incremented) field type natively, so we provide our own
@@ -124,7 +124,7 @@ class TSUser(DebuggableModel):
 
     class Meta:
         managed = True
-        db_table = 'TSUser'
+        db_table = 'tsuser'
 
     def last_login_time(self):
         return getattr(TSUserActivity.objects.filter(tsuser=self, end_time__isnull=False).order_by('-end_time').first(), 'end_time', None)
@@ -136,7 +136,7 @@ class TSID(DebuggableModel):
 
     class Meta:
         managed = True
-        db_table = 'TSID'
+        db_table = 'tsid'
 
 
 class TSUserActivity(DebuggableModel):
@@ -150,7 +150,7 @@ class TSUserActivity(DebuggableModel):
 
     class Meta:
         managed = True
-        db_table = 'TSUserActivity'
+        db_table = 'tsuseractivity'
         indexes = [
             models.Index(fields=['start_time'])
         ]
@@ -161,7 +161,7 @@ class HourlyActivity(DebuggableModel):
     activity_hours = models.FloatField(null=False)
 
     class Meta:
-        db_table = 'HourlyActivity'
+        db_table = 'hourlyactivity'
         indexes = [
             models.Index(fields=['datetime']),
         ]
