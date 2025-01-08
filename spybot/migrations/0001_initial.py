@@ -49,7 +49,7 @@ class Migration(migrations.Migration):
                 ('order', models.PositiveIntegerField()),
             ],
             options={
-                'db_table': 'TSChannel',
+                'db_table': 'tschannel',
                 'managed': True,
             },
         ),
@@ -63,7 +63,7 @@ class Migration(migrations.Migration):
                 ('merged_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='tsusers', to=settings.AUTH_USER_MODEL)),
             ],
             options={
-                'db_table': 'TSUser',
+                'db_table': 'tsuser',
                 'managed': True,
             },
         ),
@@ -88,7 +88,7 @@ class Migration(migrations.Migration):
                 ('tsuser', models.ForeignKey(blank=True, db_column='tsUserID', null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='spybot.tsuser')),
             ],
             options={
-                'db_table': 'TSID',
+                'db_table': 'tsid',
                 'managed': True,
             },
         ),
@@ -133,7 +133,7 @@ class Migration(migrations.Migration):
                 ('activity_hours', models.FloatField()),
             ],
             options={
-                'db_table': 'HourlyActivity',
+                'db_table': 'hourlyactivity',
                 'indexes': [models.Index(fields=['datetime'], name='HourlyActiv_datetim_96f0af_idx')],
             },
         ),
@@ -162,7 +162,7 @@ class Migration(migrations.Migration):
                 ('tsuser', models.ForeignKey(blank=True, db_column='tsUserID', null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='spybot.tsuser')),
             ],
             options={
-                'db_table': 'TSUserActivity',
+                'db_table': 'tsuseractivity',
                 'managed': True,
                 'indexes': [models.Index(fields=['start_time'], name='TSUserActiv_startTi_95ea75_idx')],
             },
