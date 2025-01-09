@@ -18,33 +18,33 @@ def daily_activity(days: int):
         cursor.execute("""
             WITH active_data AS (
                 SELECT
-                    DATE_FORMAT(CAST(startTime AS date), %(date_format)s) AS date,
-                    SUM(TIMESTAMPDIFF(SECOND, startTime, endTime)) / 3600 AS time_hours
+                    TO_CHAR(starttime, 'YYYY-MM-DD') AS date,
+                    SUM(EXTRACT(EPOCH FROM AGE(endTime, startTime))) / 3600 AS time_hours
                 FROM TSUserActivity
                 INNER JOIN TSChannel channel on TSUserActivity.cID = channel.id
                 WHERE
-                    startTime > DATE_SUB(CURDATE(), INTERVAL %(days)s DAY)
+                    startTime > CURRENT_DATE - INTERVAL '%(days)s days'
                     AND endTime IS NOT NULL
-                    AND channel.name NOT IN ('bei\\sBedarf\\sanstupsen', 'AFK')
+                    AND channel.name NOT IN ('bei\sBedarf\sanstupsen', 'AFK')
                 GROUP BY date
                 ORDER BY date
             ),
             afk_data AS (
                 SELECT
-                    DATE_FORMAT(CAST(startTime AS date), %(date_format)s) AS date,
-                    SUM(TIMESTAMPDIFF(SECOND, startTime, endTime)) / 3600 AS time_hours
+                    TO_CHAR(startTime, 'YYYY-MM-DD') AS date,
+                    SUM(EXTRACT(EPOCH FROM AGE(endTime, startTime))) / 3600 AS time_hours
                 FROM TSUserActivity
                 INNER JOIN TSChannel channel on TSUserActivity.cID = channel.id
                 WHERE
-                    startTime > DATE_SUB(CURDATE(), INTERVAL %(days)s DAY)
+                    startTime > CURRENT_DATE - INTERVAL '%(days)s days'
                     AND endTime IS NOT NULL
-                    AND channel.name IN ('be\\sBedarf\\sanstupsen', 'AFK')
+                    AND channel.name IN ('bei\sBedarf\sanstupsen', 'AFK')
                 GROUP BY date
                 ORDER BY date
             )
             SELECT active_data.date, 
-                CAST(active_data.time_hours AS DOUBLE) AS active_hours, 
-                COALESCE(CAST(afk_data.time_hours AS DOUBLE), 0) AS afk_hours
+                CAST(active_data.time_hours AS DOUBLE PRECISION) AS active_hours, 
+                COALESCE(CAST(afk_data.time_hours AS DOUBLE PRECISION), 0) AS afk_hours
             FROM active_data
             LEFT OUTER JOIN afk_data ON active_data.date = afk_data.date;
         """, {"days": days, "date_format": date_format})
@@ -54,7 +54,7 @@ def daily_activity(days: int):
 def time_of_day_histogram():
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT DATE_FORMAT(datetime, '%H') as hour, AVG(activity_hours) AS amplitude
+            SELECT TO_CHAR(datetime, 'HH24') AS hour, AVG(activity_hours) AS amplitude
             FROM HourlyActivity
             GROUP BY hour;
         """)
@@ -71,10 +71,10 @@ def top_users_of_week() -> List[TopUserResult]:
     with connection.cursor() as cursor:
         cursor.execute("""
             WITH startOfWeek AS (
-                SELECT DATE_ADD(UTC_DATE(), INTERVAL(-WEEKDAY(UTC_DATE())) DAY) AS date
+                SELECT DATE_TRUNC('week', CURRENT_DATE)::DATE AS date
             )
             SELECT
-                SUM(TIMESTAMPDIFF(SECOND, startTime, COALESCE(endTime, UTC_TIMESTAMP()))) / 3600 AS time,
+                SUM(EXTRACT(EPOCH FROM AGE(COALESCE(endTime, NOW()), startTime))) / 3600 AS time,
                 MU.name AS user_name,
                 MU.id AS user_id
             FROM startOfWeek, TSUserActivity
@@ -94,16 +94,13 @@ def week_activity_trend():
             WITH
                 currentWeek AS (
                     SELECT
-                        CAST(DATE_ADD(UTC_DATE(), INTERVAL(-WEEKDAY(UTC_DATE())) DAY) AS datetime) AS start,
-                        DATE_ADD(DATE_ADD(DATE_ADD(
-                            UTC_TIMESTAMP(), INTERVAL(-MINUTE(UTC_TIMESTAMP())) MINUTE),
-                            INTERVAL(-SECOND(UTC_TIMESTAMP())) SECOND),
-                            INTERVAL(-1) HOUR) AS end
+                        DATE_TRUNC('week', CURRENT_DATE) AS start,
+                        DATE_TRUNC('week', CURRENT_DATE) + INTERVAL '1 week' AS end
                 ),
                 compareWeek AS (
                     SELECT
-                        DATE_ADD(currentWeek.end, INTERVAL -1 WEEK) AS end,
-                        DATE_ADD(currentWeek.start, INTERVAL -1 WEEK) AS start
+                        DATE_ADD(currentWeek.end, INTERVAL '-1 WEEK') AS end,
+                        DATE_ADD(currentWeek.start, INTERVAL '-1 WEEK') AS start
                     FROM currentWeek
                 ),
                 currentWeekData AS (
@@ -118,13 +115,13 @@ def week_activity_trend():
                     WHERE HourlyActivity.datetime >= compareWeek.start
                         AND HourlyActivity.datetime <= compareWeek.end
                 )
-            SELECT currentWeekData.sum AS current_week_sum, 
+            SELECT currentWeekData.sum AS current_week_sum,
                 compareWeekData.sum AS compare_week_sum,
                 currentWeekData.sum / compareWeekData.sum AS fraction,
                 CASE
                     WHEN currentWeekData.sum = 0 AND compareWeekData.sum = 0 THEN 0
                     WHEN compareWeekData.sum = 0 THEN 'infinity'
-                    ELSE 100 * ((currentWeekData.sum / compareWeekData.sum) - 1) 
+                    ELSE 100 * ((currentWeekData.sum / compareWeekData.sum) - 1)
                 END AS delta_percent
             FROM currentWeekData, compareWeekData;
         """)
@@ -135,17 +132,14 @@ def week_activity_comparison():
     with connection.cursor() as cursor:
         cursor.execute("""
             WITH currentWeek AS (
-                SELECT
-                    temp.start AS start,
-                    CAST(DATE_ADD(temp.start, INTERVAL 7 DAY) AS datetime) as end
-                FROM (
-                    SELECT CAST(DATE_ADD(UTC_DATE(), INTERVAL(-WEEKDAY(UTC_DATE())) DAY) AS datetime) AS start
-                ) temp
-            ),
+                    SELECT
+                        DATE_TRUNC('week', CURRENT_DATE) AS start,
+                        DATE_TRUNC('week', CURRENT_DATE) + INTERVAL '1 week' AS end
+                ),
             compareWeek AS (
                 SELECT
-                    DATE_ADD(currentWeek.end, INTERVAL -1 WEEK) AS end,
-                    DATE_ADD(currentWeek.start, INTERVAL -1 WEEK) AS start
+                    DATE_ADD(currentWeek.end, INTERVAL '-1 WEEK') AS end,
+                    DATE_ADD(currentWeek.start, INTERVAL '-1 WEEK') AS start
                 FROM currentWeek
             ),
             currentWeekData AS (
@@ -165,7 +159,7 @@ def week_activity_comparison():
                 FROM currentWeekData
             ),
             cumulateCompareWeekData AS (
-                SELECT datetime + INTERVAL 7 DAY AS datetime, activity_hours, SUM(activity_hours) OVER(ORDER BY datetime) AS cumulative_sum
+                SELECT datetime + INTERVAL '7 DAY' AS datetime, activity_hours, SUM(activity_hours) OVER(ORDER BY datetime) AS cumulative_sum
                 FROM compareWeekData
             )
             SELECT comp.datetime, cur.cumulative_sum AS hours_current, comp.cumulative_sum AS hours_compare
@@ -178,17 +172,19 @@ def week_activity_comparison():
 def channel_popularity():
     with connection.cursor() as cursor:
         cursor.execute("""
-            WITH absolute AS (
-                SELECT ROUND(SUM(TIMESTAMPDIFF(SECOND, startTime, endTime)) / 3600) AS hours,
+            WITH unfiltered AS (
+                SELECT ROUND(SUM(EXTRACT(EPOCH FROM AGE(endTime, startTime)) / 3600)) AS hours,
                     TSChannel.name
                 FROM TSUserActivity
                 INNER JOIN TSChannel on TSUserActivity.cID = TSChannel.id
-                WHERE startTime > DATE_ADD(UTC_TIMESTAMP(), INTERVAL -1 YEAR)
+                WHERE startTime > NOW() - INTERVAL '1 YEAR'
                     AND TSChannel.name NOT LIKE '%spacer%'
                 GROUP BY TSChannel.id
-                HAVING hours > 5
+            ), absolute AS (
+                SELECT * FROM unfiltered
+                WHERE hours > 5
             ), total_hours AS (
-                SELECT SUM(hours) as hours FROM absolute 
+                SELECT SUM(hours) as hours FROM absolute
             )
             SELECT
                 absolute.name,
