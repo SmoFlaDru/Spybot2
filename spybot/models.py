@@ -36,7 +36,7 @@ class DebuggableModel(models.Model):
 
 
 class TSChannel(DebuggableModel):
-    id = models.PositiveIntegerField(primary_key=True, null=False)
+    id = models.PositiveIntegerField(primary_key=True)
     name = models.CharField(max_length=64, blank=True, null=True)
     order = models.PositiveIntegerField(null=False)
 
@@ -140,7 +140,7 @@ class TSID(DebuggableModel):
 
 
 class TSUserActivity(DebuggableModel):
-    id = models.IntegerField(primary_key=True, null=False)
+    id = models.IntegerField(primary_key=True)
     tsuser = models.ForeignKey(TSUser, models.DO_NOTHING, db_column='tsuserid', blank=True, null=True)  # Field name made lowercase.
     start_time = models.DateTimeField(db_column='starttime', blank=True, null=True)  # Field name made lowercase.
     end_time = models.DateTimeField(db_column='endtime', blank=True, null=True)  # Field name made lowercase.
