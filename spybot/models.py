@@ -140,7 +140,7 @@ class TSID(DebuggableModel):
 
 
 class TSUserActivity(DebuggableModel):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     tsuser = models.ForeignKey(TSUser, models.DO_NOTHING, db_column='tsuserid', blank=True, null=True)  # Field name made lowercase.
     start_time = models.DateTimeField(db_column='starttime', blank=True, null=True)  # Field name made lowercase.
     end_time = models.DateTimeField(db_column='endtime', blank=True, null=True)  # Field name made lowercase.

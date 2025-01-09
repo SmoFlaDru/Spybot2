@@ -56,7 +56,8 @@ def time_of_day_histogram():
         cursor.execute("""
             SELECT TO_CHAR(datetime, 'HH24') AS hour, AVG(activity_hours) AS amplitude
             FROM HourlyActivity
-            GROUP BY hour;
+            GROUP BY hour
+            ORDER BY hour;
         """)
         return cursor.fetchall()
 
