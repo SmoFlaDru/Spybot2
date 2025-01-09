@@ -1,3 +1,5 @@
 venv
 .venv
+.git
+.idea
 node_modules
