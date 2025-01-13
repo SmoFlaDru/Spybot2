@@ -202,16 +202,16 @@ def user_hall_of_fame():
             WITH total_time AS (
                 SELECT
                     spybot_mergeduser.id as user_id,
-                    spybot_mergeduser.name as user,
-                    SUM(TIMESTAMPDIFF(SECOND, TSUserActivity.startTime, COALESCE(TSUserActivity.endTime, UTC_TIMESTAMP()))) as time
+                    spybot_mergeduser.name as user_name,
+                    SUM(EXTRACT(EPOCH FROM AGE(COALESCE(TSUserActivity.endTime, NOW()), TSUserActivity.startTime))) as time
                 FROM TSUserActivity, TSUser, spybot_mergeduser
                 WHERE TSUserActivity.tsUserID = TSUser.id
                 AND spybot_mergeduser.id = TSUser.merged_user_id
-                GROUP BY TSUser.merged_user_id
+                GROUP BY TSUser.merged_user_id, spybot_mergeduser.name, spybot_mergeduser.id
             )
             SELECT
                 user_id,
-                user,
+                user_name AS "user",
                 time
             FROM total_time
             ORDER BY time DESC
@@ -226,38 +226,36 @@ def user(user_id: int):
         cursor.execute("""
             WITH user_time AS (
                 SELECT
-                    TSUserActivity.startTime as start,
-                    TSUserActivity.endTime as end,
+                    TSUserActivity.startTime as starttime,
+                    TSUserActivity.endTime as endtime,
                     TSUserActivity.cID as channel,
-                    tsUserID as user_ID
+                    tsUserID as user_ID,
+                    TSUser.merged_user_id AS mergeduserid
                 FROM TSUserActivity JOIN TSUser on TSUserActivity.tsUserID = TSUser.id
                 WHERE TSUser.merged_user_id = %s
-                ),
-                awards as (
-                    SELECT
-                        GROUP_CONCAT(DISTINCT TU.name) as names,
-                        sm.name as merged_username,
-                        MAX(TU.isCurrentlyOnline) as online,
-                        SUM(IF(points=1, 1, 0)) as bronze,
-                        SUM(IF(points=2, 1, 0)) as silver,
-                        SUM(IF(points=3, 1, 0)) as gold
-                    FROM spybot_award RIGHT JOIN TSUser TU on spybot_award.tsuser_id = TU.id
-                    JOIN spybot_mergeduser sm on TU.merged_user_id = sm.id
-                    WHERE TU.merged_user_id = %s
-                )
-            SELECT
-                SUM(IF(channel in (7, 13), TIMESTAMPDIFF(SECOND, start, COALESCE(end, UTC_TIMESTAMP())), 0)) / 3600 as afk_time,
-                SUM(IF(channel not in (7, 13), TIMESTAMPDIFF(SECOND, start, COALESCE(end, UTC_TIMESTAMP())), 0)) / 3600 as online_time,
-                MAX(end) as last_seen,
-                MIN(start) as first_seen,
-                bronze,
-                silver,
-                gold,
-                online,
-                merged_username as user_name,
-                names
-            FROM user_time,
-                 awards;""", [user_id, user_id])
+            ), total_time AS (
+                SELECT
+                    SUM(CASE WHEN channel IN (7, 13) THEN EXTRACT(EPOCH FROM AGE(COALESCE(endtime, NOW()), starttime)) ELSE 0 END) / 3600 as afk_time,
+                    SUM(CASE WHEN channel NOT IN (7, 13) THEN EXTRACT(EPOCH FROM AGE(COALESCE(endtime, NOW()), starttime)) ELSE 0 END) / 3600 as online_time,
+                    MAX(endtime) as last_seen,
+                    MIN(starttime) as first_seen
+                FROM user_time
+                GROUP BY mergeduserid
+            ), awards as (
+                SELECT
+                    string_agg(DISTINCT TU.name, ',') as names,
+                    sm.name as merged_username,
+                    bool_or(TU.isCurrentlyOnline) as online,
+                    SUM(CASE WHEN points=1 THEN 1 ELSE 0 END) as bronze,
+                    SUM(CASE WHEN points=2 THEN 1 ELSE 0 END) as silver,
+                    SUM(CASE WHEN points=3 THEN 1 ELSE 0 END) as gold
+                FROM spybot_award RIGHT JOIN TSUser TU on spybot_award.tsuser_id = TU.id
+                JOIN spybot_mergeduser sm on TU.merged_user_id = sm.id
+                WHERE TU.merged_user_id = %s
+                GROUP BY TU.merged_user_id, sm.name
+            )
+            SELECT *
+            FROM total_time, awards;""", [user_id, user_id])
 
         return dictfetchall(cursor)
 
@@ -277,24 +275,24 @@ def user_longest_streak(merged_user_id: int):
             cte AS (
                 SELECT
                     day,
-                    IFNULL(DATE(day) > DATE(LAG(day, 1) OVER (ORDER BY day)) + INTERVAL 1 DAY, 1) AS startsStreak
+                    COALESCE(DATE(day) > DATE(LAG(day, 1) OVER (ORDER BY day)) + INTERVAL '1 DAY', true) AS startsStreak
                 FROM dates
             ),
             result AS (
                 SELECT
                     dates.day AS start_day,
-                    SUM(startsStreak) AS streakGroup,
-                    ROW_NUMBER() OVER (PARTITION BY SUM(startsStreak) ORDER BY dates.day) AS runningStreakLength,
-                    COUNT(*) OVER (PARTITION BY SUM(startsStreak)) AS totalStreakLength
+                    SUM(startsStreak::int) AS streakGroup,
+                    ROW_NUMBER() OVER (PARTITION BY SUM(startsStreak::int) ORDER BY dates.day) AS runningStreakLength,
+                    COUNT(*) OVER (PARTITION BY SUM(startsStreak::int)) AS totalStreakLength
                 FROM
                     dates
-                    JOIN cte ON dates.day >= cte.day AND cte.startsStreak = 1
+                    JOIN cte ON dates.day >= cte.day AND cte.startsStreak = true
                 GROUP BY dates.day
                 ORDER BY dates.day
             )
             SELECT
             start_day,
-            DATE_ADD(start_day, INTERVAL (totalStreakLength - 1) DAY) AS end_day,
+            start_day + make_interval(days => totalStreakLength::int - 1) AS end_day,
             totalStreakLength AS length
             FROM result
             WHERE runningStreakLength = 1
@@ -309,27 +307,31 @@ def user_month_activity(merged_user_id: int):
         cursor.execute("""
         WITH data AS (
             SELECT
-                YEAR(startTime) AS year,
-                MONTH(startTime) AS month,
-                SUM(TIMESTAMPDIFF(SECOND, startTime, endTime)) / 3600 AS time_hours
+                DATE_PART('year', startTime) AS year,
+                DATE_PART('month', startTime) AS month,
+                SUM(EXTRACT(EPOCH FROM AGE(endTime, startTime))) / 3600 AS time_hours
             FROM TSUserActivity
                        INNER JOIN TSChannel channel on TSUserActivity.cID = channel.id
-            INNER JOIN TSUser user ON TSUserActivity.tsUserID = user.id
-            WHERE startTime > MAKEDATE(2016,1)
+            INNER JOIN TSUser ON TSUserActivity.tsUserID = TSUSER.id
+            WHERE startTime > MAKE_DATE(2016, 1, 1)
                 AND endTime IS NOT NULL
-                AND channel.name NOT IN ('bei\\sBedarf\\sanstupsen', 'AFK')
-                AND user.merged_user_id = %s
+                AND channel.name NOT IN ('bei\sBedarf\sanstupsen', 'AFK')
+                AND TSUser.merged_user_id = :user
             GROUP BY year, month
             ORDER BY year, month),
         months AS (
             WITH RECURSIVE nrows(date) AS (
-                SELECT MAKEDATE(2016,1) UNION ALL
-                SELECT DATE_ADD(date,INTERVAL 1 MONTH) FROM nrows WHERE date<=DATE_SUB(CURRENT_DATE, INTERVAL 1 MONTH)
+                SELECT MAKE_DATE(2016, 1, 1)::timestamptz UNION ALL
+                SELECT date + INTERVAL '1 MONTH' FROM nrows WHERE date<= CURRENT_DATE - INTERVAL '1 MONTH'
             )
             SELECT date FROM nrows
         )
-        SELECT MONTH(months.date) AS month, YEAR(months.date) AS year, COALESCE(data.time_hours, 0) AS activity FROM months
-        LEFT JOIN data ON YEAR(months.date) = data.year AND MONTH(months.date) = data.month;
+        SELECT DATE_PART('month', months.date) AS month,
+               DATE_PART('year', months.date) AS year,
+               COALESCE(data.time_hours, 0) AS activity
+        FROM months
+        LEFT JOIN data ON DATE_PART('year', months.date) = data.year AND DATE_PART('month', months.date) = data.month
+        ORDER BY year, month;
         """, [merged_user_id])
         return dictfetchall(cursor)
 
