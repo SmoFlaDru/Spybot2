@@ -4,7 +4,7 @@ services:
     restart: unless-stopped
     volumes:
       - static_files:/home/spybot/spybot_static
-      - $PWD/.env:/app/.env
+      - $PWD/.env:/home/spybot/.env
     expose:
       - 8000
   caddy:

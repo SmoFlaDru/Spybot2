@@ -25,4 +25,5 @@ COPY --chown=spybot:spybot --from=frontend-build frontend/output frontend/output
 
 USER spybot
 RUN mkdir spybot_static
+RUN touch .env
 CMD ["sh", "run.sh"]
