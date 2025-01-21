@@ -1,14 +1,20 @@
 #!/bin/bash
 
-ls -a
-# activate venv
-#.venv/bin/activate
-
 # copy static files to directory for http server
 .venv/bin/python manage.py collectstatic --noinput
 
 # run DB migrations if necessary
 .venv/bin/python manage.py migrate
+
+# run celery worker process
+.venv/bin/python -m celery -A Spybot2 worker -l info &
+CELERY_WORKER_JOB=$!
+trap 'kill CELERY_WORKER_JOB' EXIT HUP TERM INT
+
+# run celery beat process
+.venv/bin/python -m celery -A Spybot2 beat -l info &
+CELERY_BEAT_JOB=$!
+trap 'kill CELERY_BEAT_JOB' EXIT HUP TERM INT
 
 # start recorder in background and terminate on script exit
 .venv/bin/python manage.py recorder &
