@@ -117,17 +117,20 @@ def record_hourly_activity():
         cursor.execute("""
             INSERT INTO HourlyActivity(datetime, activity_hours)
             WITH startOfHour AS (
-                SELECT UTC_TIMESTAMP - INTERVAL second(UTC_TIMESTAMP) SECOND - INTERVAL minute(UTC_TIMESTAMP) MINUTE AS stamp
+                SELECT DATE_TRUNC('hour', NOW()) - INTERVAL '6' HOUR AS stamp
+            ),
+            activityHours AS (
+                SELECT
+                    CAST(COALESCE(SUM(
+                        EXTRACT(EPOCH FROM AGE(
+                           COALESCE(endTime, NOW()),
+                            CASE WHEN startOfHour.stamp > startTime THEN startOfHour.stamp ELSE startTime END
+                        ))
+                    ), 0) AS FLOAT) / 3600 AS activity_hours
+                FROM TSUserActivity, startOfHour
+                WHERE endTime IS NULL OR endTime > startOfHour.stamp
             )
-            SELECT startOfHour.stamp AS datetime,
-                CAST(COALESCE(SUM(
-                    TIMESTAMPDIFF(SECOND,
-                        IF(startOfHour.stamp > startTime, startOfHour.stamp, startTime),
-                        COALESCE(endTime, UTC_TIMESTAMP)
-                    )
-                ), 0) AS FLOAT) / 3600 AS activity_hours
-            FROM TSUserActivity, startOfHour
-            WHERE endTime IS NULL
-                OR endTime > startOfHour.stamp;
+            SELECT startOfHour.stamp, activityHours.activity_hours
+            FROM startOfHour, activityHours;
         """)
     print("Done collecting activity")
