@@ -316,7 +316,7 @@ def user_month_activity(merged_user_id: int):
             WHERE startTime > MAKE_DATE(2016, 1, 1)
                 AND endTime IS NOT NULL
                 AND channel.name NOT IN ('bei\sBedarf\sanstupsen', 'AFK')
-                AND TSUser.merged_user_id = :user
+                AND TSUser.merged_user_id = %s
             GROUP BY year, month
             ORDER BY year, month),
         months AS (
