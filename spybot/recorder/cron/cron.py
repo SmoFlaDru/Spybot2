@@ -117,7 +117,7 @@ def record_hourly_activity():
         cursor.execute("""
             INSERT INTO HourlyActivity(datetime, activity_hours)
             WITH startOfHour AS (
-                SELECT DATE_TRUNC('hour', NOW()) - INTERVAL '6' HOUR AS stamp
+                SELECT DATE_TRUNC('hour', NOW()) AS stamp
             ),
             activityHours AS (
                 SELECT
