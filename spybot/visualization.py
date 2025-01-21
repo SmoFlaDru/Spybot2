@@ -15,7 +15,7 @@ def daily_activity(days: int):
     date_format = "%Y-%m-%d"
 
     with connection.cursor() as cursor:
-        cursor.execute("""
+        cursor.execute(r"""
             WITH active_data AS (
                 SELECT
                     TO_CHAR(starttime, 'YYYY-MM-DD') AS date,
@@ -95,35 +95,35 @@ def week_activity_trend():
             WITH
                 currentWeek AS (
                     SELECT
-                        DATE_TRUNC('week', CURRENT_DATE) AS start,
-                        DATE_TRUNC('week', CURRENT_DATE) + INTERVAL '1 week' AS end
+                        DATE_TRUNC('week', CURRENT_DATE) AS startWeek,
+                        DATE_TRUNC('week', CURRENT_DATE) + INTERVAL '1 week' AS endWeek
                 ),
                 compareWeek AS (
                     SELECT
-                        DATE_ADD(currentWeek.end, INTERVAL '-1 WEEK') AS end,
-                        DATE_ADD(currentWeek.start, INTERVAL '-1 WEEK') AS start
+                        currentWeek.endWeek - INTERVAL '1 WEEK' AS endWeek,
+                        currentWeek.startWeek - INTERVAL '1 WEEK' AS startWeek
                     FROM currentWeek
                 ),
                 currentWeekData AS (
                     SELECT COALESCE(SUM(activity_hours), 0) AS sum
                     FROM HourlyActivity, currentWeek
-                    WHERE HourlyActivity.datetime >= currentWeek.start
-                        AND HourlyActivity.datetime <= currentWeek.end
+                    WHERE HourlyActivity.datetime >= currentWeek.startWeek
+                        AND HourlyActivity.datetime <= currentWeek.endWeek
                 ),
                 compareWeekData AS (
                     SELECT COALESCE(SUM(activity_hours), 0) AS sum
                     FROM HourlyActivity, compareWeek
-                    WHERE HourlyActivity.datetime >= compareWeek.start
-                        AND HourlyActivity.datetime <= compareWeek.end
+                    WHERE HourlyActivity.datetime >= compareWeek.startWeek
+                        AND HourlyActivity.datetime <= compareWeek.endWeek
                 )
             SELECT currentWeekData.sum AS current_week_sum,
-                compareWeekData.sum AS compare_week_sum,
-                currentWeekData.sum / compareWeekData.sum AS fraction,
-                CASE
-                    WHEN currentWeekData.sum = 0 AND compareWeekData.sum = 0 THEN 0
-                    WHEN compareWeekData.sum = 0 THEN 'infinity'
-                    ELSE 100 * ((currentWeekData.sum / compareWeekData.sum) - 1)
-                END AS delta_percent
+            compareWeekData.sum AS compare_week_sum,
+            currentWeekData.sum / compareWeekData.sum AS fraction,
+            CASE
+                WHEN currentWeekData.sum = 0 AND compareWeekData.sum = 0 THEN 0
+                WHEN compareWeekData.sum = 0 THEN 'infinity'
+                ELSE 100 * ((currentWeekData.sum / compareWeekData.sum) - 1)
+            END AS delta_percent
             FROM currentWeekData, compareWeekData;
         """)
         return dictfetchall(cursor)
@@ -304,7 +304,7 @@ def user_longest_streak(merged_user_id: int):
 
 def user_month_activity(merged_user_id: int):
     with connection.cursor() as cursor:
-        cursor.execute("""
+        cursor.execute(r"""
         WITH data AS (
             SELECT
                 DATE_PART('year', startTime) AS year,
