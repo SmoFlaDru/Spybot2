@@ -1,10 +1,13 @@
 from celery import shared_task
 
+from spybot.recorder.cron import cron
+
 
 @shared_task()
 def end_of_week_awards():
-    print("shared week awards job")
+    cron.end_of_week_awards()
+
 
 @shared_task()
 def record_hourly_activity():
-    print("record hourly activity job")
+    cron.record_hourly_activity()
