@@ -1,10 +1,10 @@
 import traceback
-from threading import Thread
 
 from ts3 import TS3Error
 from ts3.response import TS3ParserError
 
-from Spybot2 import settings
+from django import db
+
 from spybot.recorder.client import Client
 from spybot.recorder.ts import TS
 
@@ -54,6 +54,10 @@ class Recorder:
                 try:
                     (event_type, event) = self.ts.wait_for_event()
                     print(f"new Event of type {event_type}: {event}")
+
+                    # fix for closed database connection
+                    # https://stackoverflow.com/a/78573290
+                    db.close_old_connections()
 
                     # parse and store in db
                     self.process_event(event_type, event)
