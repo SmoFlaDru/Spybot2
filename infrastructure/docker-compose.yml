@@ -28,6 +28,8 @@ services:
       - spybot_pg_data:/var/lib/postgresql/data
     secrets:
       - db_password
+    ports:
+      - "127.0.0.1:5432:5432"
   redis:
     image: redis:7.4.2-bookworm
 volumes:
