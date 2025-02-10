@@ -96,7 +96,7 @@ def week_activity_trend():
                 currentWeek AS (
                     SELECT
                         DATE_TRUNC('week', CURRENT_DATE) AS startWeek,
-                        DATE_TRUNC('week', CURRENT_DATE) + INTERVAL '1 week' AS endWeek
+                        DATE_TRUNC('hour', NOW()) - INTERVAL '1 hour' endWeek
                 ),
                 compareWeek AS (
                     SELECT
@@ -139,8 +139,8 @@ def week_activity_comparison():
                 ),
             compareWeek AS (
                 SELECT
-                    DATE_ADD(currentWeek.end, INTERVAL '-1 WEEK') AS end,
-                    DATE_ADD(currentWeek.start, INTERVAL '-1 WEEK') AS start
+                    currentWeek.end - INTERVAL '1 WEEK' AS end,
+                    currentWeek.start - INTERVAL '1 WEEK' AS start
                 FROM currentWeek
             ),
             currentWeekData AS (
