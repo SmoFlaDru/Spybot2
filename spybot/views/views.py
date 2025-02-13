@@ -104,8 +104,8 @@ def widget_legacy(request):
     inactive_clients = []
     res = {}
     for session in sessions:
-        user_name = session.tsuser_id.name
-        channel_name = session.channel_id.name
+        user_name = session.tsuser.name
+        channel_name = session.channel.name
         if channel_name == "bei Bedarf anstupsen" or channel_name == "AFK":
             inactive_clients.append(user_name)
         else:
