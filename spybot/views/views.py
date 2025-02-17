@@ -5,22 +5,24 @@ from typing import List
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from django.http import JsonResponse, HttpResponse, Http404, HttpResponseForbidden
-from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponse, HttpResponseForbidden
+from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
 from spybot import visualization
-
-from spybot.forms import TimeRangeForm, AddSteamIDForm
+from spybot.forms import AddSteamIDForm, TimeRangeForm
+from spybot.models import (
+    MergedUser,
+    NewsEvent,
+    SteamID,
+    TSChannel,
+    TSUserActivity,
+    UserPasskey,
+)
 from spybot.remote.steam_api import get_steam_user_playing_info
-from spybot.views.fragments.activity_chart import activity_chart_data
-from spybot.models import TSChannel, TSUserActivity, NewsEvent, MergedUser, UserPasskey, SteamID
 from spybot.templatetags import ts_filters
-
-from Spybot2 import settings
-import requests
-
-from spybot.views.common import get_user, get_context
+from spybot.views.common import get_context, get_user
+from spybot.views.fragments.activity_chart import activity_chart_data
 from spybot.views.fragments.profile_steamids import profile_steamids_data
 
 
@@ -97,22 +99,6 @@ def live(request):
     return render(request, 'spybot/live.html', {'clients': clients, 'channels': channels})
 
 
-def widget_legacy(request):
-    sessions = TSUserActivity.objects.filter(end_time=None)
-
-    active_clients = []
-    inactive_clients = []
-    res = {}
-    for session in sessions:
-        user_name = session.tsuser.name
-        channel_name = session.channel.name
-        if channel_name == "bei Bedarf anstupsen" or channel_name == "AFK":
-            inactive_clients.append(user_name)
-        else:
-            active_clients.append(user_name)
-    res["activeClients"] = active_clients
-    res["inactiveClients"] = inactive_clients
-    return JsonResponse(res)
 
 
 def timeline(request):
