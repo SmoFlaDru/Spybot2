@@ -116,7 +116,7 @@ def widget_legacy(request):
 
 
 def timeline(request):
-    form = TimeRangeForm(request.POST or {})
+    form = TimeRangeForm(request.GET or {})
     form.is_valid()
     time_hours = int(form.cleaned_data.get('range'))
 
