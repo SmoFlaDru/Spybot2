@@ -1,8 +1,10 @@
 import json
 
+from django.http.request import HttpRequest
 from django.test import TestCase
-from spybot.models import TSUserActivity, TSUser, TSChannel
-from spybot.api import widget_legacy, live_api
+
+from spybot.api import live_api, widget_legacy
+from spybot.models import TSChannel, TSUser, TSUserActivity
 
 
 class ApiTestCase(TestCase):
@@ -17,25 +19,23 @@ class ApiTestCase(TestCase):
         TSUserActivity.objects.create(tsuser=user_b, channel=channel_b, end_time=None)
 
     def test_legacy_widget(self):
-        result = widget_legacy(None)
+        result = widget_legacy(HttpRequest())
         data = json.loads(result.content)
 
         self.assertEqual(data["activeClients"], ["userA"])
         assert data["inactiveClients"] == ["userB"]
 
     def test_live_view(self):
-        result = live_api(None)
+        result = live_api(HttpRequest())
         data = json.loads(result.content)
 
         self.assertEqual(
             data,
-            {'clients': [
-                {'channel_id': 3, 'name': 'userA'},
-                 {'channel_id': 4, 'name': 'userB'}
-             ],
-             'channels': [
-                 {'id': 3, 'name': 'channelA'},
-                 {'id': 4, 'name': 'AFK'}
-             ]
-            }
+            {
+                "clients": [
+                    {"channel_id": 3, "name": "userA"},
+                    {"channel_id": 4, "name": "userB"},
+                ],
+                "channels": [{"id": 3, "name": "channelA"}, {"id": 4, "name": "AFK"}],
+            },
         )

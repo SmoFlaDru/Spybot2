@@ -6,7 +6,7 @@ from spybot.schemas import LiveResponse, TSChannelSchema, TSUserSchema
 from .models import TSChannel, TSUserActivity
 
 
-def widget_legacy(request: HttpRequest | None) -> JsonResponse:
+def widget_legacy(request: HttpRequest) -> JsonResponse:
     sessions = TSUserActivity.objects.filter(end_time=None)
 
     active_clients: list[str] = []
