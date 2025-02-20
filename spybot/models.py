@@ -36,13 +36,13 @@ class DebuggableModel(models.Model):
 
 
 class TSChannel(DebuggableModel):
-    id = models.PositiveIntegerField(primary_key=True, null=False)
+    id = models.PositiveIntegerField(primary_key=True)
     name = models.CharField(max_length=64, blank=True, null=True)
     order = models.PositiveIntegerField(null=False)
 
     class Meta:
         managed = True
-        db_table = 'TSChannel'
+        db_table = 'tschannel'
 
 
 # Django doesn't have an unsigned int auto (auto-incremented) field type natively, so we provide our own
@@ -117,40 +117,40 @@ class SteamID(DebuggableModel):
 class TSUser(DebuggableModel):
     id = AutoField(primary_key=True)
     name = models.CharField(max_length=128, blank=True, null=True)
-    client_id = models.PositiveIntegerField(db_column="clientID")
+    client_id = models.PositiveIntegerField(db_column="clientid")
     # maybe remove
-    online = models.BooleanField(db_column='isCurrentlyOnline', default=False)
+    online = models.BooleanField(db_column='iscurrentlyonline', default=False)
     merged_user = models.ForeignKey(MergedUser, on_delete=models.SET_NULL, null=True, related_name="tsusers")
 
     class Meta:
         managed = True
-        db_table = 'TSUser'
+        db_table = 'tsuser'
 
     def last_login_time(self):
         return getattr(TSUserActivity.objects.filter(tsuser=self, end_time__isnull=False).order_by('-end_time').first(), 'end_time', None)
 
 
 class TSID(DebuggableModel):
-    tsuser = models.ForeignKey(TSUser, models.DO_NOTHING, db_column='tsUserID', blank=True, null=True)
-    ts_id = models.CharField(db_column='tsID', max_length=32, primary_key=True)
+    tsuser = models.ForeignKey(TSUser, models.DO_NOTHING, db_column='tsuserid', blank=True, null=True)
+    ts_id = models.CharField(db_column='tsid', max_length=32, primary_key=True)
 
     class Meta:
         managed = True
-        db_table = 'TSID'
+        db_table = 'tsid'
 
 
 class TSUserActivity(DebuggableModel):
-    id = models.IntegerField(primary_key=True, null=False)
-    tsuser = models.ForeignKey(TSUser, models.DO_NOTHING, db_column='tsUserID', blank=True, null=True)  # Field name made lowercase.
-    start_time = models.DateTimeField(db_column='startTime', blank=True, null=True)  # Field name made lowercase.
-    end_time = models.DateTimeField(db_column='endTime', blank=True, null=True)  # Field name made lowercase.
+    id = models.AutoField(primary_key=True)
+    tsuser = models.ForeignKey(TSUser, models.DO_NOTHING, db_column='tsuserid', blank=True, null=True)  # Field name made lowercase.
+    start_time = models.DateTimeField(db_column='starttime', blank=True, null=True)  # Field name made lowercase.
+    end_time = models.DateTimeField(db_column='endtime', blank=True, null=True)  # Field name made lowercase.
     joined = models.BooleanField(null=False, default=False)
-    disconnect_id = models.IntegerField(db_column='discID', blank=True, null=True)  # Field name made lowercase.
-    channel = models.ForeignKey(TSChannel, models.DO_NOTHING, db_column='cID')  # Field name made lowercase.
+    disconnect_id = models.IntegerField(db_column='discid', blank=True, null=True)  # Field name made lowercase.
+    channel = models.ForeignKey(TSChannel, models.DO_NOTHING, db_column='cid')  # Field name made lowercase.
 
     class Meta:
         managed = True
-        db_table = 'TSUserActivity'
+        db_table = 'tsuseractivity'
         indexes = [
             models.Index(fields=['start_time'])
         ]
@@ -161,7 +161,7 @@ class HourlyActivity(DebuggableModel):
     activity_hours = models.FloatField(null=False)
 
     class Meta:
-        db_table = 'HourlyActivity'
+        db_table = 'hourlyactivity'
         indexes = [
             models.Index(fields=['datetime']),
         ]

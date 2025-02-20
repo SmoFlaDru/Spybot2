@@ -1,0 +1,17 @@
+services:
+  spybot:
+    build:
+      dockerfile: Dockerfile
+  caddy:
+    ports:
+      - "80:80"
+#      - "443:443"
+#      - "443:443/udp"
+    volumes:
+      - $PWD/infrastructure/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+      - static_files:/spybot_static
+  db:
+    ports:
+      - "5432:5432"

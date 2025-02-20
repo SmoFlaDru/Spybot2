@@ -3,8 +3,8 @@ services:
     image: 'ghcr.io/smofladru/spybot2:sha-${COMMIT_SHA}'
     restart: unless-stopped
     volumes:
-      - static_files:/spybot_static
-      - $PWD/.env:/app/.env
+      - static_files:/home/spybot/spybot_static
+      - $PWD/.env:/home/spybot/.env
     expose:
       - 8000
   caddy:
@@ -19,9 +19,26 @@ services:
       - caddy_data:/data
       - caddy_config:/config
       - static_files:/spybot_static
+  db:
+    image: postgres:17.2
+    restart: always
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    volumes:
+      - spybot_pg_data:/var/lib/postgresql/data
+    secrets:
+      - db_password
+    ports:
+      - "127.0.0.1:5432:5432"
+  redis:
+    image: redis:7.4.2-bookworm
 volumes:
   caddy_data:
   caddy_config:
   static_files:
+  spybot_pg_data:
+secrets:
+  db_password:
+    file: secrets/db_password.txt
 
 

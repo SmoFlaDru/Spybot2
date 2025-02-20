@@ -14,6 +14,7 @@ from pathlib import Path
 import environ
 import os
 import sentry_sdk
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -50,7 +51,7 @@ SENTRY_DSN = env('SENTRY_DSN', default="")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', False)
 
-ALLOWED_HOSTS = [SERVER_IP, TS_IP, 'localhost', '127.0.0.1', 'spybot.localhost.direct']
+ALLOWED_HOSTS = [SERVER_IP, TS_IP, 'localhost', '127.0.0.1', 'spybot.localhost.direct', '192.168.59.100', '192.168.59.100:20001']
 
 CSRF_TRUSTED_ORIGINS = [f"https://{SERVER_IP}"]
 
@@ -64,7 +65,6 @@ SESSION_COOKIE_SECURE = not env.bool('INSECURE_COOKIES', False)
 
 INSTALLED_APPS = [
     'spybot',
-    'django_crontab',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -117,10 +117,6 @@ DATABASES = {
         'CONN_MAX_AGE': 3600,
         'CONN_HEALTH_CHECKS': True,
     },
-    #'default': {
-    #    'ENGINE': 'django.db.backends.sqlite3',
-    #    'NAME': BASE_DIR / 'db.sqlite3',
-    #}
 }
 
 
@@ -172,7 +168,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = '../spybot_static/'
+STATIC_ROOT = 'spybot_static/'
 
 STATICFILES_DIRS = [
     BASE_DIR / "frontend/output/",
@@ -183,13 +179,26 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# django-crontab config
+# Celery
+CELERY_BROKER_URL = "redis://redis:6379"
+CELERY_RESULT_BACKEND = "redis://redis:6379"
 
-CRONJOBS = [
-    ('59 23 * * SUN', 'spybot.recorder.cron.cron.end_of_week_awards'),
-    ('59 * * * *', 'spybot.recorder.cron.cron.record_hourly_activity')
-]
-CRONTAB_COMMAND_PREFIX = env.str('CRONTAB_COMMAND_PREFIX', '')
+# Celery beat
+CELERY_BEAT_SCHEDULE = {
+    'record_hourly_activity': {
+        'task': 'spybot.tasks.record_hourly_activity',
+        'schedule': crontab(minute=59), # every hour
+        'args': (),
+        'options': {},
+    },
+    'end_of_week_awards': {
+        'task': 'spybot.tasks.end_of_week_awards',
+        'schedule': crontab(minute=59, hour=23, day_of_week='sunday'), # every Sunday evening
+        'args': (),
+        'options': {},
+    },
+}
+
 
 
 # Testing

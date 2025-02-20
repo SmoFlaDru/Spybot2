@@ -10,7 +10,7 @@ class TS:
 
     def __init__(self):
         # TODO define it better so line 21 doesn't error anymore
-        self.ts3conn: TS3ServerConnection
+        self.ts3conn: TS3ServerConnection | None = None
 
         self.ts_user = settings.TS_USER
         self.ts_password = settings.TS_PASSWORD
@@ -20,9 +20,16 @@ class TS:
         self.EVENT_TIMEOUT = 30
 
     def make_conn(self):
-        conn = f"telnet://{self.ts_user}:{self.ts_password}@{self.ts_ip}:{self.ts_port}"
-        self.ts3conn = TS3ServerConnection(conn)
+        print("Starting connection")
+        self.ts3conn = TS3ServerConnection()
+        self.ts3conn.open(
+            host=self.ts_ip,
+            port=self.ts_port,
+            protocol="telnet",
+            tp_args={'username': self.ts_user, 'password': self.ts_password}
+        )
         self.ts3conn.exec_("use", sid=1)
+        print("Selected vserver")
 
     def register_events(self):
         # Register for events

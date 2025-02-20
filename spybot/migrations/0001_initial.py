@@ -49,7 +49,7 @@ class Migration(migrations.Migration):
                 ('order', models.PositiveIntegerField()),
             ],
             options={
-                'db_table': 'TSChannel',
+                'db_table': 'tschannel',
                 'managed': True,
             },
         ),
@@ -58,12 +58,12 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(primary_key=True, serialize=False)),
                 ('name', models.CharField(blank=True, max_length=128, null=True)),
-                ('client_id', models.PositiveIntegerField(db_column='clientID')),
-                ('online', models.BooleanField(db_column='isCurrentlyOnline', default=False)),
+                ('client_id', models.PositiveIntegerField(db_column='clientid')),
+                ('online', models.BooleanField(db_column='iscurrentlyonline', default=False)),
                 ('merged_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='tsusers', to=settings.AUTH_USER_MODEL)),
             ],
             options={
-                'db_table': 'TSUser',
+                'db_table': 'tsuser',
                 'managed': True,
             },
         ),
@@ -84,11 +84,11 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='TSID',
             fields=[
-                ('ts_id', models.CharField(db_column='tsID', max_length=32, primary_key=True, serialize=False)),
-                ('tsuser', models.ForeignKey(blank=True, db_column='tsUserID', null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='spybot.tsuser')),
+                ('ts_id', models.CharField(db_column='tsid', max_length=32, primary_key=True, serialize=False)),
+                ('tsuser', models.ForeignKey(blank=True, db_column='tsuserid', null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='spybot.tsuser')),
             ],
             options={
-                'db_table': 'TSID',
+                'db_table': 'tsid',
                 'managed': True,
             },
         ),
@@ -133,7 +133,7 @@ class Migration(migrations.Migration):
                 ('activity_hours', models.FloatField()),
             ],
             options={
-                'db_table': 'HourlyActivity',
+                'db_table': 'hourlyactivity',
                 'indexes': [models.Index(fields=['datetime'], name='HourlyActiv_datetim_96f0af_idx')],
             },
         ),
@@ -154,15 +154,15 @@ class Migration(migrations.Migration):
             name='TSUserActivity',
             fields=[
                 ('id', models.IntegerField(primary_key=True, serialize=False)),
-                ('start_time', models.DateTimeField(blank=True, db_column='startTime', null=True)),
-                ('end_time', models.DateTimeField(blank=True, db_column='endTime', null=True)),
+                ('start_time', models.DateTimeField(blank=True, db_column='starttime', null=True)),
+                ('end_time', models.DateTimeField(blank=True, db_column='endtime', null=True)),
                 ('joined', models.BooleanField(default=False)),
-                ('disconnect_id', models.IntegerField(blank=True, db_column='discID', null=True)),
-                ('channel', models.ForeignKey(db_column='cID', on_delete=django.db.models.deletion.DO_NOTHING, to='spybot.tschannel')),
-                ('tsuser', models.ForeignKey(blank=True, db_column='tsUserID', null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='spybot.tsuser')),
+                ('disconnect_id', models.IntegerField(blank=True, db_column='discid', null=True)),
+                ('channel', models.ForeignKey(db_column='cid', on_delete=django.db.models.deletion.DO_NOTHING, to='spybot.tschannel')),
+                ('tsuser', models.ForeignKey(blank=True, db_column='tsuserid', null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='spybot.tsuser')),
             ],
             options={
-                'db_table': 'TSUserActivity',
+                'db_table': 'tsuseractivity',
                 'managed': True,
                 'indexes': [models.Index(fields=['start_time'], name='TSUserActiv_startTi_95ea75_idx')],
             },

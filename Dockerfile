@@ -7,20 +7,23 @@ RUN npm run package
 
 FROM python:3.12-slim-bookworm
 
-WORKDIR /app
+RUN groupadd -g 1234 spybot && useradd -m -u 1234 -g spybot spybot
+
+WORKDIR /home/spybot
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000
 
-# Install mysqlclient debian package dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends python3-dev default-libmysqlclient-dev build-essential pkg-config && rm -rf /var/lib/apt/lists/*
 RUN pip install uv
 COPY pyproject.toml pyproject.toml
 RUN uv sync
-COPY . .
+COPY --chown=spybot:spybot . .
 
-COPY --from=frontend-build frontend/output frontend/output
+COPY --chown=spybot:spybot --from=frontend-build frontend/output frontend/output
 
+USER spybot
+RUN mkdir spybot_static
+RUN touch .env
 CMD ["sh", "run.sh"]
