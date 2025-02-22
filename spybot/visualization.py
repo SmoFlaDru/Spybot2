@@ -5,17 +5,15 @@ from django.db import connection
 
 def dictfetchall(cursor):
     columns = [col[0] for col in cursor.description]
-    return [
-        dict(zip(columns, row))
-        for row in cursor.fetchall()
-    ]
+    return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
 def daily_activity(days: int):
     date_format = "%Y-%m-%d"
 
     with connection.cursor() as cursor:
-        cursor.execute(r"""
+        cursor.execute(
+            r"""
             WITH active_data AS (
                 SELECT
                     TO_CHAR(starttime, 'YYYY-MM-DD') AS date,
@@ -47,7 +45,9 @@ def daily_activity(days: int):
                 COALESCE(CAST(afk_data.time_hours AS DOUBLE PRECISION), 0) AS afk_hours
             FROM active_data
             LEFT OUTER JOIN afk_data ON active_data.date = afk_data.date;
-        """, {"days": days, "date_format": date_format})
+        """,
+            {"days": days, "date_format": date_format},
+        )
         return cursor.fetchall()
 
 
@@ -223,7 +223,8 @@ def user_hall_of_fame():
 
 def user(user_id: int):
     with connection.cursor() as cursor:
-        cursor.execute("""
+        cursor.execute(
+            """
             WITH user_time AS (
                 SELECT
                     TSUserActivity.startTime as starttime,
@@ -255,14 +256,17 @@ def user(user_id: int):
                 GROUP BY TU.merged_user_id, sm.name
             )
             SELECT *
-            FROM total_time, awards;""", [user_id, user_id])
+            FROM total_time, awards;""",
+            [user_id, user_id],
+        )
 
         return dictfetchall(cursor)
 
 
 def user_longest_streak(merged_user_id: int):
     with connection.cursor() as cursor:
-        cursor.execute("""
+        cursor.execute(
+            """
             WITH dates AS (
                 SELECT DISTINCT
                     spybot_mergeduser.name,
@@ -298,13 +302,16 @@ def user_longest_streak(merged_user_id: int):
             WHERE runningStreakLength = 1
             ORDER BY totalStreakLength DESC, start_day DESC
             LIMIT 1;
-        """, [merged_user_id])
+        """,
+            [merged_user_id],
+        )
         return dictfetchall(cursor)
 
 
 def user_month_activity(merged_user_id: int):
     with connection.cursor() as cursor:
-        cursor.execute(r"""
+        cursor.execute(
+            r"""
         WITH data AS (
             SELECT
                 DATE_PART('year', startTime) AS year,
@@ -332,7 +339,9 @@ def user_month_activity(merged_user_id: int):
         FROM months
         LEFT JOIN data ON DATE_PART('year', months.date) = data.year AND DATE_PART('month', months.date) = data.month
         ORDER BY year, month;
-        """, [merged_user_id])
+        """,
+            [merged_user_id],
+        )
         return dictfetchall(cursor)
 
 

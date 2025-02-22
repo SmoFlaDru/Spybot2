@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-from datetime import timedelta
+
 from pathlib import Path
 import environ
 import os
@@ -24,71 +24,78 @@ env = environ.Env(
     DEBUG=(bool, False)
 )
 # Take environment variables from .env file
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
-RECORDER_ENABLED = env.bool('RECORDER_ENABLED', True)
+RECORDER_ENABLED = env.bool("RECORDER_ENABLED", True)
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY')
+SECRET_KEY = env("SECRET_KEY")
 
 # TS DATA
-TS_USER = env('TS_USER')
-TS_PASSWORD = env('TS_PASSWORD')
-TS_IP = env('TS_IP')
-TS_PORT = env('TS_PORT')
-SERVER_IP = env('SERVER_IP')
+TS_USER = env("TS_USER")
+TS_PASSWORD = env("TS_PASSWORD")
+TS_IP = env("TS_IP")
+TS_PORT = env("TS_PORT")
+SERVER_IP = env("SERVER_IP")
 
 # Steam API Key
-STEAM_API_KEY = env('STEAM_API_KEY')
+STEAM_API_KEY = env("STEAM_API_KEY")
 
 # Sentry SDK
-SENTRY_ENABLED = env.bool('SENTRY_ENABLED', False)
-SENTRY_DSN = env('SENTRY_DSN', default="")
+SENTRY_ENABLED = env.bool("SENTRY_ENABLED", False)
+SENTRY_DSN = env("SENTRY_DSN", default="")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DEBUG', False)
+DEBUG = env.bool("DEBUG", False)
 
-ALLOWED_HOSTS = [SERVER_IP, TS_IP, 'localhost', '127.0.0.1', 'spybot.localhost.direct', '192.168.59.100', '192.168.59.100:20001']
+ALLOWED_HOSTS = [
+    SERVER_IP,
+    TS_IP,
+    "localhost",
+    "127.0.0.1",
+    "spybot.localhost.direct",
+    "192.168.59.100",
+    "192.168.59.100:20001",
+]
 
 CSRF_TRUSTED_ORIGINS = [f"https://{SERVER_IP}"]
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-CSRF_COOKIE_SECURE = not env.bool('INSECURE_COOKIES', False)
-SESSION_COOKIE_SECURE = not env.bool('INSECURE_COOKIES', False)
+CSRF_COOKIE_SECURE = not env.bool("INSECURE_COOKIES", False)
+SESSION_COOKIE_SECURE = not env.bool("INSECURE_COOKIES", False)
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'spybot',
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.forms',
-    'django_bootstrap5',
+    "spybot",
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "django.forms",
+    "django_bootstrap5",
 ]
 
-ROOT_URLCONF = 'Spybot2.urls'
+ROOT_URLCONF = "Spybot2.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
@@ -105,17 +112,17 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-WSGI_APPLICATION = 'Spybot2.wsgi.application'
+WSGI_APPLICATION = "Spybot2.wsgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        **env.db_url('DB_URL'),
-        'CONN_MAX_AGE': 3600,
-        'CONN_HEALTH_CHECKS': True,
+    "default": {
+        **env.db_url("DB_URL"),
+        "CONN_MAX_AGE": 3600,
+        "CONN_HEALTH_CHECKS": True,
     },
 }
 
@@ -125,39 +132,39 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
-AUTH_USER_MODEL = 'spybot.MergedUser'
+AUTH_USER_MODEL = "spybot.MergedUser"
 
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-    'spybot.auth.backend.link_backend.LinkAuthBackend',
+    "django.contrib.auth.backends.ModelBackend",
+    "spybot.auth.backend.link_backend.LinkAuthBackend",
 ]
 
-LOGIN_URL = '/login'
+LOGIN_URL = "/login"
 
 # Passkeys
 FIDO_SERVER_NAME = "Spybot local"
-#KEY_ATTACHMENT = passkeys.Attachment.CROSS_PLATFORM
+# KEY_ATTACHMENT = passkeys.Attachment.CROSS_PLATFORM
 
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -167,8 +174,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'
-STATIC_ROOT = 'spybot_static/'
+STATIC_URL = "static/"
+STATIC_ROOT = "spybot_static/"
 
 STATICFILES_DIRS = [
     BASE_DIR / "frontend/output/",
@@ -177,7 +184,7 @@ STATICFILES_DIRS = [
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Celery
 CELERY_BROKER_URL = "redis://redis:6379"
@@ -185,26 +192,27 @@ CELERY_RESULT_BACKEND = "redis://redis:6379"
 
 # Celery beat
 CELERY_BEAT_SCHEDULE = {
-    'record_hourly_activity': {
-        'task': 'spybot.tasks.record_hourly_activity',
-        'schedule': crontab(minute=59), # every hour
-        'args': (),
-        'options': {},
+    "record_hourly_activity": {
+        "task": "spybot.tasks.record_hourly_activity",
+        "schedule": crontab(minute=59),  # every hour
+        "args": (),
+        "options": {},
     },
-    'end_of_week_awards': {
-        'task': 'spybot.tasks.end_of_week_awards',
-        'schedule': crontab(minute=59, hour=23, day_of_week='sunday'), # every Sunday evening
-        'args': (),
-        'options': {},
+    "end_of_week_awards": {
+        "task": "spybot.tasks.end_of_week_awards",
+        "schedule": crontab(
+            minute=59, hour=23, day_of_week="sunday"
+        ),  # every Sunday evening
+        "args": (),
+        "options": {},
     },
 }
 
 
-
 # Testing
 
-TEST_RUNNER = 'spybot.tests.runner_testcontainers_db.TestContainerRunner'
-TEST_OUTPUT_FILE_NAME = 'tests_result.xml'
+TEST_RUNNER = "spybot.tests.runner_testcontainers_db.TestContainerRunner"
+TEST_OUTPUT_FILE_NAME = "tests_result.xml"
 
 # logging
 # LOGGING = {
@@ -225,8 +233,8 @@ TEST_OUTPUT_FILE_NAME = 'tests_result.xml'
 # }
 
 BOOTSTRAP5 = {
-    'include_jquery': False,
-    'javascript_in_head': False,
+    "include_jquery": False,
+    "javascript_in_head": False,
 }
 
 if SENTRY_ENABLED:

@@ -34,7 +34,6 @@ def relative_time(date):
         return a / b, a % b
 
     class FormatDelta:
-
         def __init__(self, dt):
             now = datetime.now(timezone.utc)
             delta = now - dt
@@ -46,28 +45,28 @@ def relative_time(date):
             self.minute, self.second = qnr(self.second, 60)
 
         def format(self):
-            for period in ['year', 'month', 'day', 'hour', 'minute', 'second']:
+            for period in ["year", "month", "day", "hour", "minute", "second"]:
                 n = getattr(self, period)
                 if n >= 1:
-                    return '{0} ago'.format(formatn(n, period))
+                    return "{0} ago".format(formatn(n, period))
             return "just now"
 
     return FormatDelta(date).format()
 
+
 @register.filter
 def duration_format(td):
-
     total_seconds = td
 
     # days = total_seconds // 86400
-    remaining_hours = total_seconds #% 86400
+    remaining_hours = total_seconds  # % 86400
     remaining_minutes = remaining_hours % 3600
     hours = remaining_hours // 3600
     minutes = remaining_minutes // 60
-    seconds = remaining_minutes % 60
+    _seconds = remaining_minutes % 60
 
-    #days_str = f'{days}d ' if days else ''
-    hours_str = f'{hours} hours ' if hours else ''
-    minutes_str = f'{minutes} min ' if minutes else ''
+    # days_str = f'{days}d ' if days else ''
+    hours_str = f"{hours} hours " if hours else ""
+    minutes_str = f"{minutes} min " if minutes else ""
 
-    return f'{hours_str}{minutes_str}'
+    return f"{hours_str}{minutes_str}"

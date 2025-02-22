@@ -10,13 +10,11 @@ from spybot.recorder.ts import TS
 
 
 class Recorder:
-
     def __init__(self):
         self.ts = TS()
         self.client = Client(self.ts)
 
     def run(self):
-
         while True:
             self.ts.make_conn()
             self.ts.register_events()
@@ -85,7 +83,7 @@ class Recorder:
                     client_database_id=int(event["client_database_id"]),
                     client_nickname=event["client_nickname"],
                     client_type=event["client_type"],
-                    client_unique_identifier=event["client_unique_identifier"]
+                    client_unique_identifier=event["client_unique_identifier"],
                 )
             case "notifyclientleftview":
                 # TODO wrong there is no reasonid because of ts3 vs ts5
@@ -97,7 +95,7 @@ class Recorder:
                 self.client.client_leave(
                     client_id=event["clid"],
                     channel_id=event["cfid"],
-                    reason_id=event.get("reasonid", -1)
+                    reason_id=event.get("reasonid", -1),
                 )
             case "notifyclientmoved":
                 # notifyclientmoved: [{'ctid': '37', 'reasonid': '0', 'clid': '2760'}]
@@ -105,5 +103,5 @@ class Recorder:
                 self.client.client_move(
                     client_id=event["clid"],
                     channel_to_id=event["ctid"],
-                    reason_id=event["reasonid"]
+                    reason_id=event["reasonid"],
                 )

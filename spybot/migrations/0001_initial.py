@@ -8,167 +8,342 @@ import uuid
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='MergedUser',
+            name="MergedUser",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('password', models.CharField(max_length=128, verbose_name='password')),
-                ('last_login', models.DateTimeField(blank=True, null=True, verbose_name='last login')),
-                ('name', models.CharField(max_length=128)),
-                ('obsolete', models.BooleanField(default=False)),
-                ('is_superuser', models.BooleanField(default=False)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("password", models.CharField(max_length=128, verbose_name="password")),
+                (
+                    "last_login",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="last login"
+                    ),
+                ),
+                ("name", models.CharField(max_length=128)),
+                ("obsolete", models.BooleanField(default=False)),
+                ("is_superuser", models.BooleanField(default=False)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='NewsEvent',
+            name="NewsEvent",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('text', models.CharField(max_length=1024)),
-                ('website_link', models.CharField(max_length=256, null=True)),
-                ('date', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("text", models.CharField(max_length=1024)),
+                ("website_link", models.CharField(max_length=256, null=True)),
+                ("date", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='TSChannel',
+            name="TSChannel",
             fields=[
-                ('id', models.PositiveIntegerField(primary_key=True, serialize=False)),
-                ('name', models.CharField(blank=True, max_length=64, null=True)),
-                ('order', models.PositiveIntegerField()),
+                ("id", models.PositiveIntegerField(primary_key=True, serialize=False)),
+                ("name", models.CharField(blank=True, max_length=64, null=True)),
+                ("order", models.PositiveIntegerField()),
             ],
             options={
-                'db_table': 'tschannel',
-                'managed': True,
+                "db_table": "tschannel",
+                "managed": True,
             },
         ),
         migrations.CreateModel(
-            name='TSUser',
+            name="TSUser",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('name', models.CharField(blank=True, max_length=128, null=True)),
-                ('client_id', models.PositiveIntegerField(db_column='clientid')),
-                ('online', models.BooleanField(db_column='iscurrentlyonline', default=False)),
-                ('merged_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='tsusers', to=settings.AUTH_USER_MODEL)),
+                ("id", models.AutoField(primary_key=True, serialize=False)),
+                ("name", models.CharField(blank=True, max_length=128, null=True)),
+                ("client_id", models.PositiveIntegerField(db_column="clientid")),
+                (
+                    "online",
+                    models.BooleanField(db_column="iscurrentlyonline", default=False),
+                ),
+                (
+                    "merged_user",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="tsusers",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'db_table': 'tsuser',
-                'managed': True,
+                "db_table": "tsuser",
+                "managed": True,
             },
         ),
         migrations.CreateModel(
-            name='UserPasskey',
+            name="UserPasskey",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255)),
-                ('enabled', models.BooleanField(default=True)),
-                ('platform', models.CharField(default='', max_length=255)),
-                ('added_on', models.DateTimeField(auto_now_add=True)),
-                ('last_used', models.DateTimeField(default=None, null=True)),
-                ('credential_id', models.CharField(max_length=255, unique=True)),
-                ('token', models.CharField(max_length=1024)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=255)),
+                ("enabled", models.BooleanField(default=True)),
+                ("platform", models.CharField(default="", max_length=255)),
+                ("added_on", models.DateTimeField(auto_now_add=True)),
+                ("last_used", models.DateTimeField(default=None, null=True)),
+                ("credential_id", models.CharField(max_length=255, unique=True)),
+                ("token", models.CharField(max_length=1024)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='TSID',
+            name="TSID",
             fields=[
-                ('ts_id', models.CharField(db_column='tsid', max_length=32, primary_key=True, serialize=False)),
-                ('tsuser', models.ForeignKey(blank=True, db_column='tsuserid', null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='spybot.tsuser')),
+                (
+                    "ts_id",
+                    models.CharField(
+                        db_column="tsid",
+                        max_length=32,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "tsuser",
+                    models.ForeignKey(
+                        blank=True,
+                        db_column="tsuserid",
+                        null=True,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        to="spybot.tsuser",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'tsid',
-                'managed': True,
+                "db_table": "tsid",
+                "managed": True,
             },
         ),
         migrations.CreateModel(
-            name='SteamID',
+            name="SteamID",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('steam_id', models.BigIntegerField(default=0)),
-                ('account_name', models.CharField(blank=True, max_length=128, null=True)),
-                ('merged_user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='steamids', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("steam_id", models.BigIntegerField(default=0)),
+                (
+                    "account_name",
+                    models.CharField(blank=True, max_length=128, null=True),
+                ),
+                (
+                    "merged_user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="steamids",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='QueuedClientMessage',
+            name="QueuedClientMessage",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('text', models.CharField(max_length=1024)),
-                ('type', models.CharField(max_length=128)),
-                ('date', models.DateField(auto_now_add=True)),
-                ('tsuser', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='spybot.tsuser')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("text", models.CharField(max_length=1024)),
+                ("type", models.CharField(max_length=128)),
+                ("date", models.DateField(auto_now_add=True)),
+                (
+                    "tsuser",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="spybot.tsuser"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='LoginLink',
+            name="LoginLink",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('code', models.UUIDField(default=uuid.uuid4, editable=False, unique=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='loginlinks', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "code",
+                    models.UUIDField(default=uuid.uuid4, editable=False, unique=True),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="loginlinks",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='HourlyActivity',
+            name="HourlyActivity",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('datetime', models.DateTimeField(default=django.utils.timezone.now)),
-                ('activity_hours', models.FloatField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("datetime", models.DateTimeField(default=django.utils.timezone.now)),
+                ("activity_hours", models.FloatField()),
             ],
             options={
-                'db_table': 'hourlyactivity',
-                'indexes': [models.Index(fields=['datetime'], name='HourlyActiv_datetim_96f0af_idx')],
+                "db_table": "hourlyactivity",
+                "indexes": [
+                    models.Index(
+                        fields=["datetime"], name="HourlyActiv_datetim_96f0af_idx"
+                    )
+                ],
             },
         ),
         migrations.CreateModel(
-            name='Award',
+            name="Award",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateTimeField(auto_now_add=True)),
-                ('type', models.CharField(choices=[('USER_OF_WEEK', 'User of the week')], default='USER_OF_WEEK', max_length=64)),
-                ('points', models.IntegerField()),
-                ('tsuser', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='awards', to='spybot.tsuser')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date", models.DateTimeField(auto_now_add=True)),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[("USER_OF_WEEK", "User of the week")],
+                        default="USER_OF_WEEK",
+                        max_length=64,
+                    ),
+                ),
+                ("points", models.IntegerField()),
+                (
+                    "tsuser",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="awards",
+                        to="spybot.tsuser",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='TSUserActivity',
+            name="TSUserActivity",
             fields=[
-                ('id', models.IntegerField(primary_key=True, serialize=False)),
-                ('start_time', models.DateTimeField(blank=True, db_column='starttime', null=True)),
-                ('end_time', models.DateTimeField(blank=True, db_column='endtime', null=True)),
-                ('joined', models.BooleanField(default=False)),
-                ('disconnect_id', models.IntegerField(blank=True, db_column='discid', null=True)),
-                ('channel', models.ForeignKey(db_column='cid', on_delete=django.db.models.deletion.DO_NOTHING, to='spybot.tschannel')),
-                ('tsuser', models.ForeignKey(blank=True, db_column='tsuserid', null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='spybot.tsuser')),
+                ("id", models.IntegerField(primary_key=True, serialize=False)),
+                (
+                    "start_time",
+                    models.DateTimeField(blank=True, db_column="starttime", null=True),
+                ),
+                (
+                    "end_time",
+                    models.DateTimeField(blank=True, db_column="endtime", null=True),
+                ),
+                ("joined", models.BooleanField(default=False)),
+                (
+                    "disconnect_id",
+                    models.IntegerField(blank=True, db_column="discid", null=True),
+                ),
+                (
+                    "channel",
+                    models.ForeignKey(
+                        db_column="cid",
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        to="spybot.tschannel",
+                    ),
+                ),
+                (
+                    "tsuser",
+                    models.ForeignKey(
+                        blank=True,
+                        db_column="tsuserid",
+                        null=True,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        to="spybot.tsuser",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'tsuseractivity',
-                'managed': True,
-                'indexes': [models.Index(fields=['start_time'], name='TSUserActiv_startTi_95ea75_idx')],
+                "db_table": "tsuseractivity",
+                "managed": True,
+                "indexes": [
+                    models.Index(
+                        fields=["start_time"], name="TSUserActiv_startTi_95ea75_idx"
+                    )
+                ],
             },
         ),
         migrations.AddConstraint(
-            model_name='queuedclientmessage',
-            constraint=models.UniqueConstraint(fields=('tsuser', 'type'), name='constraint_unique_type_user'),
+            model_name="queuedclientmessage",
+            constraint=models.UniqueConstraint(
+                fields=("tsuser", "type"), name="constraint_unique_type_user"
+            ),
         ),
     ]

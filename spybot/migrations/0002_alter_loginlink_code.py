@@ -6,15 +6,16 @@ import uuid
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('spybot', '0001_initial'),
+        ("spybot", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='loginlink',
-            name='code',
-            field=spybot.models.Char32UUIDField(default=uuid.uuid4, editable=False, unique=True),
+            model_name="loginlink",
+            name="code",
+            field=spybot.models.Char32UUIDField(
+                default=uuid.uuid4, editable=False, unique=True
+            ),
         ),
     ]

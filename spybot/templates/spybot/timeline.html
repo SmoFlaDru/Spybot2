@@ -8,8 +8,7 @@
                 <div class="col"><h3 class="card-title">Timeline</h3></div>
                 <div class="col">
                     <div class="float-end">
-                        <form method="post">
-                            {% csrf_token %}
+                        <form method="get">
                             {{ form }}
                         </form>
                     </div>

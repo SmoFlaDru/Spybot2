@@ -17,8 +17,7 @@ def end_of_week_awards():
     top_users.reverse()
 
     for idx, result in enumerate(top_users):
-
-        user = TSUser.objects.get(id=result['user_id'])
+        user = TSUser.objects.get(id=result["user_id"])
         # correct index because of reversed list
         idx = 2 - idx
 
@@ -44,15 +43,21 @@ def end_of_week_awards():
         week_start = datetime.today() - timedelta(days=datetime.today().weekday() % 7)
         week_string = week_start.strftime("%d.%m.%Y")
         url = "https://" + settings.SERVER_IP
-        message = f"You got a {metal} award for being the{specifier} most active user of the week {week_string}! See " \
-                  f"more: [url]{url}[/url]"
+        message = (
+            f"You got a {metal} award for being the{specifier} most active user of the week {week_string}! See "
+            f"more: [url]{url}[/url]"
+        )
 
         # remove last message if it exists
-        previous_message = QueuedClientMessage.objects.filter(tsuser=user, type="AWARD_USER_OF_WEEK")
+        previous_message = QueuedClientMessage.objects.filter(
+            tsuser=user, type="AWARD_USER_OF_WEEK"
+        )
         if previous_message.exists():
             previous_message.first().delete()
 
-        queued_message = QueuedClientMessage(tsuser=user, text=message, type="AWARD_USER_OF_WEEK")
+        queued_message = QueuedClientMessage(
+            tsuser=user, text=message, type="AWARD_USER_OF_WEEK"
+        )
         queued_message.save()
 
 
@@ -63,7 +68,9 @@ def _generate_news_event_for_top_user_of_week(user: TSUser, idx: int, points: in
 
     # match by name to account for duplicate accounts of the same person
     previous_awards_count = Award.objects.filter(tsuser__name=user.name).count()
-    previous_same_score_awards_count = Award.objects.filter(tsuser__name=user.name, points=points).count()
+    previous_same_score_awards_count = Award.objects.filter(
+        tsuser__name=user.name, points=points
+    ).count()
 
     # create link
     link = f"/u/{user.id}"
@@ -87,24 +94,26 @@ def _generate_news_event_for_top_user_of_week(user: TSUser, idx: int, points: in
             previous_times_specifier = "the first time"
             metal_type_specifier = "any"
         case _, 1:
-            previous_times_specifier = f"the first time"
+            previous_times_specifier = "the first time"
             metal_type_specifier = f"a {metal}"
         case _, nth if nth < 4:
-            num = num2words(nth, to='ordinal')
+            num = num2words(nth, to="ordinal")
             previous_times_specifier = f"only the {num} time"
             metal_type_specifier = f"a {metal}"
         case overall, nth:
-            num = num2words(nth, to='ordinal')
+            num = num2words(nth, to="ordinal")
             previous_times_specifier = f"the {num} time"
             metal_type_specifier = f"a {metal}"
-            num_overall = num2words(overall, to='ordinal')
+            num_overall = num2words(overall, to="ordinal")
             end = f", {num_overall} award overall."
 
     user_name_unescaped = escape.unescape(user.name)
     second_line = f"This is {previous_times_specifier} <strong>{user_name_unescaped}</strong> won {metal_type_specifier} award{end}"
 
-    message = f"<strong>{user_name_unescaped}</strong> earned the {metal} award for being the{specifier} most active user of week&nbsp;{week_of_year} " \
-              f"in {year}. Congratulations! {second_line}"
+    message = (
+        f"<strong>{user_name_unescaped}</strong> earned the {metal} award for being the{specifier} most active user of week&nbsp;{week_of_year} "
+        f"in {year}. Congratulations! {second_line}"
+    )
 
     n = NewsEvent(text=message, website_link=link)
     n.save()

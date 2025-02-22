@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 
 from spybot.models import LoginLink, MergedUser
 

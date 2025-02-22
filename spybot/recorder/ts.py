@@ -7,7 +7,6 @@ from ts3.query import TS3ServerConnection, TS3TimeoutError, TS3QueryError
 
 # TODO maybe make this thread safe singleton
 class TS:
-
     def __init__(self):
         # TODO define it better so line 21 doesn't error anymore
         self.ts3conn: TS3ServerConnection | None = None
@@ -26,7 +25,7 @@ class TS:
             host=self.ts_ip,
             port=self.ts_port,
             protocol="telnet",
-            tp_args={'username': self.ts_user, 'password': self.ts_password}
+            tp_args={"username": self.ts_user, "password": self.ts_password},
         )
         self.ts3conn.exec_("use", sid=1)
         print("Selected vserver")
@@ -37,7 +36,6 @@ class TS:
         self.ts3conn.exec_("servernotifyregister", event="server")
 
     def wait_for_event(self):
-
         # not happy with yet another nested while True loop :/
         while True:
             try:
@@ -56,7 +54,9 @@ class TS:
 
     def get_channel_name(self, channel_id: int) -> Optional[str]:
         try:
-            return self.ts3conn.exec_("channelinfo", cid=channel_id).parsed[0]["channel_name"]
+            return self.ts3conn.exec_("channelinfo", cid=channel_id).parsed[0][
+                "channel_name"
+            ]
         except TS3QueryError as e:
             print("Error occurred while trying to get channel name: ", e)
         return None
@@ -99,6 +99,8 @@ class TS:
             print("Error: text message is too long")
             message = message[:1024]
         try:
-            self.ts3conn.exec_("sendtextmessage", targetmode=1, target=client_id, msg=message)
+            self.ts3conn.exec_(
+                "sendtextmessage", targetmode=1, target=client_id, msg=message
+            )
         except TS3QueryError as error:
             print("Error while sending text message:", error)
