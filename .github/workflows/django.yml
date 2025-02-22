@@ -35,10 +35,15 @@ jobs:
         mv .env.test .env
     - name: Run Tests
       run: |
-        uv run python manage.py test
+        uv run coverage run manage.py test && uv run coverage xml
     - name: Report test results
       uses: actions/upload-artifact@v4
       if: success() || failure()
       with:
         name: test-results
         path: tests_result.xml
+    - name: Post coverage result
+      uses: orgoro/coverage@v3.2
+      with:
+        coverageFile: coverage.xml
+        token: ${{ secrets.GITHUB_TOKEN }}
