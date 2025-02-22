@@ -35,3 +35,7 @@ def live_api(request: HttpRequest) -> JsonResponse:
 
     res: LiveResponse = {"clients": clients, "channels": channels}
     return JsonResponse(res)
+
+
+def something(request: HttpRequest) -> JsonResponse:
+    return JsonResponse({"status": "Up and running"})
