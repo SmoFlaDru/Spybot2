@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .auth import auth
+from . import api
 from .auth import passkeys
 from .views import views
 from .views.fragments import activity_chart
@@ -8,7 +9,6 @@ from .views.fragments import activity_chart
 urlpatterns = [
     path('live/', views.live, name='live'),
     path('', views.home, name='home'),
-    path('widget_legacy', views.widget_legacy, name='widget_legacy'),
     path('timeline', views.timeline, name='timeline'),
     path('halloffame', views.halloffame, name='halloffame'),
     path('u/<int:user_id>', views.user, name='user'),
@@ -28,5 +28,10 @@ urlpatterns = [
     path('passkeys/generate-registration-options', passkeys.generate_registration_options, name='passkeys_generate-registration-options'),
     path('passkeys/verify-registration', passkeys.verify_registration, name='passkeys_verify-registration'),
     path('passkeys/verify-authentication', passkeys.verify_authentication, name='passkeys_verify-authentication'),
+
+    # API
+    path('api/v1/live', api.live_api, name='live_api'),
+    path('api/v1/widget', api.widget_legacy, name='widget_api'),
+    path('widget_legacy', api.widget_legacy, name='widget_legacy'),
 ]
 
