@@ -36,7 +36,7 @@ class DebuggableModel(models.Model):
 
 
 class TSChannel(DebuggableModel):
-    id = models.PositiveIntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=64, blank=True, null=True)
     order = models.PositiveIntegerField(null=False)
 
