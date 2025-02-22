@@ -44,6 +44,9 @@ jobs:
         path: tests_result.xml
     - name: Post coverage result
       uses: orgoro/coverage@v3.2
+      env:
+        gh_secret: ${{ secrets.GH_PR_WRITE_TOKEN }}
+      if: ${{ env.gh_secret != '' }}
       with:
         coverageFile: coverage.xml
         token: ${{ secrets.GH_PR_WRITE_TOKEN }}
