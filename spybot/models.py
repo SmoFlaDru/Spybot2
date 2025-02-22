@@ -42,7 +42,7 @@ class TSChannel(DebuggableModel):
 
     class Meta:
         managed = True
-        db_table = 'tschannel'
+        db_table = "tschannel"
 
 
 # Django doesn't have an unsigned int auto (auto-incremented) field type natively, so we provide our own
@@ -68,7 +68,7 @@ class MergedUser(DebuggableModel, AbstractBaseUser):
 
     is_superuser = models.BooleanField(default=False)
 
-    USERNAME_FIELD = 'id'
+    USERNAME_FIELD = "id"
 
     objects = MergedUserManager()
 
@@ -84,15 +84,15 @@ class MergedUser(DebuggableModel, AbstractBaseUser):
         return self.name
 
     def get_user_permissions(self, obj=None):
-        print('get_user_permissions: ', obj)
+        print("get_user_permissions: ", obj)
         return None
 
     def get_group_permissions(self, obj=None):
-        print('get_group_permissions: ', obj)
+        print("get_group_permissions: ", obj)
         return None
 
     def get_all_permissions(self, obj=None):
-        print('get_all_permissions: ', obj)
+        print("get_all_permissions: ", obj)
         return None
 
     def has_perm(self, perm, obj=None):
@@ -105,13 +105,17 @@ class MergedUser(DebuggableModel, AbstractBaseUser):
         return self.is_superuser
 
     def merged_user_names(self):
-        return list(TSUser.objects.values_list('name', flat=True).filter(merged_user=self))
+        return list(
+            TSUser.objects.values_list("name", flat=True).filter(merged_user=self)
+        )
 
 
 class SteamID(DebuggableModel):
     steam_id = models.BigIntegerField(default=0)
     account_name = models.CharField(max_length=128, blank=True, null=True)
-    merged_user = models.ForeignKey(MergedUser, on_delete=models.CASCADE, related_name="steamids")
+    merged_user = models.ForeignKey(
+        MergedUser, on_delete=models.CASCADE, related_name="steamids"
+    )
 
 
 class TSUser(DebuggableModel):
@@ -119,41 +123,59 @@ class TSUser(DebuggableModel):
     name = models.CharField(max_length=128, blank=True, null=True)
     client_id = models.PositiveIntegerField(db_column="clientid")
     # maybe remove
-    online = models.BooleanField(db_column='iscurrentlyonline', default=False)
-    merged_user = models.ForeignKey(MergedUser, on_delete=models.SET_NULL, null=True, related_name="tsusers")
+    online = models.BooleanField(db_column="iscurrentlyonline", default=False)
+    merged_user = models.ForeignKey(
+        MergedUser, on_delete=models.SET_NULL, null=True, related_name="tsusers"
+    )
 
     class Meta:
         managed = True
-        db_table = 'tsuser'
+        db_table = "tsuser"
 
     def last_login_time(self):
-        return getattr(TSUserActivity.objects.filter(tsuser=self, end_time__isnull=False).order_by('-end_time').first(), 'end_time', None)
+        return getattr(
+            TSUserActivity.objects.filter(tsuser=self, end_time__isnull=False)
+            .order_by("-end_time")
+            .first(),
+            "end_time",
+            None,
+        )
 
 
 class TSID(DebuggableModel):
-    tsuser = models.ForeignKey(TSUser, models.DO_NOTHING, db_column='tsuserid', blank=True, null=True)
-    ts_id = models.CharField(db_column='tsid', max_length=32, primary_key=True)
+    tsuser = models.ForeignKey(
+        TSUser, models.DO_NOTHING, db_column="tsuserid", blank=True, null=True
+    )
+    ts_id = models.CharField(db_column="tsid", max_length=32, primary_key=True)
 
     class Meta:
         managed = True
-        db_table = 'tsid'
+        db_table = "tsid"
 
 
 class TSUserActivity(DebuggableModel):
     id = models.AutoField(primary_key=True)
-    tsuser = models.ForeignKey(TSUser, models.DO_NOTHING, db_column='tsuserid', blank=True, null=True)  # Field name made lowercase.
-    start_time = models.DateTimeField(db_column='starttime', blank=True, null=True)  # Field name made lowercase.
-    end_time = models.DateTimeField(db_column='endtime', blank=True, null=True)  # Field name made lowercase.
+    tsuser = models.ForeignKey(
+        TSUser, models.DO_NOTHING, db_column="tsuserid", blank=True, null=True
+    )  # Field name made lowercase.
+    start_time = models.DateTimeField(
+        db_column="starttime", blank=True, null=True
+    )  # Field name made lowercase.
+    end_time = models.DateTimeField(
+        db_column="endtime", blank=True, null=True
+    )  # Field name made lowercase.
     joined = models.BooleanField(null=False, default=False)
-    disconnect_id = models.IntegerField(db_column='discid', blank=True, null=True)  # Field name made lowercase.
-    channel = models.ForeignKey(TSChannel, models.DO_NOTHING, db_column='cid')  # Field name made lowercase.
+    disconnect_id = models.IntegerField(
+        db_column="discid", blank=True, null=True
+    )  # Field name made lowercase.
+    channel = models.ForeignKey(
+        TSChannel, models.DO_NOTHING, db_column="cid"
+    )  # Field name made lowercase.
 
     class Meta:
         managed = True
-        db_table = 'tsuseractivity'
-        indexes = [
-            models.Index(fields=['start_time'])
-        ]
+        db_table = "tsuseractivity"
+        indexes = [models.Index(fields=["start_time"])]
 
 
 class HourlyActivity(DebuggableModel):
@@ -161,9 +183,9 @@ class HourlyActivity(DebuggableModel):
     activity_hours = models.FloatField(null=False)
 
     class Meta:
-        db_table = 'hourlyactivity'
+        db_table = "hourlyactivity"
         indexes = [
-            models.Index(fields=['datetime']),
+            models.Index(fields=["datetime"]),
         ]
 
 
@@ -175,17 +197,26 @@ class QueuedClientMessage(DebuggableModel):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['tsuser', 'type'], name='constraint_unique_type_user')
+            models.UniqueConstraint(
+                fields=["tsuser", "type"], name="constraint_unique_type_user"
+            )
         ]
 
 
 class Award(DebuggableModel):
     class AwardType(models.TextChoices):
-        USER_OF_WEEK = 'USER_OF_WEEK', 'User of the week'
+        USER_OF_WEEK = "USER_OF_WEEK", "User of the week"
 
-    tsuser = models.ForeignKey(TSUser, models.CASCADE, blank=False, null=False, related_name="awards")
+    tsuser = models.ForeignKey(
+        TSUser, models.CASCADE, blank=False, null=False, related_name="awards"
+    )
     date = models.DateTimeField(auto_now_add=True)
-    type = models.CharField(max_length=64, choices=AwardType.choices, default=AwardType.USER_OF_WEEK, null=False)
+    type = models.CharField(
+        max_length=64,
+        choices=AwardType.choices,
+        default=AwardType.USER_OF_WEEK,
+        null=False,
+    )
     points = models.IntegerField(blank=False, null=False)
 
 
@@ -209,17 +240,19 @@ class Char32UUIDField(models.UUIDField):
 
 
 class LoginLink(DebuggableModel):
-    user = models.ForeignKey(MergedUser, models.CASCADE, blank=False, null=False, related_name="loginlinks")
+    user = models.ForeignKey(
+        MergedUser, models.CASCADE, blank=False, null=False, related_name="loginlinks"
+    )
     code = Char32UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
 
 class UserPasskey(models.Model):
     user_model = get_user_model()
-    user = models.ForeignKey(user_model,on_delete=models.CASCADE)
+    user = models.ForeignKey(user_model, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     enabled = models.BooleanField(default=True)
-    platform = models.CharField(max_length=255,default='')
+    platform = models.CharField(max_length=255, default="")
     added_on = models.DateTimeField(auto_now_add=True)
-    last_used = models.DateTimeField(null=True,default=None)
+    last_used = models.DateTimeField(null=True, default=None)
     credential_id = models.CharField(max_length=255, unique=True)
     token = models.CharField(max_length=1024, null=False)

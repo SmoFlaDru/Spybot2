@@ -4,12 +4,19 @@ from ts3 import escape
 from django.utils import timezone
 
 from Spybot2 import settings
-from spybot.models import TSID, TSUser, TSUserActivity, TSChannel, QueuedClientMessage, MergedUser, LoginLink
+from spybot.models import (
+    TSID,
+    TSUser,
+    TSUserActivity,
+    TSChannel,
+    QueuedClientMessage,
+    MergedUser,
+    LoginLink,
+)
 from spybot.recorder.ts import TS
 
 
 class Client:
-
     def __init__(self, ts: TS):
         self.ts = ts
 
@@ -17,8 +24,15 @@ class Client:
     called when a client enters
     """
 
-    def client_enter(self, client_id: int, channel_id: int, client_database_id: int, client_nickname: str,
-                     client_type: int, client_unique_identifier: str):
+    def client_enter(
+        self,
+        client_id: int,
+        channel_id: int,
+        client_database_id: int,
+        client_nickname: str,
+        client_type: int,
+        client_unique_identifier: str,
+    ):
         # TODO save bots maybe
         if client_type == "1":
             # because fuck that tsmonitor
@@ -96,31 +110,41 @@ class Client:
         if db_channel_query.exists():
             db_channel = db_channel_query.first()
             if db_channel.name != current_channel_name:
-                print(f"Need to update channel name from {db_channel.name} to {current_channel_name}")
+                print(
+                    f"Need to update channel name from {db_channel.name} to {current_channel_name}"
+                )
                 db_channel.name = current_channel_name
                 db_channel.save()
         else:
             # TODO: create the channel here
             pass
 
-    def __client_start_session(self, ts_user: TSUser, channel_id: int, client_id: int, joined):
+    def __client_start_session(
+        self, ts_user: TSUser, channel_id: int, client_id: int, joined
+    ):
         ts_user.client_id = client_id
         ts_user.online = True
         ts_user.save()
 
         try:
             channel = TSChannel.objects.get(id__exact=channel_id)
-            new_activity = TSUserActivity(tsuser=ts_user, start_time=timezone.now(),
-                                          channel=channel, joined=joined)
+            new_activity = TSUserActivity(
+                tsuser=ts_user,
+                start_time=timezone.now(),
+                channel=channel,
+                joined=joined,
+            )
             new_activity.save()
-        except TSChannel.DoesNotExist as e:
+        except TSChannel.DoesNotExist:
             print(f"channel ID wrong: {channel_id}")
 
     def __client_end_session(self, ts_user: TSUser, reason_id: int):
         # old_activity = newest TSUserActivity for client_id (in channel_id)
         # insert endTime, reason_id into old_activity
         try:
-            old_activities = TSUserActivity.objects.order_by('-start_time').filter(tsuser=ts_user, end_time=None)
+            old_activities = TSUserActivity.objects.order_by("-start_time").filter(
+                tsuser=ts_user, end_time=None
+            )
 
             ts_user.client_id = 0
             ts_user.online = False
@@ -149,17 +173,16 @@ class Client:
     """
 
     def handle_old_sessions(self, clients):
-
         # get all open sessions and close them
         open_sessions = TSUserActivity.objects.filter(end_time=None)
 
         for session in open_sessions:
-
             keep_session_user = None
 
             for client in clients:
-                if session.tsuser.client_id == int(client['clid']) \
-                        and session.channel.id == int(client['cid']):
+                if session.tsuser.client_id == int(
+                    client["clid"]
+                ) and session.channel.id == int(client["cid"]):
                     # KEEP SESSION OPEN
                     keep_session_user = client
                     break
@@ -174,16 +197,28 @@ class Client:
         return clients
 
     def send_queued_messages(self, client_id: int, user: TSUser):
-        msgs = QueuedClientMessage.objects.filter(tsuser__in=user.merged_user.tsusers.all()).order_by("-date").all()
+        msgs = (
+            QueuedClientMessage.objects.filter(
+                tsuser__in=user.merged_user.tsusers.all()
+            )
+            .order_by("-date")
+            .all()
+        )
 
         for message in msgs:
-            self.ts.poke_client(client_id, "You got an important message from Spybot! Check out my private message "
-                                           "for details")
+            self.ts.poke_client(
+                client_id,
+                "You got an important message from Spybot! Check out my private message "
+                "for details",
+            )
             self.ts.send_text_message(client_id, message.text)
             message.delete()
 
     def send_login_link(self, client_id: int, user: TSUser):
         link = LoginLink(user=user.merged_user)
         link.save()
-        message = f"Log into your account on Spybot: https://{settings.SERVER_IP}/link_auth?code=" + quote_plus(str(link.code))
+        message = (
+            f"Log into your account on Spybot: https://{settings.SERVER_IP}/link_auth?code="
+            + quote_plus(str(link.code))
+        )
         self.ts.send_text_message(client_id, message)

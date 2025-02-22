@@ -30,6 +30,7 @@ dependencies = [
 dev-dependencies = [
     "unittest-xml-reporting ~=3.2",
     "testcontainers[postgres]>=4.9.0",
+    "ruff>=0.9.7",
 ]
 
 [tool.setuptools]

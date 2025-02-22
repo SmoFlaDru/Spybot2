@@ -26,6 +26,9 @@ def generate_options(values: list[int], text_lambda: Callable[[int], str], param
         parameter = values[0]
 
     options = list(
-        {"text": text_lambda(n), "value": n, "active": n == parameter} for n in values)
-    parameter_text = next(option["text"] for option in options if option["value"] == parameter)
+        {"text": text_lambda(n), "value": n, "active": n == parameter} for n in values
+    )
+    parameter_text = next(
+        option["text"] for option in options if option["value"] == parameter
+    )
     return options, parameter, parameter_text

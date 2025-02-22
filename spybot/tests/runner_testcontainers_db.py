@@ -13,12 +13,16 @@ class TestContainerRunner(XMLTestRunner):
         self.postgres_container.start()
 
         db_connection_settings = {
-            'USER': self.postgres_container.username,
-            'PASSWORD': self.postgres_container.password,
-            'HOST': self.postgres_container.get_container_host_ip().replace("localhost", "127.0.0.1"),
-            'PORT': self.postgres_container.get_exposed_port(self.postgres_container.port),
+            "USER": self.postgres_container.username,
+            "PASSWORD": self.postgres_container.password,
+            "HOST": self.postgres_container.get_container_host_ip().replace(
+                "localhost", "127.0.0.1"
+            ),
+            "PORT": self.postgres_container.get_exposed_port(
+                self.postgres_container.port
+            ),
         }
-        settings.DATABASES['default'].update(db_connection_settings)
+        settings.DATABASES["default"].update(db_connection_settings)
 
         return super().setup_databases(**kwargs)
 

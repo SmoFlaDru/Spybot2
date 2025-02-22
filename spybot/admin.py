@@ -11,14 +11,14 @@ from spybot.models import NewsEvent, TSUser, MergedUser, SteamID
 # Register your models here.
 @admin.register(NewsEvent)
 class NewsEventAdmin(ModelAdmin):
-    list_display = ('text', 'website_link', 'date')
+    list_display = ("text", "website_link", "date")
 
 
 @admin.action(description="Merge selected users")
 def merge_users_action(admin: ModelAdmin, request: HttpRequest, queryset: QuerySet):
     users: List[TSUser] = list(queryset)
     if len(users) < 2:
-        messages.error(request, 'Need at least two users to merge')
+        messages.error(request, "Need at least two users to merge")
         return
 
     print("Merging users", users)
@@ -43,7 +43,7 @@ def merge_users_action(admin: ModelAdmin, request: HttpRequest, queryset: QueryS
 @admin.register(TSUser)
 class TSUserAdmin(ModelAdmin):
     actions = [merge_users_action]
-    list_display = ('id', 'name', 'merged_user', 'last_login_time')
+    list_display = ("id", "name", "merged_user", "last_login_time")
     list_max_show_all = 2000
 
     def has_delete_permission(self, request, obj=None):
@@ -59,20 +59,21 @@ class SteamIDInlineAdmin(admin.TabularInline):
 
 @admin.register(MergedUser)
 class MergedUserAdmin(ModelAdmin):
-    list_display = ('id', 'name', 'merged_user_names', 'obsolete', 'number_of_tsusers')
+    list_display = ("id", "name", "merged_user_names", "obsolete", "number_of_tsusers")
     inlines = [
         SteamIDInlineAdmin,
     ]
 
     def get_queryset(self, request):
         query_set = super(MergedUserAdmin, self).get_queryset(request)
-        query_set = query_set.annotate(number_of_tsusers=models.Count('tsusers'))
-        query_set = query_set.order_by('-number_of_tsusers')
+        query_set = query_set.annotate(number_of_tsusers=models.Count("tsusers"))
+        query_set = query_set.order_by("-number_of_tsusers")
         return query_set
 
     def number_of_tsusers(self, mu: MergedUser):
         return mu.number_of_tsusers
-    number_of_tsusers.admin_order_field = 'number_of_tsusers'
+
+    number_of_tsusers.admin_order_field = "number_of_tsusers"
 
     def has_delete_permission(self, request, obj=None):
         return False
