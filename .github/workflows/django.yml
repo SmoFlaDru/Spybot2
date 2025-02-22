@@ -47,3 +47,12 @@ jobs:
       with:
         coverageFile: coverage.xml
         token: ${{ secrets.GH_PR_WRITE_TOKEN }}
+  event_file:
+    name: "Event File"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: event-file
+          path: ${{ github.event_path }}
