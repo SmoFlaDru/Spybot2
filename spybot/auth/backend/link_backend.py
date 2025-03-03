@@ -1,4 +1,3 @@
-
 from spybot.models import LoginLink, MergedUser
 
 
