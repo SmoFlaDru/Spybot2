@@ -116,9 +116,14 @@ def week_activity_trend():
                     WHERE HourlyActivity.datetime >= compareWeek.startWeek
                         AND HourlyActivity.datetime <= compareWeek.endWeek
                 )
-            SELECT currentWeekData.sum AS current_week_sum,
-            compareWeekData.sum AS compare_week_sum,
-            currentWeekData.sum / compareWeekData.sum AS fraction,
+            SELECT
+                currentWeekData.sum AS current_week_sum,
+                compareWeekData.sum AS compare_week_sum,
+                CASE
+                    WHEN compareWeekData.sum != 0
+                        THEN currentWeekData.sum / compareWeekData.sum
+                        ELSE 0
+                    END AS fraction,
             CASE
                 WHEN currentWeekData.sum = 0 AND compareWeekData.sum = 0 THEN 0
                 WHEN compareWeekData.sum = 0 THEN 'infinity'
