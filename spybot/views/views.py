@@ -1,4 +1,5 @@
 import datetime
+import math
 import time
 from datetime import timedelta
 from typing import List
@@ -48,14 +49,7 @@ def home(request):
     top_users = visualization.top_users_of_week()
     context["top_users_data"] = list(top_users)
 
-    # week trend tile
-    week_trend = visualization.week_activity_trend()
-    week_comparison = visualization.week_activity_comparison()
-    # convert to float if it's not the special infinity value
-    if week_trend[0]["delta_percent"] != "infinity":
-        week_trend[0]["delta_percent"] = round(float(week_trend[0]["delta_percent"]))
-    context["week_trend"] = week_trend[0]
-    context["week_comparison"] = week_comparison
+    context |= week_trend_tile()
 
     # channel popularity
     channel_popularity = visualization.channel_popularity()
@@ -67,6 +61,17 @@ def home(request):
     context["recent_events"] = get_recent_events()
 
     return render(request, "spybot/home/home.html", context)
+
+
+def week_trend_tile():
+    # week trend tile
+    week_trend = visualization.week_activity_trend()
+    week_comparison = visualization.week_activity_comparison()
+    percent = float(week_trend[0]["delta_percent"])
+    # convert to integer if it's not the special infinity value
+    if not math.isinf(percent):
+        week_trend[0]["delta_percent"] = round(percent)
+    return {"week_trend": week_trend[0], "week_comparison": week_comparison}
 
 
 def get_recent_events(start=0):
