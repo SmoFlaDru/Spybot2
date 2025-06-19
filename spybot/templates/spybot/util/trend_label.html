@@ -1,16 +1,16 @@
 {% load tabler_icons %}
 {% load util %}
 
-<span class="text-{% if percentage > 0 or percentage == 'infinity' %}green
+<span class="text-{% if percentage > 0 %}green
 {% elif percentage == 0 %}yellow
 {% else %}red
 {% endif %} d-inline-flex align-items-center lh-1">
-    {% if percentage|is_string %}
-        +{{ percentage }} {# +infinity #}
+    {% if percentage|is_float_infinity %}
+        +infinity
     {% else %}
         {{ percentage|stringformat:"+.0f" }}%
     {% endif %}
-{% if percentage > 0 or percentage == 'infinity' %}
+{% if percentage > 0 %}
 {% tabler_icon 'trending-up' class='icon ms-1' %}
 {% elif percentage == 0 %}
 {% tabler_icon 'minus' class='icon ms-1' %}
