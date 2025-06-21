@@ -247,7 +247,7 @@ def live_fragment(request):
     sessions = TSUserActivity.objects.filter(end_time=None)
     channels = TSChannel.objects.order_by("order")
     clients = []
-    musers = []
+    steam_ids = []
 
     for session in sessions:
         channel_id = session.channel.id
@@ -255,17 +255,19 @@ def live_fragment(request):
         merged_user_id = session.tsuser.merged_user_id
 
         mu = MergedUser.objects.get(id=merged_user_id)
-        musers.append(mu)
+        steam_id_str = [str(m.steam_id) for m in mu.steamids.all()]
+        steam_ids.extend(steam_id_str)
+
         clients.append(
             {
                 "channel_id": channel_id,
                 "name": user_name,
                 "merged_user_id": merged_user_id,
-                "steamids": [mu.steamids.all()],
+                "steamids": steam_ids,
             }
         )
 
-    steam_games = get_steam_games(musers)
+    steam_games = get_steam_games(steam_ids)
 
     # find matching client and insert game name
     for c in clients:
@@ -277,9 +279,7 @@ def live_fragment(request):
     return render(request, "spybot/home/live_fragment.html", context)
 
 
-def get_steam_games(musers: List[MergedUser]):
-    steam_ids = [sid for muser in musers for sid in muser.steamids.all()]
-
+def get_steam_games(steam_ids: List[str]):
     return get_steam_users_playing_info(steam_ids) if steam_ids else []
 
 
