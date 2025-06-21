@@ -20,7 +20,7 @@ from spybot.models import (
     TSUserActivity,
     UserPasskey,
 )
-from spybot.remote.steam_api import get_steam_user_playing_info
+from spybot.remote.steam_api import get_steam_users_playing_info
 from spybot.templatetags import ts_filters
 from spybot.views.common import get_context, get_user
 from spybot.views.fragments.activity_chart import activity_chart_data
@@ -247,6 +247,7 @@ def live_fragment(request):
     sessions = TSUserActivity.objects.filter(end_time=None)
     channels = TSChannel.objects.order_by("order")
     clients = []
+    musers = []
 
     for session in sessions:
         channel_id = session.channel.id
@@ -254,32 +255,32 @@ def live_fragment(request):
         merged_user_id = session.tsuser.merged_user_id
 
         mu = MergedUser.objects.get(id=merged_user_id)
-        game_id, game_name = get_steam_game(mu)
+        musers.append(mu)
         clients.append(
             {
                 "channel_id": channel_id,
                 "name": user_name,
                 "merged_user_id": merged_user_id,
-                "game": game_name,
+                "steamids": [mu.steamids.all()]
             }
         )
+
+    steam_games = get_steam_games(musers)
+
+    # find matching client and insert game name
+    for c in clients:
+        for sg in steam_games:
+            if sg[0] in c["steamids"]:
+                c["game"] = sg[2]
 
     context = {"clients": clients, "channels": channels}
     return render(request, "spybot/home/live_fragment.html", context)
 
 
-def get_steam_game(mu: MergedUser):
-    steam_ids = mu.steamids.all()
+def get_steam_games(musers: List[MergedUser]):
+    steam_ids = [sid for muser in musers for sid in muser.steamids.all()]
 
-    if not steam_ids:
-        return 0, ""
-
-    for sid in steam_ids:
-        steam_id = sid.steam_id
-        game_id, game_name = get_steam_user_playing_info(steam_id)
-        if game_id is not None:
-            return game_id, game_name
-    return 0, ""
+    return get_steam_users_playing_info(steam_ids) if steam_ids else []
 
 
 def recent_events_fragment(request):
