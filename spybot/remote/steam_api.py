@@ -3,6 +3,7 @@ import requests
 
 from Spybot2 import settings
 
+
 def get_steam_users_playing_info(steam_ids: List[str]):
     assert 0 < len(steam_ids) <= 100
 
@@ -10,7 +11,7 @@ def get_steam_users_playing_info(steam_ids: List[str]):
         (
             steam_info.get("steamid", ""),
             steam_info.get("gameid", 0),
-            steam_info.get("gameextrainfo", "")
+            steam_info.get("gameextrainfo", ""),
         )
         for steam_info in _get_steam_accounts_info(steam_ids)
     ]
