@@ -261,7 +261,7 @@ def live_fragment(request):
                 "channel_id": channel_id,
                 "name": user_name,
                 "merged_user_id": merged_user_id,
-                "steamids": [mu.steamids.all()]
+                "steamids": [mu.steamids.all()],
             }
         )
 
