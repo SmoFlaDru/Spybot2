@@ -47,8 +47,8 @@ def _get_steam_accounts_info(steam_ids: List[str]):
             key=steam_api_key, id=",".join(steam_ids)
         )
 
-        steam_ids.sort()
-        result = cache.get(steam_ids)
+        key = sum(int(s) for s in steam_ids)
+        result = cache.get(key)
         if result is not None:
             return result
 
@@ -58,7 +58,7 @@ def _get_steam_accounts_info(steam_ids: List[str]):
         if len(steam_info_players) == 0:
             return []
 
-        cache.set(steam_ids, steam_info_players, timeout=5)
+        cache.set(key, steam_info_players, timeout=10)
         return steam_info_players
     except RequestException as e:
         print("Error getting data from steam API: ", e)
