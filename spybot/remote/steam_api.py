@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+from enum import Enum
 from typing import List
 import requests
 from requests.exceptions import RequestException
@@ -5,16 +7,33 @@ from requests.exceptions import RequestException
 from Spybot2 import settings
 
 
+class OnlineStatus(Enum):
+    OFFLINE = 0
+    ONLINE = 1
+    BUSY = 2
+    AWAY = 3
+    SNOOZE = 4
+
+
+@dataclass
+class SteamAccountInfo:
+    steam_id: str
+    game_id: int
+    game_name: str
+    avatar_url: str
+    online_status: OnlineStatus
+
+
 def get_steam_users_playing_info(steam_ids: List[str]):
     assert 0 < len(steam_ids) <= 100
 
     return [
-        (
+        SteamAccountInfo(
             steam_info.get("steamid", ""),
             steam_info.get("gameid", 0),
             steam_info.get("gameextrainfo", ""),
             steam_info.get("avatar", ""),
-            steam_info.get("personastate", 0),
+            steam_info.get("personastate", OnlineStatus.OFFLINE),
         )
         for steam_info in _get_steam_accounts_info(steam_ids)
     ]
