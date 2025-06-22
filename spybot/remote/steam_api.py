@@ -33,7 +33,7 @@ def get_steam_users_playing_info(steam_ids: List[str]):
             steam_info.get("gameid", 0),
             steam_info.get("gameextrainfo", ""),
             steam_info.get("avatar", ""),
-            steam_info.get("personastate", OnlineStatus.OFFLINE),
+            OnlineStatus(steam_info.get("personastate", 0)),
         )
         for steam_info in _get_steam_accounts_info(steam_ids)
     ]
