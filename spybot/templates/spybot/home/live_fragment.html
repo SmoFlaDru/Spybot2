@@ -23,6 +23,12 @@
                                  {% tabler_icon 'arrow-badge-right' size=20 %}
                              </span>
 
+                            {% if client.avatar is not None %}
+                                <span class="flex-column d-flex padding-3">
+                                    <img src="{{ client.avatar }}" style="padding-right: 5px;" alt="">
+                                </span>
+                            {% endif %}
+
                              <div class="flex-column d-flex">
                                  <span>{{ client.name }}</span>
                                  <span class="text-muted small">{{ client.game }}</span>

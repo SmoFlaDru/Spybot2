@@ -221,7 +221,7 @@ def user(request, user_id: int):
     game_id = 0
 
     if u.get("online") == 1:
-        game_id, game_name = get_steam_games(MergedUser.objects.get(id=user_id))
+        game_id, game_name = get_steam_accounts(MergedUser.objects.get(id=user_id))
 
     months = visualization.user_month_activity(user_id)
 
@@ -267,19 +267,21 @@ def live_fragment(request):
             }
         )
 
-    steam_games = get_steam_games(steam_ids)
+    steam_accounts = get_steam_accounts(steam_ids)
 
-    # find matching client and insert game name
-    for c in clients:
-        for sg in steam_games:
-            if sg[0] in c["steamids"]:
-                c["game"] = sg[2]
+    # find matching client and insert game name and avatar
+    # account[4] = online status
+    for client in clients:
+        for account in steam_accounts:
+            if account[0] in client["steamids"] and account[4] != 0:
+                client["game"] = account[2]
+                client["avatar"] = account[3]
 
     context = {"clients": clients, "channels": channels}
     return render(request, "spybot/home/live_fragment.html", context)
 
 
-def get_steam_games(steam_ids: List[str]):
+def get_steam_accounts(steam_ids: List[str]):
     return get_steam_users_playing_info(steam_ids) if steam_ids else []
 
 
