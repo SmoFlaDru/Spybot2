@@ -56,6 +56,7 @@ ALLOWED_HOSTS = [
     TS_IP,
     "localhost",
     "127.0.0.1",
+    "10.5.0.2",
     "spybot.localhost.direct",
     "192.168.59.100",
     "192.168.59.100:20001",
