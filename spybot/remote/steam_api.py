@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import List
 import requests
+from django.core.cache import cache
 from requests.exceptions import RequestException
 
 from Spybot2 import settings
@@ -46,11 +47,18 @@ def _get_steam_accounts_info(steam_ids: List[str]):
             key=steam_api_key, id=",".join(steam_ids)
         )
 
+        key = sum(int(s) for s in steam_ids)
+        result = cache.get(key)
+        if result is not None:
+            return result
+
         response = requests.get(req)
         response.raise_for_status()
         steam_info_players = response.json().get("response").get("players")
         if len(steam_info_players) == 0:
             return []
+
+        cache.set(key, steam_info_players, timeout=10)
         return steam_info_players
     except RequestException as e:
         print("Error getting data from steam API: ", e)
