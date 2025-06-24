@@ -12,6 +12,6 @@ services:
       - caddy_data:/data
       - caddy_config:/config
       - static_files:/spybot_static
-  db:
-    ports:
-      - "5432:5432"
+  #db:
+    #ports:
+    #  - "5432:5432"

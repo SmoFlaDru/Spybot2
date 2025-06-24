@@ -9,6 +9,11 @@ def is_string(val):
     return isinstance(val, str)
 
 
+@register.filter
+def is_float_infinity(val):
+    return val == float("inf")
+
+
 # from https://gist.github.com/jonlabelle/7d306575cbbd34b154f87b1853d532cc
 @register.filter
 def relative_time(date):

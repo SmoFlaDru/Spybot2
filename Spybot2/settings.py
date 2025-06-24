@@ -56,6 +56,7 @@ ALLOWED_HOSTS = [
     TS_IP,
     "localhost",
     "127.0.0.1",
+    "10.5.0.2",
     "spybot.localhost.direct",
     "192.168.59.100",
     "192.168.59.100:20001",
@@ -189,6 +190,13 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Celery
 CELERY_BROKER_URL = "redis://redis:6379"
 CELERY_RESULT_BACKEND = "redis://redis:6379"
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://redis:6379/0",
+    }
+}
 
 # Celery beat
 CELERY_BEAT_SCHEDULE = {

@@ -1,4 +1,5 @@
 import datetime
+import math
 import time
 from datetime import timedelta
 from typing import List
@@ -19,7 +20,11 @@ from spybot.models import (
     TSUserActivity,
     UserPasskey,
 )
-from spybot.remote.steam_api import get_steam_user_playing_info
+from spybot.remote.steam_api import (
+    get_steam_users_playing_info,
+    SteamAccountInfo,
+    OnlineStatus,
+)
 from spybot.templatetags import ts_filters
 from spybot.views.common import get_context, get_user
 from spybot.views.fragments.activity_chart import activity_chart_data
@@ -48,14 +53,7 @@ def home(request):
     top_users = visualization.top_users_of_week()
     context["top_users_data"] = list(top_users)
 
-    # week trend tile
-    week_trend = visualization.week_activity_trend()
-    week_comparison = visualization.week_activity_comparison()
-    # convert to float if it's not the special infinity value
-    if week_trend[0]["delta_percent"] != "infinity":
-        week_trend[0]["delta_percent"] = round(float(week_trend[0]["delta_percent"]))
-    context["week_trend"] = week_trend[0]
-    context["week_comparison"] = week_comparison
+    context |= week_trend_tile()
 
     # channel popularity
     channel_popularity = visualization.channel_popularity()
@@ -67,6 +65,17 @@ def home(request):
     context["recent_events"] = get_recent_events()
 
     return render(request, "spybot/home/home.html", context)
+
+
+def week_trend_tile():
+    # week trend tile
+    week_trend = visualization.week_activity_trend()
+    week_comparison = visualization.week_activity_comparison()
+    percent = float(week_trend[0]["delta_percent"])
+    # convert to integer if it's not the special infinity value
+    if not math.isinf(percent):
+        week_trend[0]["delta_percent"] = round(percent)
+    return {"week_trend": week_trend[0], "week_comparison": week_comparison}
 
 
 def get_recent_events(start=0):
@@ -216,7 +225,17 @@ def user(request, user_id: int):
     game_id = 0
 
     if u.get("online") == 1:
-        game_id, game_name = get_steam_game(MergedUser.objects.get(id=user_id))
+        accounts: List[SteamAccountInfo] = get_steam_accounts(
+            [
+                str(acc.steam_id)
+                for acc in MergedUser.objects.get(id=user_id).steamids.all()
+            ]
+        )
+
+        for account in accounts:
+            if account.online_status != OnlineStatus.OFFLINE:
+                game_id = account.game_id
+                game_name = account.game_name
 
     months = visualization.user_month_activity(user_id)
 
@@ -242,6 +261,7 @@ def live_fragment(request):
     sessions = TSUserActivity.objects.filter(end_time=None)
     channels = TSChannel.objects.order_by("order")
     clients = []
+    steam_ids = []
 
     for session in sessions:
         channel_id = session.channel.id
@@ -249,32 +269,36 @@ def live_fragment(request):
         merged_user_id = session.tsuser.merged_user_id
 
         mu = MergedUser.objects.get(id=merged_user_id)
-        game_id, game_name = get_steam_game(mu)
+        steam_id_str = [str(m.steam_id) for m in mu.steamids.all()]
+        steam_ids.extend(steam_id_str)
+
         clients.append(
             {
                 "channel_id": channel_id,
                 "name": user_name,
                 "merged_user_id": merged_user_id,
-                "game": game_name,
+                "steamids": steam_id_str,
             }
         )
+
+    steam_accounts = get_steam_accounts(steam_ids)
+
+    # find matching client and insert game name and avatar
+    for client in clients:
+        for account in steam_accounts:
+            if (
+                account.steam_id in client["steamids"]
+                and account.online_status != OnlineStatus.OFFLINE
+            ):
+                client["game"] = account.game_name
+                client["avatar"] = account.avatar_url
 
     context = {"clients": clients, "channels": channels}
     return render(request, "spybot/home/live_fragment.html", context)
 
 
-def get_steam_game(mu: MergedUser):
-    steam_ids = mu.steamids.all()
-
-    if not steam_ids:
-        return 0, ""
-
-    for sid in steam_ids:
-        steam_id = sid.steam_id
-        game_id, game_name = get_steam_user_playing_info(steam_id)
-        if game_id is not None:
-            return game_id, game_name
-    return 0, ""
+def get_steam_accounts(steam_ids: List[str]) -> List[SteamAccountInfo]:
+    return get_steam_users_playing_info(steam_ids) if steam_ids else []
 
 
 def recent_events_fragment(request):
