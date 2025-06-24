@@ -226,7 +226,10 @@ def user(request, user_id: int):
 
     if u.get("online") == 1:
         accounts: List[SteamAccountInfo] = get_steam_accounts(
-            MergedUser.objects.get(id=user_id)
+            [
+                str(acc.steam_id)
+                for acc in MergedUser.objects.get(id=user_id).steamids.all()
+            ]
         )
 
         for account in accounts:
