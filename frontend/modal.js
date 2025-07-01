@@ -1,5 +1,5 @@
 
-const modal = new bootstrap.Modal(document.querySelector("#modal"), {});
+const modal = new tabler.Modal(document.querySelector("#modal"), {});
 
 htmx.on("htmx:afterSwap", (e) => {
     if (e.detail.target.id === "dialog") {
