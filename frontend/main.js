@@ -5,6 +5,7 @@ import * as passkeys from './passkeys';
 
 import "@tabler/core/dist/css/tabler.min.css"
 import "@tabler/core/dist/css/tabler-vendors.min.css"
+import "@tabler/core/dist/css/tabler-themes.min.css"
 import './modal'
 
 
