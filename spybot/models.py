@@ -217,7 +217,7 @@ class Award(DebuggableModel):
 
     # Deprecated tsuser field kept for historical records. Use merged_user instead.
     tsuser = models.ForeignKey(
-        MergedUser,
+        TSUser,
         models.CASCADE,
         blank=False,
         null=True,
