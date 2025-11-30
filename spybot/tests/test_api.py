@@ -12,15 +12,11 @@ class ApiTestCase(TestCase):
         user_a = TSUser.objects.create(name="userA", client_id=1, online=False)
         user_b = TSUser.objects.create(name="userB", client_id=2, online=False)
 
-        channel_a = TSChannel.objects.create(id=3, name="channelA", order=1)
-        channel_b = TSChannel.objects.create(id=4, name="AFK", order=2)
+        channel_a = TSChannel.objects.create(name="channelA", order=1)
+        channel_b = TSChannel.objects.create(name="AFK", order=2)
 
-        TSUserActivity.objects.create(
-            id=1, tsuser=user_a, channel=channel_a, end_time=None
-        )
-        TSUserActivity.objects.create(
-            id=2, tsuser=user_b, channel=channel_b, end_time=None
-        )
+        TSUserActivity.objects.create(tsuser=user_a, channel=channel_a, end_time=None)
+        TSUserActivity.objects.create(tsuser=user_b, channel=channel_b, end_time=None)
 
     def test_legacy_widget(self):
         result = widget_legacy(HttpRequest())
