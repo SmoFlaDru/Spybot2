@@ -190,7 +190,15 @@ class HourlyActivity(DebuggableModel):
 
 
 class QueuedClientMessage(DebuggableModel):
-    tsuser = models.ForeignKey(TSUser, models.CASCADE, blank=False, null=False)
+    # Deprecated tsuser field kept for historical records. Use merged_user instead.
+    tsuser = models.ForeignKey(TSUser, models.CASCADE, blank=False, null=True)
+    merged_user = models.ForeignKey(
+        MergedUser,
+        models.CASCADE,
+        blank=False,
+        null=False,
+        related_name="queuedclientmessages",
+    )
     text = models.CharField(max_length=1024, blank=False, null=False)
     type = models.CharField(max_length=128, blank=False, null=False)
     date = models.DateField(auto_now_add=True)
@@ -207,8 +215,19 @@ class Award(DebuggableModel):
     class AwardType(models.TextChoices):
         USER_OF_WEEK = "USER_OF_WEEK", "User of the week"
 
+    # Deprecated tsuser field kept for historical records. Use merged_user instead.
     tsuser = models.ForeignKey(
-        TSUser, models.CASCADE, blank=False, null=False, related_name="awards"
+        TSUser,
+        models.CASCADE,
+        blank=False,
+        null=True,
+        related_name="awards_deprecated",
+    )
+    merged_user = models.ForeignKey(
+        MergedUser,
+        on_delete=models.CASCADE,
+        null=False,
+        related_name="awards",
     )
     date = models.DateTimeField(auto_now_add=True)
     type = models.CharField(

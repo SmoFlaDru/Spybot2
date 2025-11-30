@@ -6,7 +6,7 @@ from ts3 import escape
 
 from Spybot2 import settings
 from spybot import visualization
-from spybot.models import TSUser, Award, QueuedClientMessage, NewsEvent
+from spybot.models import MergedUser, Award, QueuedClientMessage, NewsEvent
 
 
 def end_of_week_awards():
@@ -17,14 +17,14 @@ def end_of_week_awards():
     top_users.reverse()
 
     for idx, result in enumerate(top_users):
-        user = TSUser.objects.get(id=result["user_id"])
+        user = MergedUser.objects.get(id=result["user_id"])
         # correct index because of reversed list
         idx = 2 - idx
 
         score = 3 - idx
 
         # create award
-        award = Award(tsuser=user, type=Award.AwardType.USER_OF_WEEK, points=score)
+        award = Award(merged_user=user, type=Award.AwardType.USER_OF_WEEK, points=score)
         award.save()
 
         # create news event
@@ -50,26 +50,25 @@ def end_of_week_awards():
 
         # remove last message if it exists
         previous_message = QueuedClientMessage.objects.filter(
-            tsuser=user, type="AWARD_USER_OF_WEEK"
+            merged_user=user, type="AWARD_USER_OF_WEEK"
         )
         if previous_message.exists():
             previous_message.first().delete()
 
         queued_message = QueuedClientMessage(
-            tsuser=user, text=message, type="AWARD_USER_OF_WEEK"
+            merged_user=user, text=message, type="AWARD_USER_OF_WEEK"
         )
         queued_message.save()
 
 
-def _generate_news_event_for_top_user_of_week(user: TSUser, idx: int, points: int):
+def _generate_news_event_for_top_user_of_week(user: MergedUser, idx: int, points: int):
     date = datetime.now()
     week_of_year = int(date.strftime("%V"))
     year = date.year
 
-    # match by name to account for duplicate accounts of the same person
-    previous_awards_count = Award.objects.filter(tsuser__name=user.name).count()
+    previous_awards_count = Award.objects.filter(merged_user=user).count()
     previous_same_score_awards_count = Award.objects.filter(
-        tsuser__name=user.name, points=points
+        merged_user=user, points=points
     ).count()
 
     # create link

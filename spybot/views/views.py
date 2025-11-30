@@ -195,14 +195,13 @@ def halloffame(request):
         awards_silver = []
         awards_bronze = []
         mu = MergedUser.objects.get(id=merged_user["user_id"])
-        for u in mu.tsusers.all():
-            for a in u.awards.all():
-                if a.points == 3:
-                    awards_gold.append(a)
-                elif a.points == 2:
-                    awards_silver.append(a)
-                elif a.points == 1:
-                    awards_bronze.append(a)
+        for a in mu.awards.all():
+            if a.points == 3:
+                awards_gold.append(a)
+            elif a.points == 2:
+                awards_silver.append(a)
+            elif a.points == 1:
+                awards_bronze.append(a)
         merged_user["num_gold_awards"] = len(awards_gold)
         merged_user["num_silver_awards"] = len(awards_silver)
         merged_user["num_bronze_awards"] = len(awards_bronze)
