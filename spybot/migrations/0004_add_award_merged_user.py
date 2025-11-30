@@ -39,7 +39,12 @@ def migrate_award_merged_user(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-    dependencies = [("spybot", "0002_alter_loginlink_code")]
+    dependencies = [
+        (
+            "spybot",
+            "0003_rename_hourlyactiv_datetim_96f0af_idx_hourlyactiv_datetim_4aadb3_idx_and_more",
+        )
+    ]
 
     operations = [
         # Make old field nulllable because we are not going to populate it anymore for new awards

@@ -39,7 +39,7 @@ def migrate_queuedclientmessage_merged_user(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-    dependencies = [("spybot", "0003_add_award_merged_user")]
+    dependencies = [("spybot", "0004_add_award_merged_user")]
 
     operations = [
         # Make old field nulllable because we are not going to populate it anymore for new awards
