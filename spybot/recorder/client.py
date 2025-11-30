@@ -198,9 +198,7 @@ class Client:
 
     def send_queued_messages(self, client_id: int, user: TSUser):
         msgs = (
-            QueuedClientMessage.objects.filter(
-                tsuser__in=user.merged_user.tsusers.all()
-            )
+            QueuedClientMessage.objects.filter(merged_user=user.merged_user)
             .order_by("-date")
             .all()
         )
