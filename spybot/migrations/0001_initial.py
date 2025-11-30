@@ -346,4 +346,14 @@ class Migration(migrations.Migration):
                 fields=("tsuser", "type"), name="constraint_unique_type_user"
             ),
         ),
+        migrations.AlterField(
+            model_name="tschannel",
+            name="id",
+            field=models.AutoField(primary_key=True, serialize=False),
+        ),
+        migrations.AlterField(
+            model_name="tsuseractivity",
+            name="id",
+            field=models.AutoField(primary_key=True, serialize=False),
+        ),
     ]
