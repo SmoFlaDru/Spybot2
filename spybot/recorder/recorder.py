@@ -1,3 +1,4 @@
+import signal
 import traceback
 
 from ts3 import TS3Error
@@ -13,17 +14,24 @@ class Recorder:
     def __init__(self):
         self.ts = TS()
         self.client = Client(self.ts)
+        self.stopping = False
 
     def run(self):
-        while True:
-            self.ts.make_conn()
-            self.ts.register_events()
-            self.ts.set_nickname("Spybot_2")
+        self._register_signal_handlers()
 
-            self.main_loop()
+        try:
+            while not self.stopping:
+                self.ts.make_conn()
+                self.ts.register_events()
+                self.ts.set_nickname("Spybot_2")
 
-            # prepare for reconnection attempt
-            print("Ultimate Error, restarting connection")
+                self.main_loop()
+
+                if not self.stopping:
+                    # prepare for reconnection attempt
+                    print("Ultimate Error, restarting connection")
+        finally:
+            self.shutdown()
 
     def main_loop(self):
         try:
@@ -48,9 +56,13 @@ class Recorder:
                 )
 
             # wait for events
-            while True:
+            while not self.stopping:
                 try:
-                    (event_type, event) = self.ts.wait_for_event()
+                    result = self.ts.wait_for_event()
+                    if result is None:
+                        continue
+
+                    (event_type, event) = result
                     print(f"new Event of type {event_type}: {event}")
 
                     # fix for closed database connection
@@ -64,10 +76,28 @@ class Recorder:
                     print(f"Unexpected exception during parsing: {e}")
 
         except TS3Error as e:
-            print(f"Teamspeak error {e}, retry connection")
+            if not self.stopping:
+                print(f"Teamspeak error {e}, retry connection")
         except Exception as e:
-            print(f"Very unexpected Exception: {e}")
-            print(traceback.format_exc())
+            if not self.stopping:
+                print(f"Very unexpected Exception: {e}")
+                print(traceback.format_exc())
+
+    def _register_signal_handlers(self):
+        signal.signal(signal.SIGTERM, self._request_shutdown)
+        signal.signal(signal.SIGINT, self._request_shutdown)
+
+    def _request_shutdown(self, signum, _frame):
+        signal_name = signal.Signals(signum).name
+        print(f"Recorder received {signal_name}, shutting down")
+        self.stopping = True
+        self.ts.close()
+
+    def shutdown(self):
+        print("Recorder shutting down...")
+        self.stopping = True
+        self.ts.close()
+        db.connections.close_all()
 
     # TODO maybe move into client?
     def process_event(self, event_type: str, event: dict):

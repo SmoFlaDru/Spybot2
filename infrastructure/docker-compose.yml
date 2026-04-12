@@ -1,12 +1,15 @@
 services:
   spybot:
     image: 'ghcr.io/smofladru/spybot2:sha-${COMMIT_SHA}'
+    init: true
     restart: unless-stopped
     volumes:
       - static_files:/home/spybot/spybot_static
       - $PWD/.env:/home/spybot/.env
     expose:
       - 8000
+    ports:
+      - "8000:8000"
   caddy:
     image: 'caddy:2.8-alpine'
     restart: unless-stopped
@@ -40,5 +43,4 @@ volumes:
 secrets:
   db_password:
     file: secrets/db_password.txt
-
 

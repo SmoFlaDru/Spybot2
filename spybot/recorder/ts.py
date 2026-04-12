@@ -16,7 +16,7 @@ class TS:
         self.ts_ip = settings.TS_IP
         self.ts_port = settings.TS_PORT
 
-        self.EVENT_TIMEOUT = 30
+        self.EVENT_TIMEOUT = 1
 
     def make_conn(self):
         print("Starting connection")
@@ -36,14 +36,16 @@ class TS:
         self.ts3conn.exec_("servernotifyregister", event="server")
 
     def wait_for_event(self):
-        # not happy with yet another nested while True loop :/
-        while True:
-            try:
-                res = self.ts3conn.wait_for_event(30)
-                res._parse_data()
-                return res._event, res.parsed[0]
-            except TS3TimeoutError:
-                self.keep_alive()
+        if self.ts3conn is None:
+            raise RuntimeError("Teamspeak connection is not established")
+
+        try:
+            res = self.ts3conn.wait_for_event(self.EVENT_TIMEOUT)
+            res._parse_data()
+            return res._event, res.parsed[0]
+        except TS3TimeoutError:
+            self.keep_alive()
+            return None
 
     def get_clients(self):
         return self.ts3conn.exec_("clientlist", "uid").parsed
@@ -62,7 +64,20 @@ class TS:
         return None
 
     def keep_alive(self):
+        if self.ts3conn is None:
+            return
         self.ts3conn.send_keepalive()
+
+    def close(self):
+        if self.ts3conn is None:
+            return
+
+        try:
+            self.ts3conn.close()
+        except Exception as error:
+            print("Error while closing TeamSpeak connection:", error)
+        finally:
+            self.ts3conn = None
 
     def set_nickname(self, name: str):
         postfix = 0
