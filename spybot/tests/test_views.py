@@ -1,4 +1,4 @@
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 
 from django.test import TestCase
 
@@ -12,7 +12,7 @@ class ViewsTestCase(TestCase):
 
     def test_week_trend_tile_infinite_growth(self):
         # given
-        timestamp = datetime.now(tz=timezone.utc) - timedelta(hours=3)
+        timestamp = datetime.now(tz=UTC) - timedelta(hours=3)
         current_week_activity = HourlyActivity(datetime=timestamp, activity_hours=1)
         current_week_activity.save()
 

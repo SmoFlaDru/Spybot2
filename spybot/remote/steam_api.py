@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import List
+
 import requests
 from django.core.cache import cache
 from requests.exceptions import RequestException
@@ -25,7 +25,7 @@ class SteamAccountInfo:
     online_status: OnlineStatus
 
 
-def get_steam_users_playing_info(steam_ids: List[str]):
+def get_steam_users_playing_info(steam_ids: list[str]):
     assert 0 < len(steam_ids) <= 100
 
     return [
@@ -40,7 +40,7 @@ def get_steam_users_playing_info(steam_ids: List[str]):
     ]
 
 
-def _get_steam_accounts_info(steam_ids: List[str]):
+def _get_steam_accounts_info(steam_ids: list[str]):
     try:
         steam_api_key = settings.STEAM_API_KEY
         req = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={key}&steamids={id}".format(

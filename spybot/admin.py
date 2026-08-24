@@ -1,11 +1,10 @@
-from typing import List, Set
 from django.contrib import admin, messages
 from django.contrib.admin import ModelAdmin
-from django.db.models import QuerySet
 from django.db import models
+from django.db.models import QuerySet
 from django.http import HttpRequest
 
-from spybot.models import NewsEvent, TSUser, MergedUser, SteamID
+from spybot.models import MergedUser, NewsEvent, SteamID, TSUser
 
 
 # Register your models here.
@@ -16,7 +15,7 @@ class NewsEventAdmin(ModelAdmin):
 
 @admin.action(description="Merge selected users")
 def merge_users_action(admin: ModelAdmin, request: HttpRequest, queryset: QuerySet):
-    users: List[TSUser] = list(queryset)
+    users: list[TSUser] = list(queryset)
     if len(users) < 2:
         messages.error(request, "Need at least two users to merge")
         return
@@ -24,7 +23,7 @@ def merge_users_action(admin: ModelAdmin, request: HttpRequest, queryset: QueryS
     print("Merging users", users)
     first: TSUser = users[0]
     new_merged_head = first.merged_user
-    other_ts_users: Set[TSUser] = set()
+    other_ts_users: set[TSUser] = set()
 
     for other_user in users[1:]:
         other_ts_users.update(set(other_user.merged_user.tsusers.all()))
@@ -65,7 +64,7 @@ class MergedUserAdmin(ModelAdmin):
     ]
 
     def get_queryset(self, request):
-        query_set = super(MergedUserAdmin, self).get_queryset(request)
+        query_set = super().get_queryset(request)
         query_set = query_set.annotate(number_of_tsusers=models.Count("tsusers"))
         query_set = query_set.order_by("-number_of_tsusers")
         return query_set

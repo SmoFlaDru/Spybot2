@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 from spybot import visualization
-from spybot.views.common import get_context, generate_options
+from spybot.views.common import generate_options, get_context
 
 
 def activity_chart_data(request):

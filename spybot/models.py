@@ -5,12 +5,13 @@
 #   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
+import uuid
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.db import models
-from django.db.models.fields import AutoFieldMixin, PositiveIntegerField, AutoField
+from django.db.models.fields import AutoField, AutoFieldMixin, PositiveIntegerField
 from django.utils import timezone
-import uuid
 
 
 class DebuggableModel(models.Model):
@@ -85,15 +86,12 @@ class MergedUser(DebuggableModel, AbstractBaseUser):
 
     def get_user_permissions(self, obj=None):
         print("get_user_permissions: ", obj)
-        return None
 
     def get_group_permissions(self, obj=None):
         print("get_group_permissions: ", obj)
-        return None
 
     def get_all_permissions(self, obj=None):
         print("get_all_permissions: ", obj)
-        return None
 
     def has_perm(self, perm, obj=None):
         return self.is_superuser

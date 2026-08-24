@@ -1,4 +1,4 @@
-from typing import TypedDict, List
+from typing import TypedDict
 
 from django.db import connection
 
@@ -68,7 +68,7 @@ class TopUserResult(TypedDict):
     user_id: int
 
 
-def top_users_of_week() -> List[TopUserResult]:
+def top_users_of_week() -> list[TopUserResult]:
     with connection.cursor() as cursor:
         cursor.execute("""
             WITH startOfWeek AS (

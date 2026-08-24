@@ -1,11 +1,11 @@
 from unittest.mock import patch
 
-from django.test import TestCase
 from django.db import connection
+from django.test import TestCase
 
-from Spybot2 import settings
+from spybot.models import Award, MergedUser, NewsEvent, QueuedClientMessage, TSUser
 from spybot.recorder.cron.cron import end_of_week_awards
-from spybot.models import MergedUser, TSUser, Award, QueuedClientMessage, NewsEvent
+from Spybot2 import settings
 
 
 class EndOfWeekAwardsTestCase(TestCase):

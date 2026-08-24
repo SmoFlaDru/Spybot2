@@ -1,8 +1,7 @@
 from django.urls import path
 
-from .auth import auth
 from . import api
-from .auth import passkeys
+from .auth import auth, passkeys
 from .views import views
 from .views.fragments import activity_chart
 

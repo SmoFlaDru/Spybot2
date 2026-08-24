@@ -1,12 +1,12 @@
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 
 from django.db import connection
 from num2words import num2words
 from ts3 import escape
 
-from Spybot2 import settings
 from spybot import visualization
-from spybot.models import MergedUser, Award, QueuedClientMessage, NewsEvent
+from spybot.models import Award, MergedUser, NewsEvent, QueuedClientMessage
+from Spybot2 import settings
 
 
 def end_of_week_awards():
