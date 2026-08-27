@@ -1,0 +1,33 @@
+name: 'Pre-commit (Kotlin format)'
+
+# pre-commit.ci's hosted runners have no JVM, so they can't run the ktlint-based
+# pretty-format-kotlin hook (it just fails with "java: not found"). This uses
+# pre-commit.ci's "lite" GitHub Action instead: it runs on a normal Actions runner
+# (where we can install a JDK) and the pre-commit.ci lite GitHub App pushes an
+# auto-fix commit for any diff it produces, same as pre-commit.ci already does for
+# ruff. Scoped to just pretty-format-kotlin so ruff isn't linted/fixed twice.
+on:
+  push:
+    branches: [ "master", "dev" ]
+  pull_request:
+    branches: [ "master", "dev" ]
+
+jobs:
+  pre-commit-ci-lite:
+    name: pre-commit-ci-lite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: pretty-format-kotlin --all-files
+      - uses: pre-commit-ci/lite-action@v1.1.0
+        if: always()
