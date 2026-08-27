@@ -482,19 +482,37 @@ class SpybotQueryService(
             .execute() > 0
 
     fun upsertChannels(channels: List<TeamSpeakChannelSnapshot>) {
-        channels.forEach { channel ->
-            dsl.execute(
-                """
-                insert into tschannel (id, name, "order")
-                values (?, ?, ?)
-                on conflict (id) do update
-                set name = excluded.name,
-                    "order" = excluded."order"
-                """.trimIndent(),
-                channel.id,
-                channel.name,
-                channel.order,
-            )
+        if (channels.isEmpty()) {
+            return
+        }
+        dsl.transaction { config ->
+            val tx = config.dsl()
+            // tschannel."order" has a UNIQUE constraint. If the TeamSpeak server reordered
+            // channels since the last sync, a straight per-row upsert can collide: row A wants
+            // the "order" value that row B currently still holds, and B hasn't been updated yet.
+            // Shift every touched row to a temporary, mutually-unique negative order first (ids
+            // are unique and always positive, so -id can never collide with another temp value
+            // or with any real order value) so the second pass can set the real values freely.
+            channels.forEach { channel ->
+                tx.update(TSCHANNEL)
+                    .set(TSCHANNEL.ORDER, -channel.id)
+                    .where(TSCHANNEL.ID.eq(channel.id))
+                    .execute()
+            }
+            channels.forEach { channel ->
+                tx.execute(
+                    """
+                    insert into tschannel (id, name, "order")
+                    values (?, ?, ?)
+                    on conflict (id) do update
+                    set name = excluded.name,
+                        "order" = excluded."order"
+                    """.trimIndent(),
+                    channel.id,
+                    channel.name,
+                    channel.order,
+                )
+            }
         }
     }
 
