@@ -1,0 +1,52 @@
+@param loggedInUser: com.spybot.core.model.MergedUserView
+@param csrf: org.springframework.security.web.csrf.CsrfToken?
+@param query: String
+@param users: java.util.List<com.spybot.core.model.AdminTsUserRow>
+@template.layout.base(title = "TeamSpeak users", loggedInUser = loggedInUser, csrf = csrf, activePage = "admin", content = @`
+    <div class="row row-cards justify-content-md-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header row g-0">
+                    <div class="col"><h3 class="card-title">TeamSpeak users</h3></div>
+                    <div class="col-auto">
+                        <form method="get" class="d-flex">
+                            <input type="text" class="form-control" name="q" placeholder="Search by name" value="${query}">
+                        </form>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Merged user</th>
+                            <th>Client ID</th>
+                            <th>Online</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @for(user in users)
+                            <tr>
+                                <td class="text-secondary">${user.id}</td>
+                                <td>${user.name ?: ""}</td>
+                                <td>
+                                    @if(user.mergedUserId != null)
+                                        <a href="/u/${user.mergedUserId}">${user.mergedUserName ?: user.mergedUserId.toString()}</a>
+                                    @endif
+                                </td>
+                                <td class="text-secondary">${user.clientId}</td>
+                                <td>
+                                    @if(user.isCurrentlyOnline)
+                                        <span class="badge bg-green">Online</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endfor
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+`)

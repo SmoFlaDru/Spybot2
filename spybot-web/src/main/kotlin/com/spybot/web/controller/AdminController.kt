@@ -88,6 +88,7 @@ class AdminController(
         model.addAttribute("activePage", "admin")
         model.addAttribute("query", q.orEmpty())
         model.addAttribute("events", adminService.newsEvents(q))
+        ensureFlashAttributesPresent(model)
         return "pages/admin_news_events"
     }
 
@@ -103,6 +104,7 @@ class AdminController(
         model.addAttribute("form", NewsEventForm())
         model.addAttribute("editMode", false)
         model.addAttribute("eventId", null)
+        ensureFlashAttributesPresent(model, includeSuccess = false)
         return "pages/admin_news_event_form"
     }
 
@@ -134,6 +136,7 @@ class AdminController(
         model.addAttribute("form", NewsEventForm(text = event.text, websiteLink = event.websiteLink))
         model.addAttribute("editMode", true)
         model.addAttribute("eventId", event.id)
+        ensureFlashAttributesPresent(model, includeSuccess = false)
         return "pages/admin_news_event_form"
     }
 
@@ -178,7 +181,20 @@ class AdminController(
         model.addAttribute("activePage", "admin")
         model.addAttribute("form", MergeUsersForm())
         model.addAttribute("mergedUsers", adminService.mergedUsers(null))
+        ensureFlashAttributesPresent(model)
         return "pages/admin_merge_users"
+    }
+
+    private fun ensureFlashAttributesPresent(
+        model: Model,
+        includeSuccess: Boolean = true,
+    ) {
+        if (includeSuccess && !model.containsAttribute("successMessage")) {
+            model.addAttribute("successMessage", null)
+        }
+        if (!model.containsAttribute("errorMessage")) {
+            model.addAttribute("errorMessage", null)
+        }
     }
 
     @PostMapping("/merge-users")

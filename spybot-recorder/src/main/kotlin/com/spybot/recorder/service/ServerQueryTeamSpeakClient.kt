@@ -6,10 +6,8 @@ import com.spybot.core.model.TeamSpeakClientSnapshot
 import com.spybot.core.model.TeamSpeakEvent
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import java.io.BufferedReader
-import java.io.BufferedWriter
-import java.io.InputStreamReader
-import java.io.OutputStreamWriter
+import java.io.InputStream
+import java.io.OutputStream
 import java.net.Socket
 import java.net.SocketTimeoutException
 import java.nio.charset.StandardCharsets
@@ -21,8 +19,8 @@ class ServerQueryTeamSpeakClient(
 ) : TeamSpeakQueryClient {
     private val log = LoggerFactory.getLogger(javaClass)
     private var socket: Socket? = null
-    private var reader: BufferedReader? = null
-    private var writer: BufferedWriter? = null
+    private var reader: LineReader? = null
+    private var output: OutputStream? = null
     private val queuedEvents = ArrayDeque<String>()
 
     override fun connect() {
@@ -30,8 +28,8 @@ class ServerQueryTeamSpeakClient(
         socket = Socket(properties.teamspeak.host, properties.teamspeak.port).apply {
             soTimeout = EVENT_TIMEOUT_MS
         }
-        reader = BufferedReader(InputStreamReader(socket!!.getInputStream(), StandardCharsets.UTF_8))
-        writer = BufferedWriter(OutputStreamWriter(socket!!.getOutputStream(), StandardCharsets.UTF_8))
+        reader = LineReader(socket!!.getInputStream())
+        output = socket!!.getOutputStream()
         discardGreeting()
         execute("login", mapOf("client_login_name" to properties.teamspeak.user.orEmpty(), "client_login_password" to properties.teamspeak.password.orEmpty()))
         execute("use", mapOf("sid" to "1"))
@@ -142,11 +140,9 @@ class ServerQueryTeamSpeakClient(
     }
 
     override fun close() {
-        runCatching { reader?.close() }
-        runCatching { writer?.close() }
         runCatching { socket?.close() }
         reader = null
-        writer = null
+        output = null
         socket = null
         queuedEvents.clear()
     }
@@ -187,11 +183,9 @@ class ServerQueryTeamSpeakClient(
                     append(it)
                 }
             }
-        writer?.apply {
-            write(commandLine)
-            write("\n")
-            flush()
-        } ?: error("TeamSpeak connection is not established")
+        val target = output ?: error("TeamSpeak connection is not established")
+        target.write((commandLine + "\n").toByteArray(StandardCharsets.UTF_8))
+        target.flush()
 
         var bodyLine: String? = null
         while (true) {
@@ -291,6 +285,61 @@ class ServerQueryTeamSpeakClient(
         val id: Int,
         message: String,
     ) : RuntimeException(message)
+
+    /**
+     * Reads raw bytes directly off the socket and only decodes UTF-8 once a complete line has
+     * been assembled. Deliberately avoids BufferedReader/InputStreamReader: their internal
+     * CharsetDecoder retry loop can spin at ~100% CPU without making progress (observed on this
+     * JVM/platform combination) instead of cleanly blocking or throwing SocketTimeoutException.
+     * A single InputStream.read() call per iteration has none of that retry machinery.
+     *
+     * The TS3 ServerQuery protocol terminates lines with "\n\r" (LF then CR) - the reverse of
+     * conventional CRLF - so a line ends at the first LF, and a CR immediately following it
+     * belongs to the terminator, not the next line, and must be swallowed.
+     */
+    internal class LineReader(private val input: InputStream) {
+        private val buffer = ByteArray(8192)
+        private var bufferLength = 0
+        private var bufferPos = 0
+        private val line = java.io.ByteArrayOutputStream(256)
+        private var skipLeadingCarriageReturn = false
+
+        fun readLine(): String? {
+            while (true) {
+                while (bufferPos < bufferLength) {
+                    val byte = buffer[bufferPos]
+                    bufferPos++
+                    if (skipLeadingCarriageReturn) {
+                        skipLeadingCarriageReturn = false
+                        if (byte == CARRIAGE_RETURN) {
+                            continue
+                        }
+                    }
+                    if (byte == NEWLINE) {
+                        skipLeadingCarriageReturn = true
+                        return finishLine()
+                    }
+                    line.write(byte.toInt())
+                }
+                bufferLength = input.read(buffer)
+                bufferPos = 0
+                if (bufferLength < 0) {
+                    return null
+                }
+            }
+        }
+
+        private fun finishLine(): String {
+            val bytes = line.toByteArray()
+            line.reset()
+            return String(bytes, StandardCharsets.UTF_8)
+        }
+
+        companion object {
+            private const val NEWLINE: Byte = '\n'.code.toByte()
+            private const val CARRIAGE_RETURN: Byte = '\r'.code.toByte()
+        }
+    }
 
     companion object {
         private const val EVENT_TIMEOUT_MS = 1000

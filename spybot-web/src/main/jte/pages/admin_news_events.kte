@@ -1,0 +1,60 @@
+@param loggedInUser: com.spybot.core.model.MergedUserView
+@param csrf: org.springframework.security.web.csrf.CsrfToken?
+@param query: String
+@param events: java.util.List<com.spybot.core.model.AdminNewsEventRow>
+@param successMessage: String? = null
+@param errorMessage: String? = null
+@template.layout.base(title = "News events", loggedInUser = loggedInUser, csrf = csrf, activePage = "admin", content = @`
+    <div class="row row-cards justify-content-md-center">
+        <div class="col-md-10">
+            @if(successMessage != null)
+                <div class="alert alert-success">${successMessage}</div>
+            @endif
+            @if(errorMessage != null)
+                <div class="alert alert-danger">${errorMessage}</div>
+            @endif
+            <div class="card">
+                <div class="card-header row g-0">
+                    <div class="col"><h3 class="card-title">News events</h3></div>
+                    <div class="col-auto me-2">
+                        <form method="get" class="d-flex">
+                            <input type="text" class="form-control" name="q" placeholder="Search text" value="${query}">
+                        </form>
+                    </div>
+                    <div class="col-auto">
+                        <a href="/admin/news-events/new" class="btn btn-primary">New event</a>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Text</th>
+                            <th>Website link</th>
+                            <th class="w-1"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @for(event in events)
+                            <tr>
+                                <td class="text-secondary">${event.date.toString()}</td>
+                                <td>${event.text}</td>
+                                <td class="text-secondary">${event.websiteLink ?: ""}</td>
+                                <td class="text-nowrap">
+                                    <a href="/admin/news-events/${event.id}/edit">Edit</a>
+                                    <form method="post" action="/admin/news-events/${event.id}/delete" class="d-inline"
+                                          onsubmit="return confirm('Delete this news event?')">
+                                        <input type="hidden" name="${if (csrf != null) csrf.parameterName else "_csrf"}" value="${if (csrf != null) csrf.token else ""}">
+                                        <button type="submit" class="btn btn-link text-danger p-0 ms-2">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endfor
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+`)

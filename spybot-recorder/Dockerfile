@@ -9,6 +9,4 @@ FROM eclipse-temurin:25-jre
 WORKDIR /app
 COPY --from=build /workspace/spybot-recorder/build/libs/app.jar app.jar
 
-# usePlainSocketImpl works around a JDK NioSocketImpl busy-spin: blocking reads with
-# Socket.setSoTimeout() can pin a CPU core instead of actually blocking on some platforms.
-ENTRYPOINT ["java", "-Djdk.net.usePlainSocketImpl=true", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

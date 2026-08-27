@@ -227,6 +227,7 @@ class SpybotQueryService(
         dsl.insertInto(SPYBOT_NEWSEVENT)
             .set(SPYBOT_NEWSEVENT.TEXT, text)
             .set(SPYBOT_NEWSEVENT.WEBSITE_LINK, websiteLink)
+            .set(SPYBOT_NEWSEVENT.DATE, DSL.currentOffsetDateTime())
             .returning(SPYBOT_NEWSEVENT.ID)
             .fetchSingle(SPYBOT_NEWSEVENT.ID) ?: 0L
 
