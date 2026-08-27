@@ -1,0 +1,41 @@
+@param channels: java.util.List<com.spybot.core.model.ChannelView>
+@param clients: java.util.List<com.spybot.core.model.LiveClientView>
+<div class="list-group list-group-flush list-group-hoverable">
+    @for(channel in channels)
+        @if(channel.name != null && !channel.name!!.contains("spacer"))
+            <div class="list-group-item py-2">
+                <div class="row align-items-center">
+                    <span class="nav-link-icon d-inline-block">
+                        <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-home-2"/></svg>
+                    </span>
+
+                    <div class="col text-truncate">
+                        <span class="text-reset d-block">${channel.name}</span>
+                    </div>
+                </div>
+            </div>
+            @for(client in clients)
+                @if(client.channelId == channel.id)
+                    <a href="${if (client.mergedUserId != null) "/u/${client.mergedUserId}" else "#"}" class="text-decoration-none">
+                        <div class="list-group-item py-1 d-flex flex-row align-items-center">
+                            <span class="${if (channel.id == 7 || channel.id == 13) "ms-2 me-1 red" else "ms-2 me-1 green"}">
+                                <svg width="20" height="20"><use xlink:href="/tabler-sprite.svg#tabler-arrow-badge-right"/></svg>
+                            </span>
+
+                            @if(client.avatar != null)
+                                <span class="flex-column d-flex padding-3">
+                                    <img class="pe-1" src="${client.avatar}" alt="">
+                                </span>
+                            @endif
+
+                            <div class="flex-column d-flex">
+                                <span>${client.name ?: ""}</span>
+                                <span class="text-muted small">${client.game ?: ""}</span>
+                            </div>
+                        </div>
+                    </a>
+                @endif
+            @endfor
+        @endif
+    @endfor
+</div>

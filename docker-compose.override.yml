@@ -1,7 +1,16 @@
 services:
-  spybot:
+  spybot-web:
     build:
       dockerfile: Dockerfile
+      cache_from:
+        - type=local,src=.buildx-cache/spybot-web
+      cache_to:
+        - type=local,dest=.buildx-cache/spybot-web,mode=max
+    environment:
+      SPRING_PROFILES_ACTIVE: ""
+      #SPRING_PROFILES_ACTIVE: localdev
+    volumes:
+      - $PWD:/workspace
   caddy:
     ports:
       - "80:80"
@@ -11,7 +20,6 @@ services:
       - $PWD/infrastructure/Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
-      - static_files:/spybot_static
   #db:
     #ports:
     #  - "5432:5432"

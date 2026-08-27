@@ -1,0 +1,334 @@
+@param loggedInUser: com.spybot.core.model.MergedUserView?
+@param page: com.spybot.core.model.UserPageView
+@param csrf: org.springframework.security.web.csrf.CsrfToken?
+@template.layout.base(title = page.headline.mergedUsername, loggedInUser = loggedInUser, csrf = csrf, activePage = "user", content = @`
+    <div class="mt-2 d-flex align-items-center justify-content-center">
+        <span class="avatar">${if (page.headline.mergedUsername.isNotBlank()) page.headline.mergedUsername.substring(0, 1) else "?"}</span>
+        <span class="display-6 ms-3"><b>${page.headline.mergedUsername}</b></span>
+    </div>
+    <div class="row row-cards justify-content-center mt-2">
+        <div class="col-md-6 col-lg-4">
+            <div class="card">
+                <div class="card-header justify-content-md-center">
+                    <h3 class="card-title ">Awards</h3>
+                </div>
+                <div class="card-body align-self-center">
+                    <div class="datagrid-title">
+                        <span>Award of the week Medals</span>
+                    </div>
+                    <div class="datagrid-content py-2">
+                        <span class="h3 mx-2">${page.headline.gold} x <svg width="24" height="24" class="medal gold"><use xlink:href="/tabler-sprite.svg#tabler-medal"/></svg></span>
+                        <span class="h3 mx-2">${page.headline.silver} x <svg width="24" height="24" class="medal silver"><use xlink:href="/tabler-sprite.svg#tabler-medal"/></svg></span>
+                        <span class="h3 mx-2">${page.headline.bronze} x <svg width="24" height="24" class="medal bronze"><use xlink:href="/tabler-sprite.svg#tabler-medal"/></svg></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="card">
+                <div class="card-header justify-content-md-center">
+                    <h3 class="card-title ">Statistics</h3>
+                </div>
+                <div class="row row0 justify-content-center">
+                    <div class="col-md-6">
+                        <div class="card-body">
+                            <div class="datagrid">
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">
+                                        <span>Current Status</span>
+                                    </div>
+                                    <div class="datagrid-content">
+                                        @if(page.headline.online)
+                                            <span class="text-success">online</span>
+                                        @else
+                                            <span class="text-danger">offline</span>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                @if(!page.headline.online)
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">
+                                            Last Seen
+                                        </div>
+                                        <div class="datagrid-content">
+                                            <span>${page.headline.lastSeen?.toString() ?: ""}</span>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">
+                                        First Seen
+                                    </div>
+                                    <div class="datagrid-content">
+                                        <span>${page.headline.firstSeen?.toString() ?: ""}</span>
+                                    </div>
+                                </div>
+
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">
+                                        Total Time
+                                    </div>
+                                    <div class="datagrid-content">
+                                        ${page.totalTime}h
+                                    </div>
+                                </div>
+
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">
+                                        Online Time
+                                    </div>
+                                    <div class="datagrid-content">
+                                        ${String.format("%.0f", page.headline.onlineTime)}h
+                                    </div>
+                                </div>
+
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">
+                                        AFK Time
+                                    </div>
+                                    <div class="datagrid-content">
+                                        <span>${String.format("%.0f", page.headline.afkTime)}h</span>
+                                    </div>
+                                </div>
+
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">
+                                        Longest streak
+                                    </div>
+                                    <div class="datagrid-content">
+                                        <span>${page.streak?.length ?: 0} days</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 d-flex flex-column justify-content-center align-items-center">
+                        <datagrid class="mt-auto">
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">
+                                    Former Names
+                                </div>
+
+                                <div class="datagrid-content">
+                                    @if(page.headline.names.isEmpty())
+                                        No former names known
+                                    @endif
+
+                                    <ul style="overflow: scroll">
+                                        @for(name in page.headline.names)
+                                            <li>
+                                                <span class="small">${name}</span>
+                                            </li>
+                                        @endfor
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">
+                                    Currently Playing
+                                </div>
+                                <div class="datagrid-content">
+                                    @if(page.gameId == 0)
+                                        Not in Game
+                                    @else
+                                        <p class="small"><svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-tank"/></svg>${page.gameName}</p>
+                                    @endif
+                                </div>
+                            </div>
+
+                        </datagrid>
+
+                        <div id="online-pie" class="chart-lg d-flex mt-auto"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="card">
+                <div class="card-header justify-content-md-center">
+                    <h3 class="card-title ">Monthly activity chart</h3>
+                </div>
+                <div class="card-body">
+                    <div id="activity-months-heatmap" class="chart-lg d-flex mt-auto"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        onChartReady(() => {
+            const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+
+            const onlinePieChartOptions = () => {
+                return {
+                    chart: {
+                        type: "pie",
+                        fontFamily: 'inherit',
+                        height: "50%",
+                        sparkline: {
+                            enabled: true
+                        },
+                        animations: {
+                            enabled: true,
+                            easing: 'easein',
+                            speed: 1000,
+                            animateGradually: {
+                                enabled: true,
+                                delay: 150
+                            },
+                            dynamicAnimation: {
+                                enabled: true,
+                                speed: 750
+                            }
+                        },
+                    },
+                    fill: {
+                        opacity: 1,
+                    },
+                    series: [${page.headline.afkTime}, ${page.headline.onlineTime}],
+                    labels: ["AFK", "ONLINE"],
+                    dataLabels: {
+                        enabled: true,
+                    },
+                    tooltip: {
+                        theme: 'dark'
+                    },
+                    grid: {
+                        strokeDashArray: 4,
+                    },
+                    colors: [tabler.tabler.getColor("red", 0.8), tabler.tabler.getColor("green", 0.8)],
+                    legend: {
+                        show: true,
+                        position: 'bottom',
+                    },
+                }
+            };
+            const onlinePieChart = new ApexCharts(document.getElementById('online-pie'), onlinePieChartOptions());
+            onlinePieChart.render();
+
+            const heatmapOptions = () => {
+                const rawMonthData = [${page.months.joinToString(", ") { "{ year: ${it.year}, month: ${it.month}, activity: ${it.activity} }" }}]
+                const transformedMonthData = rawMonthData.reduce((acc, { year, month, activity }) => {
+                    if (!acc[year]) {
+                        acc[year] = [];
+                    }
+                    if (activity < 0.001 && activity > -0.001) {
+                        activity = 0.001
+                    }
+                    acc[year].push(activity);
+                    return acc;
+                }, {});
+                const graphData = Object.entries(transformedMonthData).map(v => { return { name: v[0], data: v[1] }})
+
+                return {
+                    series: graphData.reverse(),
+                    chart: {
+                        height: 350,
+                        type: 'heatmap',
+                        zoom: {enabled: false},
+                    },
+                    xaxis: {
+                        labels: {
+                            formatter: (value) => { return ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][clamp(Math.floor(value)-1, 0, 11)].substring(0, 3) },
+                        },
+                        tickPlacement: 'on',
+                        tickAmount: 3,
+                    },
+                    dataLabels: {
+                        enabled: false
+                    },
+                    theme: {
+                        mode: isDarkMode() ? 'dark' : 'light',
+                    },
+                    plotOptions: {
+                        heatmap: {
+                            radius: 0,
+                            shadeIntensity: 0,
+                            colorScale: {
+                                ranges: [{
+                                    from: 0,
+                                    to: 1,
+                                    color: isDarkMode() ? '#182433' :  '#ffffff',
+                                },
+                                {
+                                    from: 1.00001,
+                                    to: 50,
+                                    color: isDarkMode() ? '#0e4429' : '#9BE9A8',
+                                },
+                                {
+                                    from: 50.000001,
+                                    to: 100,
+                                    color: isDarkMode() ? '#006d32' : '#40C463',
+                                },
+                                {
+                                    from: 100.000001,
+                                    to: 150,
+                                    color: isDarkMode() ? '#26a641' : '#30A14E',
+                                },
+                                {
+                                    from: 150.000001,
+                                    to: 1000,
+                                    color: isDarkMode() ? '#39d353' : '#216e39',
+                                }]
+                            }
+                        }
+                    },
+                    stroke: {
+                        width: 6,
+                        colors: [isDarkMode() ? '#182433' : '#fdfdfd']
+                    },
+                    fontFamily: 'inherit',
+                    parentHeightOffset: 0,
+                    legend: {
+                        show: true,
+                        formatter: (a, { seriesIndex }) => { return seriesIndex === 0 ? 'less' : (seriesIndex === 4 ? "<span class='ms-2'>more" : ''); },
+                        position: 'bottom',
+                        markers: {
+                            strokeWidth: 0,
+                        }
+                    },
+                }
+            };
+            const heatmap = new ApexCharts(document.getElementById('activity-months-heatmap'), heatmapOptions());
+            heatmap.render();
+
+            onChartRenderTrigger(false, () => {
+                onlinePieChart.updateOptions(onlinePieChartOptions());
+                heatmap.updateOptions(heatmapOptions());
+            });
+        });
+    </script>
+    <style>
+        .medal {
+            scale: .5;
+            animation: medals 1s ease-out forwards;
+        }
+
+        .gold {
+            color: rgb(201, 176, 55);
+        }
+
+        .silver {
+            color: rgb(150, 150, 150);
+            animation-delay: .25s;
+        }
+
+        .bronze {
+            color: rgb(127, 67, 6);
+            animation-delay: .5s;
+        }
+
+        @keyframes medals {
+            0% {
+                transform: scale(1);
+            }
+            100% {
+                transform: scale(4);
+            }
+        }
+    </style>
+`)

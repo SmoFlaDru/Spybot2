@@ -1,0 +1,44 @@
+<form hx-post="/profile/steamid" class="modal-content">
+    <div class="modal-header">
+        <h5 class="modal-title">Add linked Steam account</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        <div id="add-steamid-error" class="alert alert-danger d-none mb-2" role="alert"></div>
+        <div class="mb-3">
+            <label class="form-label">Account ID Number</label>
+            <div class="input-group">
+                <span class="input-group-text">https://steamcommunity.com/profiles/</span>
+                <input type="text" class="form-control" name="steamid" required>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Account name</label>
+            <input type="text" class="form-control" name="name" required>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-bs-dismiss="modal">
+            Cancel
+        </a>
+        <button class="btn btn-primary ms-auto" type="submit">
+            <svg width="24" height="24" class="icon"><use xlink:href="/tabler-sprite.svg#tabler-plus"/></svg>
+            Link account
+        </button>
+    </div>
+</form>
+<script>
+    (() => {
+        const form = document.currentScript.previousElementSibling;
+        const errorBox = form.querySelector("#add-steamid-error");
+        form.addEventListener("htmx:beforeRequest", () => {
+            errorBox.classList.add("d-none");
+            errorBox.textContent = "";
+        });
+        form.addEventListener("htmx:responseError", (event) => {
+            errorBox.textContent = event.detail.xhr.responseText ||
+                "Could not verify this Steam ID. Please double check that it's correct.";
+            errorBox.classList.remove("d-none");
+        });
+    })();
+</script>

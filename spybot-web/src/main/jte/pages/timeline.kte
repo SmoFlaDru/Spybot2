@@ -1,0 +1,137 @@
+@param loggedInUser: com.spybot.core.model.MergedUserView?
+@param timeRange: com.spybot.core.model.TimeRangeView
+@param activityByUser: java.util.List<com.spybot.core.model.TimelineUserSeries>
+@param csrf: org.springframework.security.web.csrf.CsrfToken?
+@template.layout.base(title = "Timeline", loggedInUser = loggedInUser, csrf = csrf, activePage = "timeline", content = @`
+    <div class="row row-cards justify-content-md-center">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header row g-0">
+                    <div class="col"><h3 class="card-title">Timeline</h3></div>
+                    <div class="col">
+                        <div class="float-end">
+                            <form method="get">
+                                <select class="form-select" name="range" onchange="this.form.submit()">
+                                    @for(option in timeRange.options)
+                                        <option value="${option.value}" selected="${option.active}">${option.text}</option>
+                                    @endfor
+                                </select>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if(!activityByUser.isEmpty())
+                        <div id="chart-timeline" class="chart-lg"></div>
+                    @else
+                        <div class="empty">
+                            <div class="empty-img">
+                                <img src="/quitting_time.svg" height="128" alt="">
+                            </div>
+                            <p class="empty-title">No data for this time range</p>
+                            <p class="empty-subtitle text-muted">Try adjusting the time interval or come back later</p>
+                            <div class="empty-action">
+                                <a href="javascript:window.location.reload(true)" class="btn btn-primary">
+                                    <svg width="24" height="24" class="icon"><use xlink:href="/tabler-sprite.svg#tabler-search"/></svg>
+                                    Reload page
+                                </a>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const data = [
+                @for(series in activityByUser)
+                    {
+                        name: '${series.name?.replace("'", "\\'") ?: ""}',
+                        data: [
+                            @for(entry in series.data)
+                                {x: '${entry.x?.replace("'", "\\'") ?: ""}', y: [${entry.y[0]}, ${entry.y[1]}]},
+                            @endfor
+                        ]
+                    },
+                @endfor
+            ];
+            const now = ${java.time.OffsetDateTime.now(java.time.ZoneOffset.UTC).toInstant().toEpochMilli()};
+            const min = now - (${timeRange.hours} * 60 * 60 * 1000);
+            const options = {
+                series: data,
+                chart: {
+                    height: 550,
+                    type: 'rangeBar',
+                    toolbar: {
+                        show: false
+                    },
+                    zoom: {enabled: false},
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: true,
+                        barHeight: '80%'
+                    }
+                },
+                xaxis: {
+                    type: 'datetime',
+                    labels: {
+                        datetimeUTC: false
+                    },
+                    max: now,
+                    min: min,
+                },
+                yaxis: {
+                    labels: {
+                        style: {}
+                    }
+                },
+                stroke: {
+                    width: 1
+                },
+                fill: {
+                    type: 'solid',
+                    opacity: 0.6
+                },
+                legend: {
+                    position: 'top',
+                    horizontalAlign: 'left',
+                    fontSize: '18px',
+                    fontFamily: 'inherit',
+                    markers: {
+                        radius: 18,
+                        offsetX: -5
+                    },
+                    itemMargin: {
+                        horizontal: 20
+                    }
+                },
+                tooltip: {
+                    x: {
+                        format: 'HH:mm:ss'
+                    },
+                    theme: isDarkMode() ? 'dark' : 'light'
+                },
+                theme: {
+                    palette: 'palette2'
+                },
+                dataLabels: {
+                    enabled: true,
+                    formatter: function (val, { seriesIndex, dataPointIndex, w }) {
+                        if (val[0] === undefined && val[1] === undefined) {
+                            return ""
+                        }
+                        return w.config.series[seriesIndex].name;
+                    },
+                    style: {
+                        colors: ["#f3f4f5", "#fff"]
+                    }
+                },
+            };
+
+            const chart = new ApexCharts(document.querySelector("#chart-timeline"), options);
+            chart.render();
+        })
+    </script>
+`)

@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: spybot-web
+#  datasource:
+#    url: ${DB_URL:}
+#    username: ${DB_USER:}
+#    password: ${DB_PASSWORD:}
+  jooq:
+    sql-dialect: Postgres
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  mvc:
+    static-path-pattern: /**
+
+gg:
+  jte:
+    usePrecompiledTemplates: true
+
+
+logging:
+  level:
+    org:
+      springframework:
+        security: TRACE
+
+server:
+  port: ${PORT:8000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+spybot:
+  public-base-url: ${PUBLIC_BASE_URL:https://${SERVER_IP:localhost}}
+  fido-server-name: ${FIDO_SERVER_NAME:Spybot local}
+  steam-api-key: ${STEAM_API_KEY:}
+  teamspeak:
+    host: ${TS_IP:localhost}
+    port: ${TS_PORT:10011}
+    server-ip: ${SERVER_IP:localhost}
+    user: ${TS_USER:}
+    password: ${TS_PASSWORD:}
+    nickname: ${TS_NICKNAME:Spybot_2}

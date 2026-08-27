@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Browser__navigate",
+      "Bash(docker compose logs *)",
+      "mcp__Claude_Browser__get_page_text",
+      "mcp__Claude_Browser__read_console_messages",
+      "Bash(docker compose build *)",
+      "mcp__Claude_Browser__read_network_requests",
+      "Bash(./gradlew :spybot-core:compileKotlin *)",
+      "Bash(docker compose ps *)",
+      "Bash(./gradlew :spybot-core:test *)",
+      "Bash(./gradlew :spybot-web:compileKotlin *)",
+      "mcp__Claude_Browser__read_page",
+      "Bash(./gradlew :spybot-web:test *)"
+    ]
+  }
+}

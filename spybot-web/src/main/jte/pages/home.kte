@@ -1,0 +1,513 @@
+@param loggedInUser: com.spybot.core.model.MergedUserView?
+@param home: com.spybot.core.model.HomePageView
+@param csrf: org.springframework.security.web.csrf.CsrfToken?
+@template.layout.base(title = "Home", loggedInUser = loggedInUser, csrf = csrf, activePage = "home", content = @`
+    <div class="row row-cards justify-content-md-center">
+        <div class="col-md-6 height-xs-150vw">
+            <div class="row row-cards row-height-100">
+                <div class="col-md-12 col-height-50">
+                    @template.fragments.activity_fragment(activityChart = home.activityChart)
+                </div>
+                <div class="col-md-12 col-height-50">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h3 class="card-title my-2">Time of day histogram</h3>
+                        </div>
+                        <div class="card-body ps-2">
+                            <div id="chart-tod" class="h-100"></div>
+                        </div>
+                    </div>
+                    <script>
+                        function getCSSVar(name) {
+                            return getComputedStyle(document.body).getPropertyValue(name)
+                        }
+                        document.addEventListener("DOMContentLoaded", function () {
+                            if (!window.ApexCharts) return
+                            const raw_data = [
+                                @for(entry in home.timeOfDay) [${entry.first}, ${entry.second}], @endfor
+                            ]
+                            new ApexCharts(document.querySelector("#chart-tod"), {
+                                chart: {
+                                    height: "100%",
+                                    type: 'bar',
+                                    toolbar: {
+                                        show: false,
+                                    },
+                                    zoom: {enabled: false},
+                                    parentHeightOffset: 0,
+                                },
+                                series: [{
+                                    name: 'Visitors',
+                                    data: Array.from({length: raw_data.length},
+                                        (_, i)=>({
+                                            x: 0.5+i,
+                                            y: raw_data[i][1],
+                                        }))
+                                }],
+                                plotOptions:{
+                                    bar: {
+                                        columnWidth: "70%",
+                                        strokeWidth: 0,
+                                        borderRadius: 2,
+                                        borderRadiusApplication: "end",
+                                    }
+                                },
+                                fill:{
+                                    colors: "rgb(" + getCSSVar('--tblr-info-rgb') + ")",
+                                    opacity: 0.3,
+                                },
+                                stroke:{
+                                    width: 0,
+                                    colors: ['#ee8080']
+                                },
+                                dataLabels: {enabled: false},
+                                grid: {
+                                    padding: {
+                                        top: -20,
+                                        right: 0,
+                                        left: 4,
+                                        bottom: -4
+                                    },
+                                    strokeDashArray: 4,
+                                    xaxis: {
+                                        lines: {
+                                            show: true
+                                        }
+                                    },
+                                    yaxis: {
+                                        lines: {
+                                            show: true
+                                        }
+                                    }
+                                },
+                                xaxis: {
+                                    type: "numeric",
+                                    min: 0,
+                                    max: 24,
+                                    tickAmount: 11,
+                                    labels: {formatter: x => (x <= 12 ? x : x-12) + (x < 12 ? 'am' : 'pm')},
+                                    title: {
+                                        text: "Hours",
+                                        offsetY: 68,
+                                        style: {fontWeight: 500},
+                                    },
+                                    axisBorder: {
+                                        show: false
+                                    }
+                                },
+                                yaxis: {
+                                    title: {
+                                        text: "Concurrent active users",
+                                        style: {fontWeight: 500},
+                                    },
+                                    min: 0,
+                                    max: Math.max(...raw_data.map(i => i[1])),
+                                    labels: {
+                                        padding: 20,
+                                        formatter: (value) => {
+                                            return value.toFixed(0)
+                                        }
+                                    }
+                                },
+                                tooltip:{
+                                    theme: 'dark',
+                                    onDatasetHover: {
+                                        highlightDataSeries: true,
+                                    },
+                                    x: {
+                                        formatter: x => {
+                                            const hour = (x-0.5)
+                                            if (hour < 13) return "Hour from " + hour + "am"
+                                            return "Hour from " + (hour - 12) + "pm"
+                                        }},
+                                    y: {
+                                        formatter: y => { return y.toFixed(1) },
+                                        title: {
+                                            formatter: series => "Ø clients"
+                                        }
+                                    },
+                                },
+                                legend: {
+                                    show: false,
+                                },
+                            }).render()
+                        });
+                    </script>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="row row-cards">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header" id="live_spinner_container">
+                            <div class="row w-100">
+                                <div class="col">
+                                    <h3 class="card-title my-2">Live View</h3>
+                                </div>
+                                <div class="col-auto align-self-center px-0">
+                                    <img class="htmx-indicator float-end lightmode-inverted-color" src="/loading_oval.svg" width="20">
+                                </div>
+                            </div>
+                        </div>
+                        <div hx-get="/live_fragment" hx-trigger="load, every 10s [!document.hidden]" hx-indicator="#live_spinner_container"></div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="row row-cards">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="ribbon bg-red">NEW</div>
+                                <div class="card-header">
+                                    <h3 class="card-title my-2">Spybot 2 release 2.4</h3>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted">Benno and Justus rewrote the OG teamspeak spybot as the glorious Spybot 2. It is now written in Python as opposed to PHP and more modern, maintainable and beautiful. In addition, Spybot 2 has more charts. Btw, did you know Spybot 2 supports dark mode? Try the toggle in the top right.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <style>
+                                .bg-medal {
+                                    --text-opacity: 1;
+                                    --bg-opacity: 0.1;
+                                    color: rgba(var(--icon-color), var(--text-opacity)) !important;
+                                    background-color: rgba(var(--icon-color),var(--bg-opacity)) !important;
+                                }
+                                .medal-gold {
+                                    --icon-color: 201, 176, 55;
+                                }
+                                .medal-silver {
+                                    --icon-color: 150, 150, 150;
+                                }
+                                .medal-bronze {
+                                    --icon-color: 127, 67, 6;
+                                }
+                            </style>
+                            <div class="card">
+                                <div class="ribbon ribbon-top bg-yellow">
+                                    <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-star"/></svg>
+                                </div>
+                                <div class="card-header">
+                                    <h3 class="card-title my-2">Top users this week</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="divide-y">
+                                        @if(home.topUsersOfWeek.isNotEmpty())
+                                            <a href="/u/${home.topUsersOfWeek[0].userId}" class="text-decoration-none text-reset d-block">
+                                                <div class="row">
+                                                    <div class="col-auto">
+                                                        <span class="avatar bg-medal medal-gold">
+                                                            <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-trophy"/></svg>
+                                                        </span>
+                                                    </div>
+                                                    <div class="col">
+                                                        <div class="text-truncate">
+                                                            <span>${home.topUsersOfWeek[0].userName}</span>
+                                                        </div>
+                                                        <div class="text-muted">${run {
+                                                            val rounded = String.format("%.1f", home.topUsersOfWeek[0].time)
+                                                            if (rounded.endsWith(".0")) rounded.dropLast(2) else rounded
+                                                        }} hours this week</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        @else
+                                            <div class="row">
+                                                <div class="col-auto">
+                                                    <span class="avatar bg-medal bg-green-lt">N/A</span>
+                                                </div>
+                                                <div class="col">
+                                                    <div class="text-truncate">Error</div>
+                                                    <div class="text-muted">No data to show for this week</div>
+                                                </div>
+                                            </div>
+                                        @endif
+                                        @if(home.topUsersOfWeek.size > 1)
+                                            <a href="/u/${home.topUsersOfWeek[1].userId}" class="text-decoration-none text-reset d-block">
+                                                <div class="row">
+                                                    <div class="col-auto">
+                                                        <span class="avatar bg-medal medal-silver">
+                                                            <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-trophy"/></svg>
+                                                        </span>
+                                                    </div>
+                                                    <div class="col">
+                                                        <div class="text-truncate">
+                                                            <span>${home.topUsersOfWeek[1].userName}</span>
+                                                        </div>
+                                                        <div class="text-muted">${run {
+                                                            val rounded = String.format("%.1f", home.topUsersOfWeek[1].time)
+                                                            if (rounded.endsWith(".0")) rounded.dropLast(2) else rounded
+                                                        }} hours this week</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        @endif
+                                        @if(home.topUsersOfWeek.size > 2)
+                                            <a href="/u/${home.topUsersOfWeek[2].userId}" class="text-decoration-none text-reset d-block">
+                                                <div class="row">
+                                                    <div class="col-auto">
+                                                        <span class="avatar bg-medal medal-bronze">
+                                                            <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-trophy"/></svg>
+                                                        </span>
+                                                    </div>
+                                                    <div class="col">
+                                                        <div class="text-truncate">
+                                                            <span>${home.topUsersOfWeek[2].userName}</span>
+                                                        </div>
+                                                        <div class="text-muted">${run {
+                                                            val rounded = String.format("%.1f", home.topUsersOfWeek[2].time)
+                                                            if (rounded.endsWith(".0")) rounded.dropLast(2) else rounded
+                                                        }} hours this week</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title my-2">Trend of the week</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="subheader">Activity</div>
+                                        <div class="ms-auto lh-1"></div>
+                                    </div>
+                                    <div class="d-flex align-items-baseline">
+                                        <div class="h1 mb-0 me-2">${String.format("%.0f", home.weekTrend.currentWeekSum)} hours</div>
+                                        <div class="me-auto">
+                                            <span class="${if (home.weekTrend.deltaPercent == "Infinity" || (home.weekTrend.deltaPercent.toDoubleOrNull() ?: 0.0) > 0) "text-green d-inline-flex align-items-center lh-1" else if ((home.weekTrend.deltaPercent.toDoubleOrNull() ?: 0.0) == 0.0) "text-yellow d-inline-flex align-items-center lh-1" else "text-red d-inline-flex align-items-center lh-1"}">
+                                                @if(home.weekTrend.deltaPercent == "Infinity")
+                                                    +infinity
+                                                @else
+                                                    ${String.format("%+.0f%%", home.weekTrend.deltaPercent.toDoubleOrNull() ?: 0.0)}
+                                                @endif
+                                                @if(home.weekTrend.deltaPercent == "Infinity" || (home.weekTrend.deltaPercent.toDoubleOrNull() ?: 0.0) > 0)
+                                                    <svg width="24" height="24" class="icon ms-1"><use xlink:href="/tabler-sprite.svg#tabler-trending-up"/></svg>
+                                                @else
+                                                    @if((home.weekTrend.deltaPercent.toDoubleOrNull() ?: 0.0) == 0.0)
+                                                        <svg width="24" height="24" class="icon ms-1"><use xlink:href="/tabler-sprite.svg#tabler-minus"/></svg>
+                                                    @else
+                                                        <svg width="24" height="24" class="icon ms-1"><use xlink:href="/tabler-sprite.svg#tabler-trending-down"/></svg>
+                                                    @endif
+                                                @endif
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="text-muted">
+                                        @if(home.weekTrend.deltaPercent == "Infinity" || (home.weekTrend.deltaPercent.toDoubleOrNull() ?: 0.0) > 0)
+                                            up from
+                                        @else
+                                            @if((home.weekTrend.deltaPercent.toDoubleOrNull() ?: 0.0) < 0)
+                                                down from
+                                            @else
+                                                same as
+                                            @endif
+                                        @endif
+                                        last week
+                                    </div>
+                                    <div id="chart-week-comparison" class="chart-sm" style="min-height: 40px;"></div>
+                                </div>
+                            </div>
+                            <script>
+                                const weekComparisonData = [
+                                    @for(entry in home.weekComparison)
+                                    {
+                                        datetime: '$unsafe{entry.datetime.toString()}',
+                                        hours_current: ${entry.hoursCurrent?.toString() ?: "null"},
+                                        hours_compare: ${entry.hoursCompare?.toString() ?: "null"}
+                                    },
+                                    @endfor
+                                ]
+                                document.addEventListener("DOMContentLoaded", function () {
+                                    window.ApexCharts && (new ApexCharts(document.getElementById('chart-week-comparison'), {
+                                        chart: {
+                                            type: "line",
+                                            fontFamily: 'inherit',
+                                            height: 40.0,
+                                            sparkline: {
+                                                enabled: true
+                                            },
+                                            animations: {
+                                                enabled: false
+                                            },
+                                        },
+                                        fill: {
+                                            opacity: 1,
+                                        },
+                                        stroke: {
+                                            width: [2, 1],
+                                            dashArray: 0,
+                                            lineCap: "butt",
+                                            curve: "straight",
+                                        },
+                                        series: [{
+                                            name: "This week",
+                                            data: weekComparisonData.map(x => x.hours_current)
+                                        }, {
+                                            name: "Last week",
+                                            data: weekComparisonData.map(x => x.hours_compare)
+                                        }],
+                                        tooltip: {
+                                            enabled: false,
+                                            theme: 'dark',
+                                            x: {
+                                                format: 'dddd H:mm'
+                                            },
+                                        },
+                                        grid: {
+                                            strokeDashArray: 4,
+                                        },
+                                        xaxis: {
+                                            labels: {
+                                                padding: 0,
+                                            },
+                                            tooltip: {
+                                                enabled: false
+                                            },
+                                            type: 'datetime',
+                                        },
+                                        yaxis: {
+                                            labels: {
+                                                padding: 4
+                                            },
+                                        },
+                                        labels: weekComparisonData.map(x => x.datetime),
+                                        colors: [tabler.tabler.getColor("primary"), tabler.tabler.getColor("gray-600")],
+                                        legend: {
+                                            show: false,
+                                        },
+                                    })).render();
+                                });
+                            </script>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card" style="height: 26em;">
+                <div class="card-body card-body-scrollable card-body-scrollable-shadow">
+                    <div class="divide-y">
+                        @template.fragments.recent_events_fragment(recentEvents = home.recentEvents)
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card" style="height: 26em;">
+                <div class="card-header">
+                    <h3 class="card-title my-2">Channel popularity</h3>
+                </div>
+                <div class="card-body">
+                    <div id="chart-channel-tree-map" class="chart-lg"></div>
+                </div>
+            </div>
+            <script>
+                function getCSSVar(name) {
+                    return getComputedStyle(document.body).getPropertyValue(name)
+                }
+                onChartReady(() => {
+                    const raw_data = [
+                        @for(entry in home.channelPopularity)
+                        {
+                            name: '${entry.name}',
+                            percentage: ${entry.percentage},
+                        },
+                        @endfor
+                    ]
+
+                    const chartOptions = () => {
+                        return {
+                            chart: {
+                                type: 'treemap',
+                                toolbar: {
+                                    show: false,
+                                },
+                                zoom: {enabled: false},
+                                height: '100%',
+                                parentHeightOffset: 0,
+                            },
+                            series: [
+                                {
+                                    name: 'Talking',
+                                    data: raw_data.filter(o => o.name !== "AFK" && o.name !== "bei Bedarf anstupsen")
+                                        .map(o => { return {x: o.name, y: o.percentage}})
+                                },
+                                {
+                                    name: 'Inactive',
+                                    data: raw_data.filter(o => o.name === "AFK" || o.name === "bei Bedarf anstupsen")
+                                        .map(o => { return {x: o.name, y: o.percentage}})
+                                }
+                            ],
+                            plotOptions: {
+                                treemap: {
+                                    enableShades: true,
+                                    shadeIntensity: 0.3,
+                                }
+                            },
+                            stroke:{
+                                width: 5,
+                                colors: [getCSSVar('--tblr-bg-surface')],
+                            },
+                            colors: [tabler.tabler.getColor("primary"), tabler.tabler.getColor("red")],
+                            dataLabels: {
+                                enabled: true,
+                                offsetY: -5,
+                                formatter: function(text, op) {
+                                    return [text, op.value.toFixed(1) + "%"]
+                                },
+                            },
+                            grid: {
+                                padding: {
+                                    top: -20,
+                                    right: 0,
+                                    left: 0,
+                                    bottom: 0
+                                },
+                            },
+                            tooltip:{
+                                theme: 'dark',
+                                marker: {show: false},
+                                y: {
+                                    formatter: y => { return y.toFixed(1) + "%" },
+                                },
+                            },
+                            legend: {
+                                show: false,
+                            },
+                        };
+                    }
+                    let chart = null;
+
+                    onChartRenderTrigger(true, () => {
+                        if (chart !== null) {
+                            chart.destroy();
+                        }
+                        chart = new ApexCharts(document.querySelector("#chart-channel-tree-map"), chartOptions())
+                        chart.render();
+                    });
+                });
+            </script>
+        </div>
+    </div>
+
+    <style>
+        .red {
+            color: rgb(214, 57, 57);
+        }
+        .green {
+            color: rgb(38, 114, 12);
+        }
+        [data-bs-theme=dark] .lightmode-inverted-color {
+            filter: none;
+        }
+        .lightmode-inverted-color {
+            filter: invert(1);
+        }
+    </style>
+`)

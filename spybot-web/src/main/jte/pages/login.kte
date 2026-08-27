@@ -1,0 +1,36 @@
+@param loggedInUser: com.spybot.core.model.MergedUserView?
+@param csrf: org.springframework.security.web.csrf.CsrfToken?
+@template.layout.base(title = "Login", loggedInUser = loggedInUser, csrf = csrf, activePage = "login", content = @`
+    <div class="page page-center">
+        <div class="container container-tight py-4">
+            <div class="card card-md">
+                <div class="card-body">
+                    <h2 class="h2 text-center mb-4">Log in to your account</h2>
+                    <form action="./" method="get" autocomplete="on" novalidate="">
+                        <div class="mb-3">
+                            <label class="form-label">Passkey</label>
+                            <input type="email" class="form-control" placeholder="Your passkey" autocomplete="username webauthn">
+                        </div>
+                        <div class="form-footer">
+                            <button type="submit" class="btn btn-primary w-100">Sign in</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="hr-text">or</div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col"><a href="login_teamspeak" class="btn w-100">
+                            <svg width="24" height="24" class="icon"><use xlink:href="/tabler-sprite.svg#tabler-microphone"/></svg>
+                            Log in with Teamspeak
+                        </a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script defer>
+        window.addEventListener("load", () => {
+            passkeys.autocomplete()
+        });
+    </script>
+`)

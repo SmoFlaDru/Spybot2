@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@github/relative-time-element": "^5.0.0",
     "@simplewebauthn/browser": "^10.0.0",
     "@tabler/core": "^1.4.0",
     "apexcharts": "^3.36.3",

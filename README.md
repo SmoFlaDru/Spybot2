@@ -1,6 +1,17 @@
 # Spybot 2
 
-Spybot 2 is a rewrite of the original teamspeak server monitoring and statistics system in Python 3.11 using Django. The web frontend uses [Tabler.io](http://tabler.io) as the UI library.
+This repository now contains two application generations:
+
+- The original Django/Python implementation in the existing `spybot` and `Spybot2` packages.
+- An in-progress Spring Boot + Kotlin rewrite in `spybot-core`, `spybot-web`, and `spybot-recorder`.
+
+The Spring rewrite uses Spring MVC, Spring Security, jOOQ, Flyway, and JTE templates, while preserving the current PostgreSQL schema for the first release.
+
+## Spring rewrite modules
+
+- `spybot-core`: shared query layer, domain models, security principal, Flyway baseline, and jOOQ generation config.
+- `spybot-web`: MVC app, JTE views, REST endpoints, security config, and scheduled jobs.
+- `spybot-recorder`: dedicated recorder process scaffold for the TeamSpeak listener.
 
 ## Dependencies
 This project uses `uv` as a Python package manager. 
@@ -15,4 +26,3 @@ Execute `uv add mydependency`, then commit the files `pyproject.toml` and `uv.lo
 ### Code style
 We use `ruff` for code formatting. The code style is enforced in pull requests.
 To install the pre-commit hook, use `pre-commit install`.
-

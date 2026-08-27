@@ -1,0 +1,134 @@
+@param activityChart: com.spybot.core.model.ActivityChartView
+<div class="card h-100" id="activity_fragment">
+    <div class="card-header d-flex justify-content-between">
+        <h3 class="card-title my-2">Recent activity</h3>
+        <div class="lh-1">
+            <div class="dropdown" hx-target="#activity_fragment" hx-swap="outerHTML">
+                <a class="dropdown-toggle text-secondary" href="#" data-bs-toggle="dropdown" aria-haspopup="true"
+                   aria-expanded="false">${activityChart.activeOptionText}</a>
+                <div class="dropdown-menu dropdown-zx-end dropdown-menu-arrow" style="">
+                    @for(option in activityChart.options)
+                        <button class="${if (option.active) "dropdown-item active" else "dropdown-item"}" hx-get="/activity_fragment?timespan=${option.value}">${option.text}</button>
+                    @endfor
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body ps-2">
+        <div id="chart-mentions" class="h-100"></div>
+    </div>
+    <script>
+        var renderActivityChart = () => {
+            window.ApexCharts && (new ApexCharts(document.getElementById('chart-mentions'), {
+                chart: {
+                    height: "100%",
+                    type: "bar",
+                    fontFamily: 'inherit',
+                    parentHeightOffset: 0,
+                    toolbar: {
+                        show: false,
+                    },
+                    zoom: {enabled: false},
+                    animations: {
+                        enabled: true,
+                        easing: 'easein',
+                        speed: 1000,
+                        animateGradually: {
+                            enabled: true,
+                            delay: 150
+                        },
+                        dynamicAnimation: {
+                            enabled: true,
+                            speed: 550
+                        }
+                    },
+                    stacked: true,
+                },
+                plotOptions: {
+                    bar: {
+                        columnWidth: '50%',
+                        borderRadius: 2,
+                        borderRadiusApplication: "end",
+                    }
+                },
+                dataLabels: {
+                    enabled: false,
+                },
+                fill: {
+                    opacity: 1,
+                },
+                series: [{
+                    name: "Talking",
+                    data: [$unsafe{activityChart.points.joinToString(", ") { it.activeHours.toString() }}]
+                }, {
+                    name: "Idling",
+                    data: [$unsafe{activityChart.points.joinToString(", ") { it.afkHours.toString() }}]
+                }],
+                tooltip: {
+                    theme: 'dark',
+                    x: {
+                        format: 'dd MMMM',
+                    },
+                    shared: true,
+                    intersect: false,
+                    followCursor: false,
+                },
+                grid: {
+                    padding: {
+                        top: -20,
+                        right: 0,
+                        left: 4,
+                        bottom: -4
+                    },
+                    strokeDashArray: 4,
+                    xaxis: {
+                        lines: {
+                            show: true
+                        }
+                    },
+                },
+                xaxis: {
+                    labels: {
+                        padding: 0,
+                        datetimeFormatter: {
+                            day: 'dd.',
+                        },
+                    },
+                    tooltip: {
+                        enabled: false
+                    },
+                    axisBorder: {
+                        show: false,
+                    },
+                    type: 'datetime',
+                },
+                yaxis: {
+                    title: {
+                        text: "Cumulative hours",
+                        offsetX: 0,
+                        style: {fontWeight: 500},
+                    },
+                    labels: {
+                        padding: 20,
+                        formatter: (value) => {
+                            return value.toFixed(0)
+                        }
+                    }
+                },
+                labels: [
+                    @for(entry in activityChart.points) '$unsafe{entry.date.toString()}', @endfor
+                ],
+                colors: [tabler.tabler.getColor("primary"), tabler.tabler.getColor("red", 0.8), tabler.tabler.getColor("green", 0.8)],
+                legend: {
+                    show: false,
+                },
+            })).render();
+        }
+
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", renderActivityChart);
+        } else {
+            renderActivityChart();
+        }
+    </script>
+</div>

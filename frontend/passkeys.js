@@ -2,7 +2,7 @@ import {startAuthentication, startRegistration} from '@simplewebauthn/browser'
 
 const isAllowedRedirectUrl = url => {
     const regex = /^[A-Za-z0-9/]+$/;
-    return regex.test(str);
+    return regex.test(url);
 }
 
 const sendToServerForVerificationAndLogin = async (response) => {
