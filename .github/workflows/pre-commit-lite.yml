@@ -6,11 +6,15 @@ name: 'Pre-commit (Kotlin format)'
 # (where we can install a JDK) and the pre-commit.ci lite GitHub App pushes an
 # auto-fix commit for any diff it produces, same as pre-commit.ci already does for
 # ruff. Scoped to just pretty-format-kotlin so ruff isn't linted/fixed twice.
+#
+# push only covers master: every PR here targets master and dev is the long-lived
+# head of an open PR into it, so a push to dev already fires pull_request:synchronize
+# - adding dev to push too would run this workflow twice per commit.
 on:
   push:
-    branches: [ "master", "dev" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "master", "dev" ]
+    branches: [ "master" ]
 
 jobs:
   pre-commit-ci-lite:
