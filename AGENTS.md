@@ -80,3 +80,4 @@ Use Spring MVC + JTE for server-rendered pages. Keep the existing Tabler, HTMX, 
 - Keep changes scoped; the worktree may contain unrelated user changes. Never reset, revert, or delete those changes.
 - Use `apply_patch` for source edits and keep new text ASCII unless the file already needs Unicode.
 - Do not commit generated build output, frontend output, Gradle caches, Docker build caches, secrets, or IDE user files.
+- Add a `CHANGELOG.md` entry in the same PR as any user-visible or otherwise notable change, following the format documented at the top of that file. The home page footer and `/changelog` page render it directly.

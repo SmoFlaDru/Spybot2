@@ -1,6 +1,8 @@
 @param loggedInUser: com.spybot.core.model.MergedUserView?
 @param csrf: org.springframework.security.web.csrf.CsrfToken?
-@template.layout.base(title = "TeamSpeak Login", loggedInUser = loggedInUser, csrf = csrf, activePage = "login", content = @`
+@param commitHash: String? = null
+@param buildTime: java.time.Instant? = null
+@template.layout.base(title = "TeamSpeak Login", loggedInUser = loggedInUser, csrf = csrf, commitHash = commitHash, buildTime = buildTime, activePage = "login", content = @`
     <div class="page page-center">
         <div class="container container-tight py-4">
             <div class="card card-md">

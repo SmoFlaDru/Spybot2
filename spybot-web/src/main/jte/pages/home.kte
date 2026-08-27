@@ -1,7 +1,9 @@
 @param loggedInUser: com.spybot.core.model.MergedUserView?
 @param home: com.spybot.core.model.HomePageView
 @param csrf: org.springframework.security.web.csrf.CsrfToken?
-@template.layout.base(title = "Home", loggedInUser = loggedInUser, csrf = csrf, activePage = "home", content = @`
+@param commitHash: String? = null
+@param buildTime: java.time.Instant? = null
+@template.layout.base(title = "Home", loggedInUser = loggedInUser, csrf = csrf, commitHash = commitHash, buildTime = buildTime, activePage = "home", content = @`
     <div class="row row-cards justify-content-md-center">
         <div class="col-md-6 height-xs-150vw">
             <div class="row row-cards row-height-100">

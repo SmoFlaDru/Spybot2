@@ -1,8 +1,10 @@
 @param loggedInUser: com.spybot.core.model.MergedUserView
 @param csrf: org.springframework.security.web.csrf.CsrfToken?
+@param commitHash: String? = null
+@param buildTime: java.time.Instant? = null
 @param query: String
 @param users: java.util.List<com.spybot.core.model.AdminMergedUserRow>
-@template.layout.base(title = "Merged users", loggedInUser = loggedInUser, csrf = csrf, activePage = "admin", content = @`
+@template.layout.base(title = "Merged users", loggedInUser = loggedInUser, csrf = csrf, commitHash = commitHash, buildTime = buildTime, activePage = "admin", content = @`
     <div class="row row-cards justify-content-md-center">
         <div class="col-md-10">
             <div class="card">

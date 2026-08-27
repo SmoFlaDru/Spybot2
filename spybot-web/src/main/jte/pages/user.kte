@@ -1,7 +1,9 @@
 @param loggedInUser: com.spybot.core.model.MergedUserView?
 @param page: com.spybot.core.model.UserPageView
 @param csrf: org.springframework.security.web.csrf.CsrfToken?
-@template.layout.base(title = page.headline.mergedUsername, loggedInUser = loggedInUser, csrf = csrf, activePage = "user", content = @`
+@param commitHash: String? = null
+@param buildTime: java.time.Instant? = null
+@template.layout.base(title = page.headline.mergedUsername, loggedInUser = loggedInUser, csrf = csrf, commitHash = commitHash, buildTime = buildTime, activePage = "user", content = @`
     <div class="mt-2 d-flex align-items-center justify-content-center">
         <span class="avatar">${if (page.headline.mergedUsername.isNotBlank()) page.headline.mergedUsername.substring(0, 1) else "?"}</span>
         <span class="display-6 ms-3"><b>${page.headline.mergedUsername}</b></span>

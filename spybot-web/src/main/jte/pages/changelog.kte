@@ -1,0 +1,40 @@
+@param loggedInUser: com.spybot.core.model.MergedUserView?
+@param csrf: org.springframework.security.web.csrf.CsrfToken?
+@param commitHash: String? = null
+@param buildTime: java.time.Instant? = null
+@param entries: java.util.List<com.spybot.web.service.ChangelogEntry>
+@template.layout.base(title = "Changelog", loggedInUser = loggedInUser, csrf = csrf, commitHash = commitHash, buildTime = buildTime, activePage = "changelog", content = @`
+    <div class="row row-cards justify-content-md-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header row g-0">
+                    <h3 class="card-title">Changelog</h3>
+                </div>
+                <div class="list-group list-group-flush">
+                    @for(entry in entries)
+                        <div class="list-group-item">
+                            <div class="row align-items-center mb-2">
+                                <div class="col-auto">
+                                    <span class="h3 mb-0">${entry.version}</span>
+                                </div>
+                                <div class="col text-secondary">
+                                    ${entry.date.toString()} &middot;
+                                    <a class="link-secondary" href="https://github.com/SmoFlaDru/Spybot2/commit/${entry.commitHash}"
+                                       target="_blank" rel="noopener">${entry.commitHash}</a>
+                                </div>
+                            </div>
+                            <ul class="mb-0">
+                                @for(feature in entry.features)
+                                    <li>${feature}</li>
+                                @endfor
+                            </ul>
+                        </div>
+                    @endfor
+                    @if(entries.isEmpty())
+                        <div class="list-group-item text-secondary">No changelog entries yet.</div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+`)

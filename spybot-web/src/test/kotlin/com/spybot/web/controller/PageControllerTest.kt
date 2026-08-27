@@ -9,6 +9,7 @@ import com.spybot.core.model.SelectorOption
 import com.spybot.core.model.TopUserWeek
 import com.spybot.core.model.WeekTrendView
 import com.spybot.core.service.SpybotQueryService
+import com.spybot.web.service.ChangelogService
 import com.spybot.web.service.SpybotPageService
 import jakarta.servlet.http.HttpServletRequest
 import org.junit.jupiter.api.Test
@@ -62,7 +63,7 @@ class PageControllerTest {
         Mockito.`when`(pageService.home(7)).thenReturn(homePage)
         Mockito.`when`(request.getAttribute("_csrf")).thenReturn(csrfToken)
 
-        val controller = PageController(pageService, queryService)
+        val controller = PageController(pageService, queryService, ChangelogService())
         val viewName = controller.home(7, null, model, request)
 
         assertEquals("pages/home", viewName)

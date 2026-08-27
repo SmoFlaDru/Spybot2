@@ -1,7 +1,9 @@
 @param loggedInUser: com.spybot.core.model.MergedUserView?
 @param topUsers: java.util.List<com.spybot.core.model.HallOfFameEntry>
 @param csrf: org.springframework.security.web.csrf.CsrfToken?
-@template.layout.base(title = "Hall of Fame", loggedInUser = loggedInUser, csrf = csrf, activePage = "halloffame", content = @`
+@param commitHash: String? = null
+@param buildTime: java.time.Instant? = null
+@template.layout.base(title = "Hall of Fame", loggedInUser = loggedInUser, csrf = csrf, commitHash = commitHash, buildTime = buildTime, activePage = "halloffame", content = @`
     <div class="row row-cards justify-content-md-center">
         <div class="col-md-8">
             <div class="card">

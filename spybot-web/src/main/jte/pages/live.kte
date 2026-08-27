@@ -2,7 +2,9 @@
 @param channels: java.util.List<com.spybot.core.model.ChannelView>
 @param clients: java.util.List<com.spybot.core.model.LiveClientView>
 @param csrf: org.springframework.security.web.csrf.CsrfToken?
-@template.layout.base(title = "Live", loggedInUser = loggedInUser, csrf = csrf, activePage = "home", content = @`
+@param commitHash: String? = null
+@param buildTime: java.time.Instant? = null
+@template.layout.base(title = "Live", loggedInUser = loggedInUser, csrf = csrf, commitHash = commitHash, buildTime = buildTime, activePage = "home", content = @`
     <style>
         table {
             margin-left: auto;

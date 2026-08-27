@@ -14,7 +14,7 @@ WORKDIR /workspace
 
 # Copy Gradle wrapper and build descriptors first for better layer reuse.
 COPY gradle ./gradle
-COPY gradlew gradlew.bat settings.gradle.kts build.gradle.kts gradle.properties ./
+COPY gradlew gradlew.bat settings.gradle.kts build.gradle.kts gradle.properties CHANGELOG.md ./
 COPY spybot-core/build.gradle.kts spybot-core/build.gradle.kts
 COPY spybot-web/build.gradle.kts spybot-web/build.gradle.kts
 COPY spybot-recorder/build.gradle.kts spybot-recorder/build.gradle.kts
@@ -29,7 +29,10 @@ COPY spybot-web ./spybot-web
 COPY spybot ./spybot
 COPY --from=frontend-build /workspace/frontend/output ./frontend/output
 
+# Bind-mount .git (read-only, not COPY'd) so the git-properties Gradle plugin can read the real
+# commit; it changes every commit, so COPY-ing it would bust the dependency-priming layer cache.
 RUN --mount=type=cache,target=/root/.gradle \
+    --mount=type=bind,source=.git,target=.git,readonly \
     ./gradlew --no-daemon --max-workers=1 -Dkotlin.compiler.execution.strategy=in-process -Dkotlin.incremental=false :spybot-web:bootJar
 
 FROM eclipse-temurin:25-jre

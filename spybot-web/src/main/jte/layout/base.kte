@@ -3,6 +3,8 @@
 @param csrf: org.springframework.security.web.csrf.CsrfToken?
 @param activePage: String
 @param content: gg.jte.Content
+@param commitHash: String? = null
+@param buildTime: java.time.Instant? = null
 <!DOCTYPE html>
 <html lang="en" data-bs-theme-base="slate">
 <head>
@@ -148,6 +150,13 @@
                                     <svg width="14" height="14"><use xlink:href="/tabler-sprite.svg#tabler-lock"/></svg>
                                 </a>
                             </li>
+                            @if(commitHash != null)
+                                <li class="list-inline-item">
+                                    <a class="link-secondary" href="/changelog">
+                                        ${commitHash}@if(buildTime != null) (${buildTime.toString().substring(0, 10)})@endif
+                                    </a>
+                                </li>
+                            @endif
                         </ul>
                     </div>
                 </div>

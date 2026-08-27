@@ -44,6 +44,7 @@ class SecurityConfig(
                     "/live/",
                     "/timeline",
                     "/halloffame",
+                    "/changelog",
                     "/login",
                     "/login_teamspeak",
                     "/link_auth",

@@ -4,6 +4,7 @@ plugins {
     id("org.springframework.boot")
     id("io.spring.dependency-management")
     id("gg.jte.gradle") version "3.2.3"
+    id("com.gorylenko.gradle-git-properties") version "4.0.1"
 }
 
 dependencyManagement {
@@ -64,6 +65,15 @@ tasks.named<ProcessResources>("processResources") {
     from(prepareFrontendAssets) {
         into("static")
     }
+    from(rootProject.file("CHANGELOG.md"))
+}
+
+gitProperties {
+    dotGitDirectory.set(rootProject.layout.projectDirectory.dir(".git"))
+}
+
+springBoot {
+    buildInfo()
 }
 
 jte {

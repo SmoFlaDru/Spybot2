@@ -2,7 +2,9 @@
 @param passkeys: java.util.List<com.spybot.core.model.PasskeyView>
 @param steamIds: java.util.List<com.spybot.core.model.SteamIdView>
 @param csrf: org.springframework.security.web.csrf.CsrfToken?
-@template.layout.base(title = "Profile", loggedInUser = loggedInUser, csrf = csrf, activePage = "profile", content = @`
+@param commitHash: String? = null
+@param buildTime: java.time.Instant? = null
+@template.layout.base(title = "Profile", loggedInUser = loggedInUser, csrf = csrf, commitHash = commitHash, buildTime = buildTime, activePage = "profile", content = @`
     <div class="row row-cards justify-content-md-center">
         <div class="col-md-8">
             <div class="card">

@@ -2,6 +2,7 @@ package com.spybot.web.controller
 
 import com.spybot.core.security.MergedUserPrincipal
 import com.spybot.core.service.SpybotQueryService
+import com.spybot.web.service.ChangelogService
 import com.spybot.web.service.SpybotPageService
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -17,6 +18,7 @@ import org.springframework.http.HttpStatus
 class PageController(
     private val pageService: SpybotPageService,
     private val queryService: SpybotQueryService,
+    private val changelogService: ChangelogService,
 ) {
     @GetMapping("/")
     fun home(
@@ -119,5 +121,17 @@ class PageController(
         model.addAttribute("loggedInUser", pageService.loggedInUser(principal))
         model.addAttribute("csrf", request.getAttribute("_csrf"))
         return "pages/login_teamspeak"
+    }
+
+    @GetMapping("/changelog")
+    fun changelog(
+        @AuthenticationPrincipal principal: MergedUserPrincipal?,
+        model: Model,
+        request: HttpServletRequest,
+    ): String {
+        model.addAttribute("loggedInUser", pageService.loggedInUser(principal))
+        model.addAttribute("entries", changelogService.entries())
+        model.addAttribute("csrf", request.getAttribute("_csrf"))
+        return "pages/changelog"
     }
 }
