@@ -1,6 +1,6 @@
 import nu.studer.gradle.jooq.JooqEdition
-import org.jooq.meta.jaxb.Logging
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+import org.jooq.meta.jaxb.Logging
 
 plugins {
     kotlin("jvm")
@@ -31,10 +31,10 @@ dependencies {
 
     jooqGenerator("org.postgresql:postgresql")
     // Keep generator classpath versions aligned to avoid codegen runtime NoSuchMethodError
-    jooqGenerator("org.jooq:jooq:${jooqVersion}")
-    jooqGenerator("org.jooq:jooq-meta:${jooqVersion}")
-    jooqGenerator("org.jooq:jooq-codegen:${jooqVersion}")
-    jooqGenerator("org.jooq:jooq-meta-extensions:${jooqVersion}")
+    jooqGenerator("org.jooq:jooq:$jooqVersion")
+    jooqGenerator("org.jooq:jooq-meta:$jooqVersion")
+    jooqGenerator("org.jooq:jooq-codegen:$jooqVersion")
+    jooqGenerator("org.jooq:jooq-meta-extensions:$jooqVersion")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
@@ -72,9 +72,19 @@ jooq {
                         inputSchema = "PUBLIC"
                         properties.addAll(
                             listOf(
-                                org.jooq.meta.jaxb.Property().withKey("scripts").withValue("src/main/resources/db/migration/V1__baseline.sql"),
-                                org.jooq.meta.jaxb.Property().withKey("sort").withValue("flyway"),
-                                org.jooq.meta.jaxb.Property().withKey("defaultNameCase").withValue("lower"),
+                                org.jooq.meta.jaxb
+                                    .Property()
+                                    .withKey(
+                                        "scripts",
+                                    ).withValue("src/main/resources/db/migration/V1__baseline.sql"),
+                                org.jooq.meta.jaxb
+                                    .Property()
+                                    .withKey("sort")
+                                    .withValue("flyway"),
+                                org.jooq.meta.jaxb
+                                    .Property()
+                                    .withKey("defaultNameCase")
+                                    .withValue("lower"),
                             ),
                         )
                     }
@@ -86,7 +96,11 @@ jooq {
                     }
                     target.apply {
                         packageName = "com.spybot.jooq"
-                        directory = layout.buildDirectory.dir("generated-src/jooq/main").get().asFile.absolutePath
+                        directory =
+                            layout.buildDirectory
+                                .dir("generated-src/jooq/main")
+                                .get()
+                                .asFile.absolutePath
                     }
                 }
             }

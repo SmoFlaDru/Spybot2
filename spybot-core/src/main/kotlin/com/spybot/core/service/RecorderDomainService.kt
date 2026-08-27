@@ -45,7 +45,10 @@ class RecorderDomainService(
         channelNameLookup: (Int) -> String?,
     ) {
         when (event) {
-            is TeamSpeakEvent.ClientEnter -> handleClientEnter(event.client, gateway, joined = true, channelNameLookup = channelNameLookup)
+            is TeamSpeakEvent.ClientEnter -> {
+                handleClientEnter(event.client, gateway, joined = true, channelNameLookup = channelNameLookup)
+            }
+
             is TeamSpeakEvent.ClientLeave -> {
                 queryService.findIdentityByClientId(event.clientId)?.let {
                     queryService.closeOpenSessionsForUser(it.tsUserId, event.reasonId)
@@ -79,7 +82,8 @@ class RecorderDomainService(
         }
 
         val identity =
-            queryService.findIdentityByUniqueIdentifier(client.uniqueIdentifier)
+            queryService
+                .findIdentityByUniqueIdentifier(client.uniqueIdentifier)
                 ?.let { queryService.renameIdentity(it, client.nickname) }
                 ?: queryService.createTeamSpeakIdentity(client.nickname, client.clientId, client.uniqueIdentifier)
 
@@ -133,7 +137,13 @@ class RecorderDomainService(
 }
 
 interface RecorderMessageGateway {
-    fun pokeClient(clientId: Int, message: String)
+    fun pokeClient(
+        clientId: Int,
+        message: String,
+    )
 
-    fun sendTextMessage(clientId: Int, message: String)
+    fun sendTextMessage(
+        clientId: Int,
+        message: String,
+    )
 }

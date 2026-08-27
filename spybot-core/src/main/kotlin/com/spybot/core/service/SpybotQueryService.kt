@@ -20,8 +20,8 @@ import com.spybot.core.model.QueuedClientMessageView
 import com.spybot.core.model.RecentEventView
 import com.spybot.core.model.RecentEventsPayload
 import com.spybot.core.model.SelectorOption
-import com.spybot.core.model.StoredPasskey
 import com.spybot.core.model.SteamIdView
+import com.spybot.core.model.StoredPasskey
 import com.spybot.core.model.StreakView
 import com.spybot.core.model.TeamSpeakChannelSnapshot
 import com.spybot.core.model.TeamSpeakIdentity
@@ -52,13 +52,14 @@ class SpybotQueryService(
     private val dsl: DSLContext,
 ) {
     fun findMergedUserById(id: Long): MergedUserView? =
-        dsl.select(
-            SPYBOT_MERGEDUSER.ID,
-            SPYBOT_MERGEDUSER.NAME,
-            SPYBOT_MERGEDUSER.OBSOLETE,
-            SPYBOT_MERGEDUSER.IS_SUPERUSER,
-            SPYBOT_MERGEDUSER.LAST_LOGIN,
-        ).from(SPYBOT_MERGEDUSER)
+        dsl
+            .select(
+                SPYBOT_MERGEDUSER.ID,
+                SPYBOT_MERGEDUSER.NAME,
+                SPYBOT_MERGEDUSER.OBSOLETE,
+                SPYBOT_MERGEDUSER.IS_SUPERUSER,
+                SPYBOT_MERGEDUSER.LAST_LOGIN,
+            ).from(SPYBOT_MERGEDUSER)
             .where(SPYBOT_MERGEDUSER.ID.eq(id))
             .fetchOne {
                 MergedUserView(
@@ -71,14 +72,16 @@ class SpybotQueryService(
             }
 
     fun findMergedUserByLoginCode(code: String): MergedUserView? =
-        dsl.select(
-            SPYBOT_MERGEDUSER.ID,
-            SPYBOT_MERGEDUSER.NAME,
-            SPYBOT_MERGEDUSER.OBSOLETE,
-            SPYBOT_MERGEDUSER.IS_SUPERUSER,
-            SPYBOT_MERGEDUSER.LAST_LOGIN,
-        ).from(SPYBOT_LOGINLINK)
-            .join(SPYBOT_MERGEDUSER).on(SPYBOT_MERGEDUSER.ID.eq(SPYBOT_LOGINLINK.USER_ID))
+        dsl
+            .select(
+                SPYBOT_MERGEDUSER.ID,
+                SPYBOT_MERGEDUSER.NAME,
+                SPYBOT_MERGEDUSER.OBSOLETE,
+                SPYBOT_MERGEDUSER.IS_SUPERUSER,
+                SPYBOT_MERGEDUSER.LAST_LOGIN,
+            ).from(SPYBOT_LOGINLINK)
+            .join(SPYBOT_MERGEDUSER)
+            .on(SPYBOT_MERGEDUSER.ID.eq(SPYBOT_LOGINLINK.USER_ID))
             .where(SPYBOT_LOGINLINK.CODE.eq(code))
             .fetchOne {
                 MergedUserView(
@@ -91,7 +94,8 @@ class SpybotQueryService(
             }
 
     fun touchLastSeen(userId: Long) {
-        dsl.update(SPYBOT_MERGEDUSER)
+        dsl
+            .update(SPYBOT_MERGEDUSER)
             .set(SPYBOT_MERGEDUSER.LAST_LOGIN, DSL.currentOffsetDateTime())
             .where(SPYBOT_MERGEDUSER.ID.eq(userId))
             .execute()
@@ -110,15 +114,17 @@ class SpybotQueryService(
                 }
         }
 
-        return dsl.select(
-            SPYBOT_MERGEDUSER.ID,
-            SPYBOT_MERGEDUSER.NAME,
-            SPYBOT_MERGEDUSER.OBSOLETE,
-            SPYBOT_MERGEDUSER.IS_SUPERUSER,
-            SPYBOT_MERGEDUSER.LAST_LOGIN,
-            tsCountField,
-        ).from(SPYBOT_MERGEDUSER)
-            .leftJoin(TSUSER).on(TSUSER.MERGED_USER_ID.eq(SPYBOT_MERGEDUSER.ID))
+        return dsl
+            .select(
+                SPYBOT_MERGEDUSER.ID,
+                SPYBOT_MERGEDUSER.NAME,
+                SPYBOT_MERGEDUSER.OBSOLETE,
+                SPYBOT_MERGEDUSER.IS_SUPERUSER,
+                SPYBOT_MERGEDUSER.LAST_LOGIN,
+                tsCountField,
+            ).from(SPYBOT_MERGEDUSER)
+            .leftJoin(TSUSER)
+            .on(TSUSER.MERGED_USER_ID.eq(SPYBOT_MERGEDUSER.ID))
             .where(if (conditions.isEmpty()) DSL.trueCondition() else conditions.reduce(Condition::and))
             .groupBy(
                 SPYBOT_MERGEDUSER.ID,
@@ -153,15 +159,17 @@ class SpybotQueryService(
                     .or(SPYBOT_MERGEDUSER.NAME.containsIgnoreCase(q))
         }
 
-        return dsl.select(
-            TSUSER.ID,
-            TSUSER.NAME,
-            TSUSER.MERGED_USER_ID,
-            TSUSER.ISCURRENTLYONLINE,
-            TSUSER.CLIENTID,
-            SPYBOT_MERGEDUSER.NAME,
-        ).from(TSUSER)
-            .leftJoin(SPYBOT_MERGEDUSER).on(SPYBOT_MERGEDUSER.ID.eq(TSUSER.MERGED_USER_ID))
+        return dsl
+            .select(
+                TSUSER.ID,
+                TSUSER.NAME,
+                TSUSER.MERGED_USER_ID,
+                TSUSER.ISCURRENTLYONLINE,
+                TSUSER.CLIENTID,
+                SPYBOT_MERGEDUSER.NAME,
+            ).from(TSUSER)
+            .leftJoin(SPYBOT_MERGEDUSER)
+            .on(SPYBOT_MERGEDUSER.ID.eq(TSUSER.MERGED_USER_ID))
             .where(if (conditions.isEmpty()) DSL.trueCondition() else conditions.reduce(Condition::and))
             .orderBy(TSUSER.ID.desc())
             .fetch {
@@ -188,12 +196,13 @@ class SpybotQueryService(
                 }
         }
 
-        return dsl.select(
-            SPYBOT_NEWSEVENT.ID,
-            SPYBOT_NEWSEVENT.TEXT,
-            SPYBOT_NEWSEVENT.WEBSITE_LINK,
-            SPYBOT_NEWSEVENT.DATE,
-        ).from(SPYBOT_NEWSEVENT)
+        return dsl
+            .select(
+                SPYBOT_NEWSEVENT.ID,
+                SPYBOT_NEWSEVENT.TEXT,
+                SPYBOT_NEWSEVENT.WEBSITE_LINK,
+                SPYBOT_NEWSEVENT.DATE,
+            ).from(SPYBOT_NEWSEVENT)
             .where(if (conditions.isEmpty()) DSL.trueCondition() else conditions.reduce(Condition::and))
             .orderBy(SPYBOT_NEWSEVENT.DATE.desc(), SPYBOT_NEWSEVENT.ID.desc())
             .fetch {
@@ -207,12 +216,13 @@ class SpybotQueryService(
     }
 
     fun adminNewsEventById(id: Long): AdminNewsEventRow? =
-        dsl.select(
-            SPYBOT_NEWSEVENT.ID,
-            SPYBOT_NEWSEVENT.TEXT,
-            SPYBOT_NEWSEVENT.WEBSITE_LINK,
-            SPYBOT_NEWSEVENT.DATE,
-        ).from(SPYBOT_NEWSEVENT)
+        dsl
+            .select(
+                SPYBOT_NEWSEVENT.ID,
+                SPYBOT_NEWSEVENT.TEXT,
+                SPYBOT_NEWSEVENT.WEBSITE_LINK,
+                SPYBOT_NEWSEVENT.DATE,
+            ).from(SPYBOT_NEWSEVENT)
             .where(SPYBOT_NEWSEVENT.ID.eq(id))
             .fetchOne {
                 AdminNewsEventRow(
@@ -223,8 +233,12 @@ class SpybotQueryService(
                 )
             }
 
-    fun adminCreateNewsEvent(text: String, websiteLink: String?): Long =
-        dsl.insertInto(SPYBOT_NEWSEVENT)
+    fun adminCreateNewsEvent(
+        text: String,
+        websiteLink: String?,
+    ): Long =
+        dsl
+            .insertInto(SPYBOT_NEWSEVENT)
             .set(SPYBOT_NEWSEVENT.TEXT, text)
             .set(SPYBOT_NEWSEVENT.WEBSITE_LINK, websiteLink)
             .set(SPYBOT_NEWSEVENT.DATE, DSL.currentOffsetDateTime())
@@ -236,14 +250,16 @@ class SpybotQueryService(
         text: String,
         websiteLink: String?,
     ): Boolean =
-        dsl.update(SPYBOT_NEWSEVENT)
+        dsl
+            .update(SPYBOT_NEWSEVENT)
             .set(SPYBOT_NEWSEVENT.TEXT, text)
             .set(SPYBOT_NEWSEVENT.WEBSITE_LINK, websiteLink)
             .where(SPYBOT_NEWSEVENT.ID.eq(id))
             .execute() > 0
 
     fun adminDeleteNewsEvent(id: Long): Boolean =
-        dsl.deleteFrom(SPYBOT_NEWSEVENT)
+        dsl
+            .deleteFrom(SPYBOT_NEWSEVENT)
             .where(SPYBOT_NEWSEVENT.ID.eq(id))
             .execute() > 0
 
@@ -251,13 +267,14 @@ class SpybotQueryService(
         if (ids.isEmpty()) {
             return emptyList()
         }
-        return dsl.select(
-            SPYBOT_MERGEDUSER.ID,
-            SPYBOT_MERGEDUSER.NAME,
-            SPYBOT_MERGEDUSER.OBSOLETE,
-            SPYBOT_MERGEDUSER.IS_SUPERUSER,
-            SPYBOT_MERGEDUSER.LAST_LOGIN,
-        ).from(SPYBOT_MERGEDUSER)
+        return dsl
+            .select(
+                SPYBOT_MERGEDUSER.ID,
+                SPYBOT_MERGEDUSER.NAME,
+                SPYBOT_MERGEDUSER.OBSOLETE,
+                SPYBOT_MERGEDUSER.IS_SUPERUSER,
+                SPYBOT_MERGEDUSER.LAST_LOGIN,
+            ).from(SPYBOT_MERGEDUSER)
             .where(SPYBOT_MERGEDUSER.ID.`in`(ids))
             .fetch {
                 MergedUserView(
@@ -270,90 +287,123 @@ class SpybotQueryService(
             }
     }
 
-    fun adminSetMergedUserSuperuser(id: Long, isSuperuser: Boolean): Int =
-        dsl.update(SPYBOT_MERGEDUSER)
+    fun adminSetMergedUserSuperuser(
+        id: Long,
+        isSuperuser: Boolean,
+    ): Int =
+        dsl
+            .update(SPYBOT_MERGEDUSER)
             .set(SPYBOT_MERGEDUSER.IS_SUPERUSER, isSuperuser)
             .where(SPYBOT_MERGEDUSER.ID.eq(id))
             .execute()
 
-    fun adminSetMergedUsersObsolete(ids: Collection<Long>, obsolete: Boolean): Int {
+    fun adminSetMergedUsersObsolete(
+        ids: Collection<Long>,
+        obsolete: Boolean,
+    ): Int {
         if (ids.isEmpty()) {
             return 0
         }
-        return dsl.update(SPYBOT_MERGEDUSER)
+        return dsl
+            .update(SPYBOT_MERGEDUSER)
             .set(SPYBOT_MERGEDUSER.OBSOLETE, obsolete)
             .where(SPYBOT_MERGEDUSER.ID.`in`(ids))
             .execute()
     }
 
-    fun adminReassignTsUsers(sourceIds: Collection<Long>, targetId: Long): Int {
+    fun adminReassignTsUsers(
+        sourceIds: Collection<Long>,
+        targetId: Long,
+    ): Int {
         if (sourceIds.isEmpty()) {
             return 0
         }
-        return dsl.update(TSUSER)
+        return dsl
+            .update(TSUSER)
             .set(TSUSER.MERGED_USER_ID, targetId)
             .where(TSUSER.MERGED_USER_ID.`in`(sourceIds))
             .execute()
     }
 
-    fun adminReassignSteamIds(sourceIds: Collection<Long>, targetId: Long): Int {
+    fun adminReassignSteamIds(
+        sourceIds: Collection<Long>,
+        targetId: Long,
+    ): Int {
         if (sourceIds.isEmpty()) {
             return 0
         }
-        return dsl.update(SPYBOT_STEAMID)
+        return dsl
+            .update(SPYBOT_STEAMID)
             .set(SPYBOT_STEAMID.MERGED_USER_ID, targetId)
             .where(SPYBOT_STEAMID.MERGED_USER_ID.`in`(sourceIds))
             .execute()
     }
 
-    fun adminReassignAwards(sourceIds: Collection<Long>, targetId: Long): Int {
+    fun adminReassignAwards(
+        sourceIds: Collection<Long>,
+        targetId: Long,
+    ): Int {
         if (sourceIds.isEmpty()) {
             return 0
         }
-        return dsl.update(SPYBOT_AWARD)
+        return dsl
+            .update(SPYBOT_AWARD)
             .set(SPYBOT_AWARD.MERGED_USER_ID, targetId)
             .where(SPYBOT_AWARD.MERGED_USER_ID.`in`(sourceIds))
             .execute()
     }
 
-    fun adminReassignQueuedMessages(sourceIds: Collection<Long>, targetId: Long): Int {
+    fun adminReassignQueuedMessages(
+        sourceIds: Collection<Long>,
+        targetId: Long,
+    ): Int {
         if (sourceIds.isEmpty()) {
             return 0
         }
-        return dsl.update(SPYBOT_QUEUEDCLIENTMESSAGE)
+        return dsl
+            .update(SPYBOT_QUEUEDCLIENTMESSAGE)
             .set(SPYBOT_QUEUEDCLIENTMESSAGE.MERGED_USER_ID, targetId)
             .where(SPYBOT_QUEUEDCLIENTMESSAGE.MERGED_USER_ID.`in`(sourceIds))
             .execute()
     }
 
-    fun adminReassignLoginLinks(sourceIds: Collection<Long>, targetId: Long): Int {
+    fun adminReassignLoginLinks(
+        sourceIds: Collection<Long>,
+        targetId: Long,
+    ): Int {
         if (sourceIds.isEmpty()) {
             return 0
         }
-        return dsl.update(SPYBOT_LOGINLINK)
+        return dsl
+            .update(SPYBOT_LOGINLINK)
             .set(SPYBOT_LOGINLINK.USER_ID, targetId)
             .where(SPYBOT_LOGINLINK.USER_ID.`in`(sourceIds))
             .execute()
     }
 
-    fun adminReassignPasskeys(sourceIds: Collection<Long>, targetId: Long): Int {
+    fun adminReassignPasskeys(
+        sourceIds: Collection<Long>,
+        targetId: Long,
+    ): Int {
         if (sourceIds.isEmpty()) {
             return 0
         }
-        return dsl.update(SPYBOT_USERPASSKEY)
+        return dsl
+            .update(SPYBOT_USERPASSKEY)
             .set(SPYBOT_USERPASSKEY.USER_ID, targetId)
             .where(SPYBOT_USERPASSKEY.USER_ID.`in`(sourceIds))
             .execute()
     }
 
     fun passkeysForUser(userId: Long): List<PasskeyView> =
-        dsl.select(
-            SPYBOT_USERPASSKEY.ID,
-            SPYBOT_USERPASSKEY.NAME,
-            SPYBOT_USERPASSKEY.PLATFORM,
-            SPYBOT_USERPASSKEY.ADDED_ON,
-            SPYBOT_USERPASSKEY.LAST_USED,
-        ).from(SPYBOT_USERPASSKEY)
+        dsl
+            .select(
+                SPYBOT_USERPASSKEY.ID,
+                SPYBOT_USERPASSKEY.NAME,
+                SPYBOT_USERPASSKEY.PLATFORM,
+                SPYBOT_USERPASSKEY.ADDED_ON,
+                SPYBOT_USERPASSKEY.LAST_USED,
+            ).from(SPYBOT_USERPASSKEY)
             .where(SPYBOT_USERPASSKEY.USER_ID.eq(userId))
             .orderBy(SPYBOT_USERPASSKEY.ADDED_ON.desc())
             .fetch {
@@ -366,24 +416,29 @@ class SpybotQueryService(
                 )
             }
 
-    fun deletePasskey(userId: Long, passkeyId: Long): Boolean =
-        dsl.deleteFrom(SPYBOT_USERPASSKEY)
+    fun deletePasskey(
+        userId: Long,
+        passkeyId: Long,
+    ): Boolean =
+        dsl
+            .deleteFrom(SPYBOT_USERPASSKEY)
             .where(SPYBOT_USERPASSKEY.ID.eq(passkeyId))
             .and(SPYBOT_USERPASSKEY.USER_ID.eq(userId))
             .execute() > 0
 
     fun passkeyCredentialsForUser(userId: Long): List<StoredPasskey> =
-        dsl.select(
-            SPYBOT_USERPASSKEY.ID,
-            SPYBOT_USERPASSKEY.USER_ID,
-            SPYBOT_USERPASSKEY.NAME,
-            SPYBOT_USERPASSKEY.PLATFORM,
-            SPYBOT_USERPASSKEY.ADDED_ON,
-            SPYBOT_USERPASSKEY.LAST_USED,
-            SPYBOT_USERPASSKEY.CREDENTIAL_ID,
-            SPYBOT_USERPASSKEY.TOKEN,
-            SPYBOT_USERPASSKEY.ENABLED,
-        ).from(SPYBOT_USERPASSKEY)
+        dsl
+            .select(
+                SPYBOT_USERPASSKEY.ID,
+                SPYBOT_USERPASSKEY.USER_ID,
+                SPYBOT_USERPASSKEY.NAME,
+                SPYBOT_USERPASSKEY.PLATFORM,
+                SPYBOT_USERPASSKEY.ADDED_ON,
+                SPYBOT_USERPASSKEY.LAST_USED,
+                SPYBOT_USERPASSKEY.CREDENTIAL_ID,
+                SPYBOT_USERPASSKEY.TOKEN,
+                SPYBOT_USERPASSKEY.ENABLED,
+            ).from(SPYBOT_USERPASSKEY)
             .where(SPYBOT_USERPASSKEY.USER_ID.eq(userId))
             .orderBy(SPYBOT_USERPASSKEY.ADDED_ON.desc())
             .fetch {
@@ -401,17 +456,18 @@ class SpybotQueryService(
             }
 
     fun findPasskeyByCredentialId(credentialId: String): StoredPasskey? =
-        dsl.select(
-            SPYBOT_USERPASSKEY.ID,
-            SPYBOT_USERPASSKEY.USER_ID,
-            SPYBOT_USERPASSKEY.NAME,
-            SPYBOT_USERPASSKEY.PLATFORM,
-            SPYBOT_USERPASSKEY.ADDED_ON,
-            SPYBOT_USERPASSKEY.LAST_USED,
-            SPYBOT_USERPASSKEY.CREDENTIAL_ID,
-            SPYBOT_USERPASSKEY.TOKEN,
-            SPYBOT_USERPASSKEY.ENABLED,
-        ).from(SPYBOT_USERPASSKEY)
+        dsl
+            .select(
+                SPYBOT_USERPASSKEY.ID,
+                SPYBOT_USERPASSKEY.USER_ID,
+                SPYBOT_USERPASSKEY.NAME,
+                SPYBOT_USERPASSKEY.PLATFORM,
+                SPYBOT_USERPASSKEY.ADDED_ON,
+                SPYBOT_USERPASSKEY.LAST_USED,
+                SPYBOT_USERPASSKEY.CREDENTIAL_ID,
+                SPYBOT_USERPASSKEY.TOKEN,
+                SPYBOT_USERPASSKEY.ENABLED,
+            ).from(SPYBOT_USERPASSKEY)
             .where(SPYBOT_USERPASSKEY.CREDENTIAL_ID.eq(credentialId))
             .and(SPYBOT_USERPASSKEY.ENABLED.eq(true))
             .fetchOne {
@@ -436,7 +492,8 @@ class SpybotQueryService(
         token: String,
         addedOn: Instant,
     ): Long =
-        dsl.insertInto(SPYBOT_USERPASSKEY)
+        dsl
+            .insertInto(SPYBOT_USERPASSKEY)
             .set(SPYBOT_USERPASSKEY.USER_ID, userId)
             .set(SPYBOT_USERPASSKEY.NAME, name)
             .set(SPYBOT_USERPASSKEY.ENABLED, true)
@@ -448,14 +505,16 @@ class SpybotQueryService(
             .fetchSingle(SPYBOT_USERPASSKEY.ID)!!
 
     fun updatePasskeyLastUsed(passkeyId: Long) {
-        dsl.update(SPYBOT_USERPASSKEY)
+        dsl
+            .update(SPYBOT_USERPASSKEY)
             .set(SPYBOT_USERPASSKEY.LAST_USED, DSL.currentOffsetDateTime())
             .where(SPYBOT_USERPASSKEY.ID.eq(passkeyId))
             .execute()
     }
 
     fun steamIdsForUser(userId: Long): List<SteamIdView> =
-        dsl.select(SPYBOT_STEAMID.ID, SPYBOT_STEAMID.STEAM_ID, SPYBOT_STEAMID.ACCOUNT_NAME)
+        dsl
+            .select(SPYBOT_STEAMID.ID, SPYBOT_STEAMID.STEAM_ID, SPYBOT_STEAMID.ACCOUNT_NAME)
             .from(SPYBOT_STEAMID)
             .where(SPYBOT_STEAMID.MERGED_USER_ID.eq(userId))
             .orderBy(SPYBOT_STEAMID.ID.desc())
@@ -467,16 +526,25 @@ class SpybotQueryService(
                 )
             }
 
-    fun addSteamId(userId: Long, steamId: Long, accountName: String?): Long =
-        dsl.insertInto(SPYBOT_STEAMID)
+    fun addSteamId(
+        userId: Long,
+        steamId: Long,
+        accountName: String?,
+    ): Long =
+        dsl
+            .insertInto(SPYBOT_STEAMID)
             .set(SPYBOT_STEAMID.STEAM_ID, steamId)
             .set(SPYBOT_STEAMID.ACCOUNT_NAME, accountName)
             .set(SPYBOT_STEAMID.MERGED_USER_ID, userId)
             .returning(SPYBOT_STEAMID.ID)
             .fetchSingle(SPYBOT_STEAMID.ID) ?: 0L
 
-    fun deleteSteamId(userId: Long, steamIdId: Long): Boolean =
-        dsl.deleteFrom(SPYBOT_STEAMID)
+    fun deleteSteamId(
+        userId: Long,
+        steamIdId: Long,
+    ): Boolean =
+        dsl
+            .deleteFrom(SPYBOT_STEAMID)
             .where(SPYBOT_STEAMID.ID.eq(steamIdId))
             .and(SPYBOT_STEAMID.MERGED_USER_ID.eq(userId))
             .execute() > 0
@@ -494,7 +562,8 @@ class SpybotQueryService(
             // are unique and always positive, so -id can never collide with another temp value
             // or with any real order value) so the second pass can set the real values freely.
             channels.forEach { channel ->
-                tx.update(TSCHANNEL)
+                tx
+                    .update(TSCHANNEL)
                     .set(TSCHANNEL.ORDER, -channel.id)
                     .where(TSCHANNEL.ID.eq(channel.id))
                     .execute()
@@ -516,27 +585,32 @@ class SpybotQueryService(
         }
     }
 
-    fun updateChannelName(channelId: Int, escapedChannelName: String) {
-        dsl.update(TSCHANNEL)
+    fun updateChannelName(
+        channelId: Int,
+        escapedChannelName: String,
+    ) {
+        dsl
+            .update(TSCHANNEL)
             .set(TSCHANNEL.NAME, escapedChannelName)
             .where(TSCHANNEL.ID.eq(channelId))
             .execute()
     }
 
     fun findIdentityByUniqueIdentifier(uniqueIdentifier: String): TeamSpeakIdentity? =
-        dsl.fetchOne(
-            """
-            select tu.id as ts_user_id,
-                   mu.id as merged_user_id,
-                   tu.name as ts_user_name,
-                   mu.name as merged_user_name
-            from tsid tid
-            join tsuser tu on tu.id = tid.tsuserid
-            join spybot_mergeduser mu on mu.id = tu.merged_user_id
-            where tid.tsid = ?
-            """.trimIndent(),
-            uniqueIdentifier,
-        )?.toTeamSpeakIdentity()
+        dsl
+            .fetchOne(
+                """
+                select tu.id as ts_user_id,
+                       mu.id as merged_user_id,
+                       tu.name as ts_user_name,
+                       mu.name as merged_user_name
+                from tsid tid
+                join tsuser tu on tu.id = tid.tsuserid
+                join spybot_mergeduser mu on mu.id = tu.merged_user_id
+                where tid.tsid = ?
+                """.trimIndent(),
+                uniqueIdentifier,
+            )?.toTeamSpeakIdentity()
 
     fun createTeamSpeakIdentity(
         nickname: String,
@@ -544,7 +618,8 @@ class SpybotQueryService(
         uniqueIdentifier: String,
     ): TeamSpeakIdentity {
         val mergedUserId =
-            dsl.insertInto(SPYBOT_MERGEDUSER)
+            dsl
+                .insertInto(SPYBOT_MERGEDUSER)
                 .set(SPYBOT_MERGEDUSER.PASSWORD, "")
                 .set(SPYBOT_MERGEDUSER.NAME, nickname)
                 .set(SPYBOT_MERGEDUSER.OBSOLETE, false)
@@ -552,14 +627,16 @@ class SpybotQueryService(
                 .returning(SPYBOT_MERGEDUSER.ID)
                 .fetchSingle(SPYBOT_MERGEDUSER.ID) ?: 0L
         val tsUserId =
-            dsl.insertInto(TSUSER)
+            dsl
+                .insertInto(TSUSER)
                 .set(TSUSER.NAME, nickname)
                 .set(TSUSER.CLIENTID, clientId)
                 .set(TSUSER.ISCURRENTLYONLINE, false)
                 .set(TSUSER.MERGED_USER_ID, mergedUserId)
                 .returning(TSUSER.ID)
                 .fetchSingle(TSUSER.ID) ?: 0
-        dsl.insertInto(TSID)
+        dsl
+            .insertInto(TSID)
             .set(TSID.TSID_, uniqueIdentifier)
             .set(TSID.TSUSERID, tsUserId)
             .execute()
@@ -571,17 +648,22 @@ class SpybotQueryService(
         )
     }
 
-    fun renameIdentity(identity: TeamSpeakIdentity, nickname: String): TeamSpeakIdentity {
+    fun renameIdentity(
+        identity: TeamSpeakIdentity,
+        nickname: String,
+    ): TeamSpeakIdentity {
         if (identity.tsUserName == nickname) {
             return identity
         }
-        dsl.update(TSUSER)
+        dsl
+            .update(TSUSER)
             .set(TSUSER.NAME, nickname)
             .where(TSUSER.ID.eq(identity.tsUserId))
             .execute()
         val mergedUserName =
             if (identity.mergedUserName == identity.tsUserName) {
-                dsl.update(SPYBOT_MERGEDUSER)
+                dsl
+                    .update(SPYBOT_MERGEDUSER)
                     .set(SPYBOT_MERGEDUSER.NAME, nickname)
                     .where(SPYBOT_MERGEDUSER.ID.eq(identity.mergedUserId))
                     .execute()
@@ -598,12 +680,14 @@ class SpybotQueryService(
         clientId: Int,
         joined: Boolean,
     ) {
-        dsl.update(TSUSER)
+        dsl
+            .update(TSUSER)
             .set(TSUSER.CLIENTID, clientId)
             .set(TSUSER.ISCURRENTLYONLINE, true)
             .where(TSUSER.ID.eq(tsUserId))
             .execute()
-        dsl.insertInto(TSUSERACTIVITY)
+        dsl
+            .insertInto(TSUSERACTIVITY)
             .set(TSUSERACTIVITY.TSUSERID, tsUserId)
             .set(TSUSERACTIVITY.STARTTIME, DSL.currentOffsetDateTime())
             .set(TSUSERACTIVITY.JOINED, joined)
@@ -611,8 +695,12 @@ class SpybotQueryService(
             .execute()
     }
 
-    fun closeOpenSessionsForUser(tsUserId: Int, reasonId: Int) {
-        dsl.update(TSUSER)
+    fun closeOpenSessionsForUser(
+        tsUserId: Int,
+        reasonId: Int,
+    ) {
+        dsl
+            .update(TSUSER)
             .set(TSUSER.CLIENTID, 0)
             .set(TSUSER.ISCURRENTLYONLINE, false)
             .where(TSUSER.ID.eq(tsUserId))
@@ -631,47 +719,50 @@ class SpybotQueryService(
     }
 
     fun findIdentityByClientId(clientId: Int): TeamSpeakIdentity? =
-        dsl.fetchOne(
-            """
-            select tu.id as ts_user_id,
-                   mu.id as merged_user_id,
-                   tu.name as ts_user_name,
-                   mu.name as merged_user_name
-            from tsuser tu
-            join spybot_mergeduser mu on mu.id = tu.merged_user_id
-            where tu.clientid = ?
-            """.trimIndent(),
-            clientId,
-        )?.toTeamSpeakIdentity()
+        dsl
+            .fetchOne(
+                """
+                select tu.id as ts_user_id,
+                       mu.id as merged_user_id,
+                       tu.name as ts_user_name,
+                       mu.name as merged_user_name
+                from tsuser tu
+                join spybot_mergeduser mu on mu.id = tu.merged_user_id
+                where tu.clientid = ?
+                """.trimIndent(),
+                clientId,
+            )?.toTeamSpeakIdentity()
 
     fun openSessions(): List<OpenSessionView> =
-        dsl.fetch(
-            """
-            select a.tsuserid as ts_user_id,
-                   u.clientid as client_id,
-                   a.cid as channel_id,
-                   u.name as ts_user_name
-            from tsuseractivity a
-            join tsuser u on u.id = a.tsuserid
-            where a.endtime is null
-            order by a.starttime desc
-            """.trimIndent(),
-        ).map {
-            OpenSessionView(
-                tsUserId = it.int("ts_user_id"),
-                clientId = it.int("client_id"),
-                channelId = it.int("channel_id"),
-                tsUserName = it.string("ts_user_name"),
-            )
-        }
+        dsl
+            .fetch(
+                """
+                select a.tsuserid as ts_user_id,
+                       u.clientid as client_id,
+                       a.cid as channel_id,
+                       u.name as ts_user_name
+                from tsuseractivity a
+                join tsuser u on u.id = a.tsuserid
+                where a.endtime is null
+                order by a.starttime desc
+                """.trimIndent(),
+            ).map {
+                OpenSessionView(
+                    tsUserId = it.int("ts_user_id"),
+                    clientId = it.int("client_id"),
+                    channelId = it.int("channel_id"),
+                    tsUserName = it.string("ts_user_name"),
+                )
+            }
 
     fun queuedMessagesForMergedUser(mergedUserId: Long): List<QueuedClientMessageView> =
-        dsl.select(
-            SPYBOT_QUEUEDCLIENTMESSAGE.ID,
-            SPYBOT_QUEUEDCLIENTMESSAGE.MERGED_USER_ID,
-            SPYBOT_QUEUEDCLIENTMESSAGE.TEXT,
-            SPYBOT_QUEUEDCLIENTMESSAGE.TYPE,
-        ).from(SPYBOT_QUEUEDCLIENTMESSAGE)
+        dsl
+            .select(
+                SPYBOT_QUEUEDCLIENTMESSAGE.ID,
+                SPYBOT_QUEUEDCLIENTMESSAGE.MERGED_USER_ID,
+                SPYBOT_QUEUEDCLIENTMESSAGE.TEXT,
+                SPYBOT_QUEUEDCLIENTMESSAGE.TYPE,
+            ).from(SPYBOT_QUEUEDCLIENTMESSAGE)
             .where(SPYBOT_QUEUEDCLIENTMESSAGE.MERGED_USER_ID.eq(mergedUserId))
             .orderBy(SPYBOT_QUEUEDCLIENTMESSAGE.DATE.desc(), SPYBOT_QUEUEDCLIENTMESSAGE.ID.desc())
             .fetch {
@@ -684,7 +775,8 @@ class SpybotQueryService(
             }
 
     fun deleteQueuedMessage(messageId: Long) {
-        dsl.deleteFrom(SPYBOT_QUEUEDCLIENTMESSAGE)
+        dsl
+            .deleteFrom(SPYBOT_QUEUEDCLIENTMESSAGE)
             .where(SPYBOT_QUEUEDCLIENTMESSAGE.ID.eq(messageId))
             .execute()
     }
@@ -694,11 +786,13 @@ class SpybotQueryService(
         type: String,
         text: String,
     ) {
-        dsl.deleteFrom(SPYBOT_QUEUEDCLIENTMESSAGE)
+        dsl
+            .deleteFrom(SPYBOT_QUEUEDCLIENTMESSAGE)
             .where(SPYBOT_QUEUEDCLIENTMESSAGE.MERGED_USER_ID.eq(mergedUserId))
             .and(SPYBOT_QUEUEDCLIENTMESSAGE.TYPE.eq(type))
             .execute()
-        dsl.insertInto(SPYBOT_QUEUEDCLIENTMESSAGE)
+        dsl
+            .insertInto(SPYBOT_QUEUEDCLIENTMESSAGE)
             .set(SPYBOT_QUEUEDCLIENTMESSAGE.TSUSER_ID, null as Int?)
             .set(SPYBOT_QUEUEDCLIENTMESSAGE.MERGED_USER_ID, mergedUserId)
             .set(SPYBOT_QUEUEDCLIENTMESSAGE.TEXT, text)
@@ -706,23 +800,30 @@ class SpybotQueryService(
             .execute()
     }
 
-    fun createLoginLink(userId: Long, code: String) {
-        dsl.insertInto(SPYBOT_LOGINLINK)
+    fun createLoginLink(
+        userId: Long,
+        code: String,
+    ) {
+        dsl
+            .insertInto(SPYBOT_LOGINLINK)
             .set(SPYBOT_LOGINLINK.CODE, code)
             .set(SPYBOT_LOGINLINK.USER_ID, userId)
             .execute()
     }
 
     fun mergedUserName(userId: Long): String? =
-        dsl.select(SPYBOT_MERGEDUSER.NAME)
+        dsl
+            .select(SPYBOT_MERGEDUSER.NAME)
             .from(SPYBOT_MERGEDUSER)
             .where(SPYBOT_MERGEDUSER.ID.eq(userId))
             .fetchOne(SPYBOT_MERGEDUSER.NAME)
 
-    fun countAwardsForUser(userId: Long): Int =
-        dsl.fetchCount(SPYBOT_AWARD, SPYBOT_AWARD.MERGED_USER_ID.eq(userId))
+    fun countAwardsForUser(userId: Long): Int = dsl.fetchCount(SPYBOT_AWARD, SPYBOT_AWARD.MERGED_USER_ID.eq(userId))
 
-    fun countAwardsForUserByPoints(userId: Long, points: Int): Int =
+    fun countAwardsForUserByPoints(
+        userId: Long,
+        points: Int,
+    ): Int =
         dsl.fetchCount(
             SPYBOT_AWARD,
             SPYBOT_AWARD.MERGED_USER_ID.eq(userId).and(SPYBOT_AWARD.POINTS.eq(points)),
@@ -732,7 +833,8 @@ class SpybotQueryService(
         mergedUserId: Long,
         points: Int,
     ) {
-        dsl.insertInto(SPYBOT_AWARD)
+        dsl
+            .insertInto(SPYBOT_AWARD)
             .set(SPYBOT_AWARD.TYPE, "USER_OF_WEEK")
             .set(SPYBOT_AWARD.POINTS, points)
             .set(SPYBOT_AWARD.TSUSER_ID, null as Int?)
@@ -744,7 +846,8 @@ class SpybotQueryService(
         text: String,
         websiteLink: String?,
     ) {
-        dsl.insertInto(SPYBOT_NEWSEVENT)
+        dsl
+            .insertInto(SPYBOT_NEWSEVENT)
             .set(SPYBOT_NEWSEVENT.TEXT, text)
             .set(SPYBOT_NEWSEVENT.WEBSITE_LINK, websiteLink)
             .execute()
@@ -752,14 +855,17 @@ class SpybotQueryService(
 
     fun liveApi(): LiveApiResponse {
         val channels =
-            dsl.select(TSCHANNEL.ID, TSCHANNEL.NAME)
+            dsl
+                .select(TSCHANNEL.ID, TSCHANNEL.NAME)
                 .from(TSCHANNEL)
                 .orderBy(TSCHANNEL.ORDER.asc())
                 .fetch { LiveApiChannel(it.get(TSCHANNEL.ID) ?: 0, it.get(TSCHANNEL.NAME)) }
         val clients =
-            dsl.select(TSUSER.NAME, TSUSERACTIVITY.CID)
+            dsl
+                .select(TSUSER.NAME, TSUSERACTIVITY.CID)
                 .from(TSUSERACTIVITY)
-                .join(TSUSER).on(TSUSER.ID.eq(TSUSERACTIVITY.TSUSERID))
+                .join(TSUSER)
+                .on(TSUSER.ID.eq(TSUSERACTIVITY.TSUSERID))
                 .where(TSUSERACTIVITY.ENDTIME.isNull)
                 .fetch { LiveApiUser(it.get(TSUSER.NAME), it.get(TSUSERACTIVITY.CID) ?: 0) }
 
@@ -769,58 +875,61 @@ class SpybotQueryService(
     fun widgetLegacy(): WidgetLegacyResponse {
         val active = mutableListOf<String?>()
         val inactive = mutableListOf<String?>()
-        dsl.fetch(
-            """
-            select u.name as user_name, c.name as channel_name
-            from tsuseractivity a
-            join tsuser u on u.id = a.tsuserid
-            join tschannel c on c.id = a.cid
-            where a.endtime is null
-            """.trimIndent(),
-        ).forEach { record ->
-            when (record.string("channel_name")) {
-                "bei Bedarf anstupsen", "AFK" -> inactive += record.get("user_name", String::class.java)
-                else -> active += record.get("user_name", String::class.java)
+        dsl
+            .fetch(
+                """
+                select u.name as user_name, c.name as channel_name
+                from tsuseractivity a
+                join tsuser u on u.id = a.tsuserid
+                join tschannel c on c.id = a.cid
+                where a.endtime is null
+                """.trimIndent(),
+            ).forEach { record ->
+                when (record.string("channel_name")) {
+                    "bei Bedarf anstupsen", "AFK" -> inactive += record.get("user_name", String::class.java)
+                    else -> active += record.get("user_name", String::class.java)
+                }
             }
-        }
 
         return WidgetLegacyResponse(activeClients = active, inactiveClients = inactive)
     }
 
     fun liveClients(): Pair<List<ChannelView>, List<LiveClientView>> {
         val channels =
-            dsl.select(TSCHANNEL.ID, TSCHANNEL.NAME)
+            dsl
+                .select(TSCHANNEL.ID, TSCHANNEL.NAME)
                 .from(TSCHANNEL)
                 .orderBy(TSCHANNEL.ORDER.asc())
                 .fetch { ChannelView(it.get(TSCHANNEL.ID) ?: 0, it.get(TSCHANNEL.NAME)?.let(::unescapeTeamSpeak)) }
 
         val clients =
-            dsl.fetch(
-                """
-                select
-                    a.cid as channel_id,
-                    u.name,
-                    u.merged_user_id,
-                    coalesce(
-                        (
-                            select json_agg(s.steam_id::text)
-                            from spybot_steamid s
-                            where s.merged_user_id = u.merged_user_id
-                        )::text,
-                        '[]'
-                    ) as steam_ids
-                from tsuseractivity a
-                join tsuser u on u.id = a.tsuserid
-                where a.endtime is null
-                """.trimIndent(),
-            ).map {
-                LiveClientView(
-                    channelId = it.int("channel_id"),
-                    name = it.get("name", String::class.java),
-                    mergedUserId = it.get("merged_user_id", Long::class.java),
-                    steamIds = parseJsonArray(it.string("steam_ids")),
-                )
-            }
+            dsl
+                .fetch(
+                    """
+                    select
+                        a.cid as channel_id,
+                        u.name,
+                        u.merged_user_id,
+                        coalesce(
+                            (
+                                select json_agg(s.steam_id::text)
+                                from spybot_steamid s
+                                where s.merged_user_id = u.merged_user_id
+                            )::text,
+                            '[]'
+                        ) as steam_ids
+                    from tsuseractivity a
+                    join tsuser u on u.id = a.tsuserid
+                    where a.endtime is null
+                    """.trimIndent(),
+                ).map {
+                    LiveClientView(
+                        channelId = it.int("channel_id"),
+                        name = it.get("name", String::class.java),
+                        mergedUserId = it.get("merged_user_id", Long::class.java),
+                        steamIds = parseJsonArray(it.string("steam_ids")),
+                    )
+                }
 
         return channels to clients
     }
@@ -830,49 +939,50 @@ class SpybotQueryService(
         val selected = allowed.firstOrNull { it == timeSpan } ?: allowed.first()
         val options = allowed.map { SelectorOption("Last $it days", it, it == selected) }
         val points =
-            dsl.fetch(
-                """
-                WITH active_data AS (
-                    SELECT
-                        TO_CHAR(starttime, 'YYYY-MM-DD') AS date,
-                        SUM(EXTRACT(EPOCH FROM AGE(endtime, starttime))) / 3600 AS time_hours
-                    FROM tsuseractivity
-                    INNER JOIN tschannel channel ON tsuseractivity.cid = channel.id
-                    WHERE
-                        starttime > CURRENT_DATE - (? || ' days')::interval
-                        AND endtime IS NOT NULL
-                        AND channel.name NOT IN ('bei\sBedarf\sanstupsen', 'AFK')
-                    GROUP BY date
-                    ORDER BY date
-                ),
-                afk_data AS (
-                    SELECT
-                        TO_CHAR(starttime, 'YYYY-MM-DD') AS date,
-                        SUM(EXTRACT(EPOCH FROM AGE(endtime, starttime))) / 3600 AS time_hours
-                    FROM tsuseractivity
-                    INNER JOIN tschannel channel ON tsuseractivity.cid = channel.id
-                    WHERE
-                        starttime > CURRENT_DATE - (? || ' days')::interval
-                        AND endtime IS NOT NULL
-                        AND channel.name IN ('bei\sBedarf\sanstupsen', 'AFK')
-                    GROUP BY date
-                    ORDER BY date
-                )
-                SELECT active_data.date,
-                       CAST(active_data.time_hours AS DOUBLE PRECISION) AS active_hours,
-                       COALESCE(CAST(afk_data.time_hours AS DOUBLE PRECISION), 0) AS afk_hours
-                FROM active_data
-                LEFT OUTER JOIN afk_data ON active_data.date = afk_data.date
-                """.trimIndent(),
-                selected,
-                selected,
-            ).map {
-                DailyActivityPoint(
-                    date = it.string("date"),
-                    activeHours = it.double("active_hours"),
-                    afkHours = it.double("afk_hours"),
-                )
-            }
+            dsl
+                .fetch(
+                    """
+                    WITH active_data AS (
+                        SELECT
+                            TO_CHAR(starttime, 'YYYY-MM-DD') AS date,
+                            SUM(EXTRACT(EPOCH FROM AGE(endtime, starttime))) / 3600 AS time_hours
+                        FROM tsuseractivity
+                        INNER JOIN tschannel channel ON tsuseractivity.cid = channel.id
+                        WHERE
+                            starttime > CURRENT_DATE - (? || ' days')::interval
+                            AND endtime IS NOT NULL
+                            AND channel.name NOT IN ('bei\sBedarf\sanstupsen', 'AFK')
+                        GROUP BY date
+                        ORDER BY date
+                    ),
+                    afk_data AS (
+                        SELECT
+                            TO_CHAR(starttime, 'YYYY-MM-DD') AS date,
+                            SUM(EXTRACT(EPOCH FROM AGE(endtime, starttime))) / 3600 AS time_hours
+                        FROM tsuseractivity
+                        INNER JOIN tschannel channel ON tsuseractivity.cid = channel.id
+                        WHERE
+                            starttime > CURRENT_DATE - (? || ' days')::interval
+                            AND endtime IS NOT NULL
+                            AND channel.name IN ('bei\sBedarf\sanstupsen', 'AFK')
+                        GROUP BY date
+                        ORDER BY date
+                    )
+                    SELECT active_data.date,
+                           CAST(active_data.time_hours AS DOUBLE PRECISION) AS active_hours,
+                           COALESCE(CAST(afk_data.time_hours AS DOUBLE PRECISION), 0) AS afk_hours
+                    FROM active_data
+                    LEFT OUTER JOIN afk_data ON active_data.date = afk_data.date
+                    """.trimIndent(),
+                    selected,
+                    selected,
+                ).map {
+                    DailyActivityPoint(
+                        date = it.string("date"),
+                        activeHours = it.double("active_hours"),
+                        afkHours = it.double("afk_hours"),
+                    )
+                }
 
         return ActivityChartView(points = points, options = options, activeOptionText = "Last $selected days")
     }
@@ -880,7 +990,8 @@ class SpybotQueryService(
     fun timeOfDayHistogram(): List<Pair<String, Double>> =
         run {
             val hourField = DSL.field("to_char({0}, 'HH24')", String::class.java, HOURLYACTIVITY.DATETIME).`as`("hour")
-            dsl.select(hourField, DSL.avg(HOURLYACTIVITY.ACTIVITY_HOURS).`as`("amplitude"))
+            dsl
+                .select(hourField, DSL.avg(HOURLYACTIVITY.ACTIVITY_HOURS).`as`("amplitude"))
                 .from(HOURLYACTIVITY)
                 .groupBy(hourField)
                 .orderBy(hourField)
@@ -888,30 +999,31 @@ class SpybotQueryService(
         }
 
     fun topUsersOfWeek(): List<TopUserWeek> =
-        dsl.fetch(
-            """
-            WITH start_of_week AS (
-                SELECT DATE_TRUNC('week', CURRENT_DATE)::DATE AS date
-            )
-            SELECT
-                SUM(EXTRACT(EPOCH FROM AGE(COALESCE(endtime, NOW()), starttime))) / 3600 AS time,
-                mu.name AS user_name,
-                mu.id AS user_id
-            FROM start_of_week, tsuseractivity
-            INNER JOIN tsuser tu ON tsuserid = tu.id
-            INNER JOIN spybot_mergeduser mu ON tu.merged_user_id = mu.id
-            WHERE starttime > start_of_week.date
-            GROUP BY mu.id
-            ORDER BY time DESC
-            LIMIT 3
-            """.trimIndent(),
-        ).map {
-            TopUserWeek(
-                time = it.double("time"),
-                userName = it.string("user_name"),
-                userId = it.long("user_id"),
-            )
-        }
+        dsl
+            .fetch(
+                """
+                WITH start_of_week AS (
+                    SELECT DATE_TRUNC('week', CURRENT_DATE)::DATE AS date
+                )
+                SELECT
+                    SUM(EXTRACT(EPOCH FROM AGE(COALESCE(endtime, NOW()), starttime))) / 3600 AS time,
+                    mu.name AS user_name,
+                    mu.id AS user_id
+                FROM start_of_week, tsuseractivity
+                INNER JOIN tsuser tu ON tsuserid = tu.id
+                INNER JOIN spybot_mergeduser mu ON tu.merged_user_id = mu.id
+                WHERE starttime > start_of_week.date
+                GROUP BY mu.id
+                ORDER BY time DESC
+                LIMIT 3
+                """.trimIndent(),
+            ).map {
+                TopUserWeek(
+                    time = it.double("time"),
+                    userName = it.string("user_name"),
+                    userId = it.long("user_id"),
+                )
+            }
 
     fun weekTrend(): WeekTrendView {
         val record =
@@ -967,89 +1079,92 @@ class SpybotQueryService(
     }
 
     fun weekComparison(): List<WeekComparisonPoint> =
-        dsl.fetch(
-            """
-            WITH current_week AS (
+        dsl
+            .fetch(
+                """
+                WITH current_week AS (
+                        SELECT
+                            DATE_TRUNC('week', CURRENT_DATE) AS start,
+                            DATE_TRUNC('week', CURRENT_DATE) + INTERVAL '1 week' AS end
+                    ),
+                compare_week AS (
                     SELECT
-                        DATE_TRUNC('week', CURRENT_DATE) AS start,
-                        DATE_TRUNC('week', CURRENT_DATE) + INTERVAL '1 week' AS end
+                        current_week.end - INTERVAL '1 WEEK' AS end,
+                        current_week.start - INTERVAL '1 WEEK' AS start
+                    FROM current_week
                 ),
-            compare_week AS (
-                SELECT
-                    current_week.end - INTERVAL '1 WEEK' AS end,
-                    current_week.start - INTERVAL '1 WEEK' AS start
-                FROM current_week
-            ),
-            current_week_data AS (
-                SELECT datetime, activity_hours
-                FROM hourlyactivity, current_week
-                WHERE hourlyactivity.datetime >= current_week.start
-                    AND hourlyactivity.datetime <= current_week.end
-            ),
-            compare_week_data AS (
-                SELECT datetime, activity_hours
-                FROM hourlyactivity, compare_week
-                WHERE hourlyactivity.datetime >= compare_week.start
-                    AND hourlyactivity.datetime <= compare_week.end
-            ),
-            cumulate_current_week_data AS (
-                SELECT datetime, activity_hours, SUM(activity_hours) OVER(ORDER BY datetime) AS cumulative_sum
-                FROM current_week_data
-            ),
-            cumulate_compare_week_data AS (
-                SELECT datetime + INTERVAL '7 DAY' AS datetime, activity_hours, SUM(activity_hours) OVER(ORDER BY datetime) AS cumulative_sum
-                FROM compare_week_data
-            )
-            SELECT comp.datetime, cur.cumulative_sum AS hours_current, comp.cumulative_sum AS hours_compare
-            FROM cumulate_compare_week_data AS comp
-            LEFT JOIN cumulate_current_week_data cur ON comp.datetime = cur.datetime
-            """.trimIndent(),
-        ).map {
-            WeekComparisonPoint(
-                datetime = it.offsetDateTime("datetime") ?: OffsetDateTime.now(ZoneOffset.UTC),
-                hoursCurrent = it.get("hours_current")?.let { value -> (value as Number).toDouble() },
-                hoursCompare = it.get("hours_compare")?.let { value -> (value as Number).toDouble() },
-            )
-        }
+                current_week_data AS (
+                    SELECT datetime, activity_hours
+                    FROM hourlyactivity, current_week
+                    WHERE hourlyactivity.datetime >= current_week.start
+                        AND hourlyactivity.datetime <= current_week.end
+                ),
+                compare_week_data AS (
+                    SELECT datetime, activity_hours
+                    FROM hourlyactivity, compare_week
+                    WHERE hourlyactivity.datetime >= compare_week.start
+                        AND hourlyactivity.datetime <= compare_week.end
+                ),
+                cumulate_current_week_data AS (
+                    SELECT datetime, activity_hours, SUM(activity_hours) OVER(ORDER BY datetime) AS cumulative_sum
+                    FROM current_week_data
+                ),
+                cumulate_compare_week_data AS (
+                    SELECT datetime + INTERVAL '7 DAY' AS datetime, activity_hours, SUM(activity_hours) OVER(ORDER BY datetime) AS cumulative_sum
+                    FROM compare_week_data
+                )
+                SELECT comp.datetime, cur.cumulative_sum AS hours_current, comp.cumulative_sum AS hours_compare
+                FROM cumulate_compare_week_data AS comp
+                LEFT JOIN cumulate_current_week_data cur ON comp.datetime = cur.datetime
+                """.trimIndent(),
+            ).map {
+                WeekComparisonPoint(
+                    datetime = it.offsetDateTime("datetime") ?: OffsetDateTime.now(ZoneOffset.UTC),
+                    hoursCurrent = it.get("hours_current")?.let { value -> (value as Number).toDouble() },
+                    hoursCompare = it.get("hours_compare")?.let { value -> (value as Number).toDouble() },
+                )
+            }
 
     fun channelPopularity(): List<ChannelPopularityEntry> =
-        dsl.fetch(
-            """
-            WITH unfiltered AS (
-                SELECT ROUND(SUM(EXTRACT(EPOCH FROM AGE(endtime, starttime)) / 3600)) AS hours,
-                    tschannel.name
-                FROM tsuseractivity
-                INNER JOIN tschannel ON tsuseractivity.cid = tschannel.id
-                WHERE starttime > NOW() - INTERVAL '1 YEAR'
-                    AND tschannel.name NOT LIKE '%spacer%'
-                GROUP BY tschannel.id
-            ), absolute AS (
-                SELECT * FROM unfiltered
-                WHERE hours > 5
-            ), total_hours AS (
-                SELECT SUM(hours) AS hours FROM absolute
-            )
-            SELECT
-                absolute.name,
-                100 * absolute.hours / total_hours.hours AS percentage
-            FROM absolute, total_hours
-            ORDER BY percentage DESC
-            """.trimIndent(),
-        ).map {
-            ChannelPopularityEntry(
-                name = unescapeTeamSpeak(it.string("name")),
-                percentage = it.double("percentage"),
-            )
-        }
+        dsl
+            .fetch(
+                """
+                WITH unfiltered AS (
+                    SELECT ROUND(SUM(EXTRACT(EPOCH FROM AGE(endtime, starttime)) / 3600)) AS hours,
+                        tschannel.name
+                    FROM tsuseractivity
+                    INNER JOIN tschannel ON tsuseractivity.cid = tschannel.id
+                    WHERE starttime > NOW() - INTERVAL '1 YEAR'
+                        AND tschannel.name NOT LIKE '%spacer%'
+                    GROUP BY tschannel.id
+                ), absolute AS (
+                    SELECT * FROM unfiltered
+                    WHERE hours > 5
+                ), total_hours AS (
+                    SELECT SUM(hours) AS hours FROM absolute
+                )
+                SELECT
+                    absolute.name,
+                    100 * absolute.hours / total_hours.hours AS percentage
+                FROM absolute, total_hours
+                ORDER BY percentage DESC
+                """.trimIndent(),
+            ).map {
+                ChannelPopularityEntry(
+                    name = unescapeTeamSpeak(it.string("name")),
+                    percentage = it.double("percentage"),
+                )
+            }
 
     fun recentEvents(start: Int): RecentEventsPayload {
         val rows =
-            dsl.select(
-                SPYBOT_NEWSEVENT.ID,
-                SPYBOT_NEWSEVENT.TEXT,
-                SPYBOT_NEWSEVENT.WEBSITE_LINK,
-                SPYBOT_NEWSEVENT.DATE,
-            ).from(SPYBOT_NEWSEVENT)
+            dsl
+                .select(
+                    SPYBOT_NEWSEVENT.ID,
+                    SPYBOT_NEWSEVENT.TEXT,
+                    SPYBOT_NEWSEVENT.WEBSITE_LINK,
+                    SPYBOT_NEWSEVENT.DATE,
+                ).from(SPYBOT_NEWSEVENT)
                 .orderBy(SPYBOT_NEWSEVENT.DATE.desc())
                 .offset(start)
                 .limit(11)
@@ -1156,9 +1271,10 @@ class SpybotQueryService(
             users.computeIfAbsent(userName) { mutableListOf() }.add(entry)
         }
 
-        return TimeRangeView(selected, options) to users.map { (name, data) ->
-            TimelineUserSeries(name = name, data = data)
-        }
+        return TimeRangeView(selected, options) to
+            users.map { (name, data) ->
+                TimelineUserSeries(name = name, data = data)
+            }
     }
 
     fun userPage(userId: Long): UserPageView? {
@@ -1207,91 +1323,93 @@ class SpybotQueryService(
             ) ?: return null
 
         val streak =
-            dsl.fetchOne(
-                """
-                WITH dates AS (
-                    SELECT DISTINCT CAST(tsuseractivity.starttime AS DATE) AS day
-                    FROM tsuseractivity
-                    INNER JOIN tsuser ON tsuserid = tsuser.id
-                    WHERE merged_user_id = ?
-                ),
-                cte AS (
-                    SELECT
-                        day,
-                        COALESCE(DATE(day) > DATE(LAG(day, 1) OVER (ORDER BY day)) + INTERVAL '1 DAY', true) AS startsstreak
-                    FROM dates
-                ),
-                result AS (
-                    SELECT
-                        dates.day AS start_day,
-                        SUM(startsstreak::int) AS streakgroup,
-                        ROW_NUMBER() OVER (PARTITION BY SUM(startsstreak::int) ORDER BY dates.day) AS runningstreaklength,
-                        COUNT(*) OVER (PARTITION BY SUM(startsstreak::int)) AS totalstreaklength
-                    FROM dates
-                    JOIN cte ON dates.day >= cte.day AND cte.startsstreak = true
-                    GROUP BY dates.day
-                    ORDER BY dates.day
-                )
-                SELECT start_day,
-                       start_day + make_interval(days => totalstreaklength::int - 1) AS end_day,
-                       totalstreaklength AS length
-                FROM result
-                WHERE runningstreaklength = 1
-                ORDER BY totalstreaklength DESC, start_day DESC
-                LIMIT 1
-                """.trimIndent(),
-                userId,
-            )?.let {
-                StreakView(
-                    startDay = it.localDate("start_day") ?: LocalDate.now(),
-                    endDay = it.localDate("end_day") ?: LocalDate.now(),
-                    length = it.int("length"),
-                )
-            }
+            dsl
+                .fetchOne(
+                    """
+                    WITH dates AS (
+                        SELECT DISTINCT CAST(tsuseractivity.starttime AS DATE) AS day
+                        FROM tsuseractivity
+                        INNER JOIN tsuser ON tsuserid = tsuser.id
+                        WHERE merged_user_id = ?
+                    ),
+                    cte AS (
+                        SELECT
+                            day,
+                            COALESCE(DATE(day) > DATE(LAG(day, 1) OVER (ORDER BY day)) + INTERVAL '1 DAY', true) AS startsstreak
+                        FROM dates
+                    ),
+                    result AS (
+                        SELECT
+                            dates.day AS start_day,
+                            SUM(startsstreak::int) AS streakgroup,
+                            ROW_NUMBER() OVER (PARTITION BY SUM(startsstreak::int) ORDER BY dates.day) AS runningstreaklength,
+                            COUNT(*) OVER (PARTITION BY SUM(startsstreak::int)) AS totalstreaklength
+                        FROM dates
+                        JOIN cte ON dates.day >= cte.day AND cte.startsstreak = true
+                        GROUP BY dates.day
+                        ORDER BY dates.day
+                    )
+                    SELECT start_day,
+                           start_day + make_interval(days => totalstreaklength::int - 1) AS end_day,
+                           totalstreaklength AS length
+                    FROM result
+                    WHERE runningstreaklength = 1
+                    ORDER BY totalstreaklength DESC, start_day DESC
+                    LIMIT 1
+                    """.trimIndent(),
+                    userId,
+                )?.let {
+                    StreakView(
+                        startDay = it.localDate("start_day") ?: LocalDate.now(),
+                        endDay = it.localDate("end_day") ?: LocalDate.now(),
+                        length = it.int("length"),
+                    )
+                }
 
         val months =
-            dsl.fetch(
-                """
-                WITH data AS (
-                    SELECT
-                        DATE_PART('year', starttime) AS year,
-                        DATE_PART('month', starttime) AS month,
-                        SUM(EXTRACT(EPOCH FROM AGE(endtime, starttime))) / 3600 AS time_hours
-                    FROM tsuseractivity
-                    INNER JOIN tschannel channel ON tsuseractivity.cid = channel.id
-                    INNER JOIN tsuser ON tsuseractivity.tsuserid = tsuser.id
-                    WHERE starttime > MAKE_DATE(2016, 1, 1)
-                        AND endtime IS NOT NULL
-                        AND channel.name NOT IN ('bei\sBedarf\sanstupsen', 'AFK')
-                        AND tsuser.merged_user_id = ?
-                    GROUP BY year, month
-                    ORDER BY year, month
-                ),
-                months AS (
-                    WITH RECURSIVE nrows(date) AS (
-                        SELECT MAKE_DATE(2016, 1, 1)::timestamptz
-                        UNION ALL
-                        SELECT date + INTERVAL '1 MONTH' FROM nrows WHERE date <= CURRENT_DATE - INTERVAL '1 MONTH'
+            dsl
+                .fetch(
+                    """
+                    WITH data AS (
+                        SELECT
+                            DATE_PART('year', starttime) AS year,
+                            DATE_PART('month', starttime) AS month,
+                            SUM(EXTRACT(EPOCH FROM AGE(endtime, starttime))) / 3600 AS time_hours
+                        FROM tsuseractivity
+                        INNER JOIN tschannel channel ON tsuseractivity.cid = channel.id
+                        INNER JOIN tsuser ON tsuseractivity.tsuserid = tsuser.id
+                        WHERE starttime > MAKE_DATE(2016, 1, 1)
+                            AND endtime IS NOT NULL
+                            AND channel.name NOT IN ('bei\sBedarf\sanstupsen', 'AFK')
+                            AND tsuser.merged_user_id = ?
+                        GROUP BY year, month
+                        ORDER BY year, month
+                    ),
+                    months AS (
+                        WITH RECURSIVE nrows(date) AS (
+                            SELECT MAKE_DATE(2016, 1, 1)::timestamptz
+                            UNION ALL
+                            SELECT date + INTERVAL '1 MONTH' FROM nrows WHERE date <= CURRENT_DATE - INTERVAL '1 MONTH'
+                        )
+                        SELECT date FROM nrows
                     )
-                    SELECT date FROM nrows
-                )
-                SELECT DATE_PART('month', months.date) AS month,
-                       DATE_PART('year', months.date) AS year,
-                       COALESCE(data.time_hours, 0) AS activity
-                FROM months
-                LEFT JOIN data
-                    ON DATE_PART('year', months.date) = data.year
-                   AND DATE_PART('month', months.date) = data.month
-                ORDER BY year, month
-                """.trimIndent(),
-                userId,
-            ).map {
-                MonthActivityPoint(
-                    month = it.int("month"),
-                    year = it.int("year"),
-                    activity = it.double("activity"),
-                )
-            }
+                    SELECT DATE_PART('month', months.date) AS month,
+                           DATE_PART('year', months.date) AS year,
+                           COALESCE(data.time_hours, 0) AS activity
+                    FROM months
+                    LEFT JOIN data
+                        ON DATE_PART('year', months.date) = data.year
+                       AND DATE_PART('month', months.date) = data.month
+                    ORDER BY year, month
+                    """.trimIndent(),
+                    userId,
+                ).map {
+                    MonthActivityPoint(
+                        month = it.int("month"),
+                        year = it.int("year"),
+                        activity = it.double("activity"),
+                    )
+                }
 
         val headline =
             UserHeadline(
@@ -1445,7 +1563,9 @@ class SpybotQueryService(
         if (trimmed.length < 2) {
             return emptyList()
         }
-        return trimmed.removePrefix("[").removeSuffix("]")
+        return trimmed
+            .removePrefix("[")
+            .removeSuffix("]")
             .split(',')
             .map { it.trim().removePrefix("\"").removeSuffix("\"") }
             .filter { it.isNotBlank() }

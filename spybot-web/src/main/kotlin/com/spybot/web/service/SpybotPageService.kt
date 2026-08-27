@@ -27,9 +27,10 @@ class SpybotPageService(
     fun live(): Pair<List<com.spybot.core.model.ChannelView>, List<LiveClientView>> {
         val (channels, clients) = queryService.liveClients()
         val steamAccounts =
-            steamService.getSteamUsersPlayingInfo(
-                clients.flatMap { it.steamIds }.distinct(),
-            ).associateBy { it.steamId }
+            steamService
+                .getSteamUsersPlayingInfo(
+                    clients.flatMap { it.steamIds }.distinct(),
+                ).associateBy { it.steamId }
 
         val enriched =
             clients.map { client ->

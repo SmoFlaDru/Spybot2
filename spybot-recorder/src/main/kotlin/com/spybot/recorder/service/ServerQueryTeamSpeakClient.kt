@@ -25,13 +25,20 @@ class ServerQueryTeamSpeakClient(
 
     override fun connect() {
         close()
-        socket = Socket(properties.teamspeak.host, properties.teamspeak.port).apply {
-            soTimeout = EVENT_TIMEOUT_MS
-        }
+        socket =
+            Socket(properties.teamspeak.host, properties.teamspeak.port).apply {
+                soTimeout = EVENT_TIMEOUT_MS
+            }
         reader = LineReader(socket!!.getInputStream())
         output = socket!!.getOutputStream()
         discardGreeting()
-        execute("login", mapOf("client_login_name" to properties.teamspeak.user.orEmpty(), "client_login_password" to properties.teamspeak.password.orEmpty()))
+        execute(
+            "login",
+            mapOf(
+                "client_login_name" to properties.teamspeak.user.orEmpty(),
+                "client_login_password" to properties.teamspeak.password.orEmpty(),
+            ),
+        )
         execute("use", mapOf("sid" to "1"))
     }
 
@@ -101,7 +108,7 @@ class ServerQueryTeamSpeakClient(
         val records = parseRecords(line.substringAfter(' '))
         val record = records.firstOrNull().orEmpty()
         return when (line.substringBefore(' ')) {
-            "notifycliententerview" ->
+            "notifycliententerview" -> {
                 TeamSpeakEvent.ClientEnter(
                     TeamSpeakClientSnapshot(
                         clientId = record["clid"]?.toIntOrNull() ?: return null,
@@ -112,30 +119,41 @@ class ServerQueryTeamSpeakClient(
                         uniqueIdentifier = record["client_unique_identifier"].orEmpty(),
                     ),
                 )
+            }
 
-            "notifyclientleftview" ->
+            "notifyclientleftview" -> {
                 TeamSpeakEvent.ClientLeave(
                     clientId = record["clid"]?.toIntOrNull() ?: return null,
                     channelId = record["cfid"]?.toIntOrNull() ?: 0,
                     reasonId = record["reasonid"]?.toIntOrNull() ?: -1,
                 )
+            }
 
-            "notifyclientmoved" ->
+            "notifyclientmoved" -> {
                 TeamSpeakEvent.ClientMove(
                     clientId = record["clid"]?.toIntOrNull() ?: return null,
                     channelToId = record["ctid"]?.toIntOrNull() ?: return null,
                     reasonId = record["reasonid"]?.toIntOrNull() ?: -1,
                 )
+            }
 
-            else -> null
+            else -> {
+                null
+            }
         }
     }
 
-    override fun pokeClient(clientId: Int, message: String) {
+    override fun pokeClient(
+        clientId: Int,
+        message: String,
+    ) {
         execute("clientpoke", mapOf("clid" to clientId.toString(), "msg" to message.take(100)))
     }
 
-    override fun sendTextMessage(clientId: Int, message: String) {
+    override fun sendTextMessage(
+        clientId: Int,
+        message: String,
+    ) {
         execute("sendtextmessage", mapOf("targetmode" to "1", "target" to clientId.toString(), "msg" to message.take(1024)))
     }
 
@@ -215,7 +233,8 @@ class ServerQueryTeamSpeakClient(
     }
 
     private fun parseRecord(raw: String): Map<String, String> =
-        raw.split(' ')
+        raw
+            .split(' ')
             .filter { it.isNotBlank() }
             .associate { token ->
                 val parts = token.split('=', limit = 2)
@@ -297,7 +316,9 @@ class ServerQueryTeamSpeakClient(
      * conventional CRLF - so a line ends at the first LF, and a CR immediately following it
      * belongs to the terminator, not the next line, and must be swallowed.
      */
-    internal class LineReader(private val input: InputStream) {
+    internal class LineReader(
+        private val input: InputStream,
+    ) {
         private val buffer = ByteArray(8192)
         private var bufferLength = 0
         private var bufferPos = 0

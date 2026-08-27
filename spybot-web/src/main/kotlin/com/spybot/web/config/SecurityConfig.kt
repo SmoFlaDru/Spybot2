@@ -39,44 +39,56 @@ class SecurityConfig(
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .authorizeHttpRequests {
-                it.requestMatchers(
-                    "/",
-                    "/live/",
-                    "/timeline",
-                    "/halloffame",
-                    "/changelog",
-                    "/login",
-                    "/login_teamspeak",
-                    "/link_auth",
-                    "/logout",
-                    "/live_fragment",
-                    "/activity_fragment",
-                    "/recent_events_fragment",
-                    "/api/v1/live",
-                    "/api/v1/widget",
-                    "/widget_legacy",
-                    "/css/**",
-                    "/js/**",
-                    "/images/**",
-                    "/favicon*",
-                    "/main.css",
-                    "/main.js",
-                    "/styles.css",
-                    "/theme.js",
-                    "/loading_oval.svg",
-                    "/quitting_time.svg",
-                    "/spybot_ai_icon.png",
-                    "/tabler-sprite.svg",
-                ).permitAll()
-                    .requestMatchers("/admin/**").hasRole("ADMIN")
-                    .requestMatchers("/passkeys/generate-authentication-options", "/passkeys/verify-authentication").permitAll()
-                    .requestMatchers("/u/*", "/profile", "/profile/**", "/passkeys/generate-registration-options", "/passkeys/verify-registration").authenticated()
-                    .anyRequest().permitAll()
+                it
+                    .requestMatchers(
+                        "/",
+                        "/live/",
+                        "/timeline",
+                        "/halloffame",
+                        "/changelog",
+                        "/login",
+                        "/login_teamspeak",
+                        "/link_auth",
+                        "/logout",
+                        "/live_fragment",
+                        "/activity_fragment",
+                        "/recent_events_fragment",
+                        "/api/v1/live",
+                        "/api/v1/widget",
+                        "/widget_legacy",
+                        "/css/**",
+                        "/js/**",
+                        "/images/**",
+                        "/favicon*",
+                        "/main.css",
+                        "/main.js",
+                        "/styles.css",
+                        "/theme.js",
+                        "/loading_oval.svg",
+                        "/quitting_time.svg",
+                        "/spybot_ai_icon.png",
+                        "/tabler-sprite.svg",
+                    ).permitAll()
+                    .requestMatchers("/admin/**")
+                    .hasRole("ADMIN")
+                    .requestMatchers("/passkeys/generate-authentication-options", "/passkeys/verify-authentication")
+                    .permitAll()
+                    .requestMatchers(
+                        "/u/*",
+                        "/profile",
+                        "/profile/**",
+                        "/passkeys/generate-registration-options",
+                        "/passkeys/verify-registration",
+                    ).authenticated()
+                    .anyRequest()
+                    .permitAll()
             }.csrf {
-                it.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                it
+                    .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                     .ignoringRequestMatchers("/passkeys/**")
             }.logout {
-                it.logoutRequestMatcher(pathPattern(HttpMethod.GET, "/logout"))
+                it
+                    .logoutRequestMatcher(pathPattern(HttpMethod.GET, "/logout"))
                     .logoutSuccessUrl("/")
                     .invalidateHttpSession(true)
                     .deleteCookies("JSESSIONID")
@@ -86,10 +98,10 @@ class SecurityConfig(
                         pathPattern("/passkeys/generate-registration-options"),
                         pathPattern("/passkeys/verify-registration"),
                     )
-                it.defaultAuthenticationEntryPointFor(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED), jsonEndpoints)
+                it
+                    .defaultAuthenticationEntryPointFor(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED), jsonEndpoints)
                     .defaultAuthenticationEntryPointFor(LoginUrlAuthenticationEntryPoint("/login"), pathPattern("/**"))
-            }
-            .addFilterAfter(lastSeenFilter, org.springframework.security.web.authentication.AnonymousAuthenticationFilter::class.java)
+            }.addFilterAfter(lastSeenFilter, org.springframework.security.web.authentication.AnonymousAuthenticationFilter::class.java)
 
         return http.build()
     }

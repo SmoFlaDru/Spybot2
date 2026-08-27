@@ -61,7 +61,8 @@ class ChangelogService {
             }
 
         val features =
-            lines.drop(1)
+            lines
+                .drop(1)
                 .filter { it.trimStart().startsWith("- ") }
                 .map { it.trimStart().removePrefix("- ").trim() }
 

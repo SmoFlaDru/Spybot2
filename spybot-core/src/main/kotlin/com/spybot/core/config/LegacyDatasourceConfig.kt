@@ -14,22 +14,25 @@ import javax.sql.DataSource
 
 @Configuration
 class LegacyDatasourceConfig {
-
     @Bean
     @ConditionalOnMissingBean(DataSource::class)
     fun dataSource(environment: Environment): DataSource {
-        val rawUrl = environment.getProperty("spring.datasource.url")
-            ?: environment.getProperty("DB_URL")
-            ?: "jdbc:postgresql://localhost:5432/spybot"
-        val explicitUsername = environment.getProperty("spring.datasource.username")
-            ?: environment.getProperty("DB_USER")
-        val explicitPassword = environment.getProperty("spring.datasource.password")
-            ?: environment.getProperty("DB_PASSWORD")
-            ?: readPasswordFromFile(environment.getProperty("DB_PASSWORD_FILE"))
+        val rawUrl =
+            environment.getProperty("spring.datasource.url")
+                ?: environment.getProperty("DB_URL")
+                ?: "jdbc:postgresql://localhost:5432/spybot"
+        val explicitUsername =
+            environment.getProperty("spring.datasource.username")
+                ?: environment.getProperty("DB_USER")
+        val explicitPassword =
+            environment.getProperty("spring.datasource.password")
+                ?: environment.getProperty("DB_PASSWORD")
+                ?: readPasswordFromFile(environment.getProperty("DB_PASSWORD_FILE"))
 
         val details = parseDatabaseSettings(rawUrl, explicitUsername, explicitPassword)
 
-        return DataSourceBuilder.create()
+        return DataSourceBuilder
+            .create()
             .type(HikariDataSource::class.java)
             .driverClassName("org.postgresql.Driver")
             .url(details.url)
@@ -54,15 +57,18 @@ class LegacyDatasourceConfig {
             )
         }
 
-        val normalizedUrl = when {
-            rawUrl.startsWith("postgres://") -> rawUrl.replaceFirst("postgres://", "http://")
-            rawUrl.startsWith("postgresql://") -> rawUrl.replaceFirst("postgresql://", "http://")
-            else -> return DatabaseSettings(
-                url = rawUrl,
-                username = explicitUsername ?: "postgres",
-                password = explicitPassword ?: "postgres",
-            )
-        }
+        val normalizedUrl =
+            when {
+                rawUrl.startsWith("postgres://") -> rawUrl.replaceFirst("postgres://", "http://")
+
+                rawUrl.startsWith("postgresql://") -> rawUrl.replaceFirst("postgresql://", "http://")
+
+                else -> return DatabaseSettings(
+                    url = rawUrl,
+                    username = explicitUsername ?: "postgres",
+                    password = explicitPassword ?: "postgres",
+                )
+            }
 
         val uri = URI(normalizedUrl)
         val userInfo = uri.userInfo.orEmpty().split(":", limit = 2)

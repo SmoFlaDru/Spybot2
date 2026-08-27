@@ -29,7 +29,10 @@ class AwardService(
         return candidates.size
     }
 
-    private fun privateMessage(index: Int, points: Int): String {
+    private fun privateMessage(
+        index: Int,
+        points: Int,
+    ): String {
         val specifier =
             when (index) {
                 1 -> " second"
@@ -43,7 +46,9 @@ class AwardService(
                 else -> "bronze"
             }
         val weekStart = LocalDate.now().with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY))
-        return "You got a $metal award for being the$specifier most active user of the week ${weekStart.format(DATE_FORMAT)}! See more: [url]${properties.publicBaseUrl}[/url]"
+        return "You got a $metal award for being the$specifier most active user of the week ${weekStart.format(
+            DATE_FORMAT,
+        )}! See more: [url]${properties.publicBaseUrl}[/url]"
     }
 
     private fun newsEventText(
@@ -70,9 +75,16 @@ class AwardService(
         val detail =
             when {
                 totalAwards == 1 -> "This is the first time <strong>$userName</strong> won any award."
+
                 sameScoreAwards == 1 -> "This is the first time <strong>$userName</strong> won a $metal award."
-                sameScoreAwards < 4 -> "This is only the ${ordinalWord(sameScoreAwards)} time <strong>$userName</strong> won a $metal award."
-                else -> "This is the ${ordinalWord(sameScoreAwards)} time <strong>$userName</strong> won a $metal award, ${ordinalWord(totalAwards)} award overall."
+
+                sameScoreAwards < 4 -> "This is only the ${ordinalWord(
+                    sameScoreAwards,
+                )} time <strong>$userName</strong> won a $metal award."
+
+                else -> "This is the ${ordinalWord(
+                    sameScoreAwards,
+                )} time <strong>$userName</strong> won a $metal award, ${ordinalWord(totalAwards)} award overall."
             }
 
         val now = LocalDate.now()
@@ -116,7 +128,9 @@ class AwardService(
             .replace("'", "&#39;")
 
     companion object {
-        private val DATE_FORMAT = java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy", Locale.ENGLISH)
+        private val DATE_FORMAT =
+            java.time.format.DateTimeFormatter
+                .ofPattern("dd.MM.yyyy", Locale.ENGLISH)
         private const val AWARD_USER_OF_WEEK = "AWARD_USER_OF_WEEK"
     }
 }

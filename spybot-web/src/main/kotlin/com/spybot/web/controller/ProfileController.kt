@@ -42,11 +42,13 @@ class ProfileController(
         @RequestParam("name") @NotBlank accountName: String,
     ): ResponseEntity<String> {
         if (steamService.getSteamUsersPlayingInfo(listOf(steamId)).isEmpty()) {
-            return ResponseEntity.badRequest()
+            return ResponseEntity
+                .badRequest()
                 .body("Could not verify this Steam ID. Please double check that it's correct.")
         }
         queryService.addSteamId(principal.id, steamId.toLong(), accountName)
-        return ResponseEntity.noContent()
+        return ResponseEntity
+            .noContent()
             .header("HX-Trigger", "steamids_changed")
             .build()
     }
@@ -57,7 +59,8 @@ class ProfileController(
         @PathVariable id: Long,
     ): ResponseEntity<Void> =
         if (queryService.deleteSteamId(principal.id, id)) {
-            ResponseEntity.status(HttpStatus.OK)
+            ResponseEntity
+                .status(HttpStatus.OK)
                 .header("HX-Trigger", "steamids_changed")
                 .build()
         } else {

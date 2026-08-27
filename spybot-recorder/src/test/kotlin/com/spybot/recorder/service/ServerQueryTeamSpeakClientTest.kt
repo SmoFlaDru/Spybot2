@@ -9,7 +9,10 @@ import java.nio.charset.StandardCharsets
 class ServerQueryTeamSpeakClientTest {
     @Test
     fun `reads plain lines separated by newlines`() {
-        val reader = ServerQueryTeamSpeakClient.LineReader(ChunkedInputStream("first\nsecond\nthird\n".toByteArray(StandardCharsets.UTF_8), chunkSize = 4096))
+        val reader =
+            ServerQueryTeamSpeakClient.LineReader(
+                ChunkedInputStream("first\nsecond\nthird\n".toByteArray(StandardCharsets.UTF_8), chunkSize = 4096),
+            )
 
         assertEquals("first", reader.readLine())
         assertEquals("second", reader.readLine())
@@ -49,7 +52,10 @@ class ServerQueryTeamSpeakClientTest {
     fun `handles the CR terminator split across separate underlying reads`() {
         // The CR can arrive in a later read() call than the LF that precedes it; the reader must
         // still swallow it rather than treating it as the start of the next line's content.
-        val reader = ServerQueryTeamSpeakClient.LineReader(ChunkedInputStream("first\n\rsecond\n\r".toByteArray(StandardCharsets.UTF_8), chunkSize = 1))
+        val reader =
+            ServerQueryTeamSpeakClient.LineReader(
+                ChunkedInputStream("first\n\rsecond\n\r".toByteArray(StandardCharsets.UTF_8), chunkSize = 1),
+            )
 
         assertEquals("first", reader.readLine())
         assertEquals("second", reader.readLine())
@@ -57,7 +63,10 @@ class ServerQueryTeamSpeakClientTest {
 
     @Test
     fun `returns null at end of stream`() {
-        val reader = ServerQueryTeamSpeakClient.LineReader(ChunkedInputStream("only\n\r".toByteArray(StandardCharsets.UTF_8), chunkSize = 4096))
+        val reader =
+            ServerQueryTeamSpeakClient.LineReader(
+                ChunkedInputStream("only\n\r".toByteArray(StandardCharsets.UTF_8), chunkSize = 4096),
+            )
 
         assertEquals("only", reader.readLine())
         assertNull(reader.readLine())
@@ -67,14 +76,20 @@ class ServerQueryTeamSpeakClientTest {
     fun `decodes a multi-byte UTF-8 character split across separate reads`() {
         // "Gästeecke" contains an ä (2 UTF-8 bytes); force the stream to hand back bytes one at a
         // time so the split can land in the middle of that multi-byte sequence.
-        val reader = ServerQueryTeamSpeakClient.LineReader(ChunkedInputStream("Gästeecke\n\r".toByteArray(StandardCharsets.UTF_8), chunkSize = 1))
+        val reader =
+            ServerQueryTeamSpeakClient.LineReader(
+                ChunkedInputStream("Gästeecke\n\r".toByteArray(StandardCharsets.UTF_8), chunkSize = 1),
+            )
 
         assertEquals("Gästeecke", reader.readLine())
     }
 
     @Test
     fun `handles a line spanning multiple underlying reads`() {
-        val reader = ServerQueryTeamSpeakClient.LineReader(ChunkedInputStream("notifycliententerview clid=5\n\r".toByteArray(StandardCharsets.UTF_8), chunkSize = 3))
+        val reader =
+            ServerQueryTeamSpeakClient.LineReader(
+                ChunkedInputStream("notifycliententerview clid=5\n\r".toByteArray(StandardCharsets.UTF_8), chunkSize = 3),
+            )
 
         assertEquals("notifycliententerview clid=5", reader.readLine())
     }
@@ -87,7 +102,11 @@ class ServerQueryTeamSpeakClientTest {
 
         override fun read(): Int = throw UnsupportedOperationException("not used by LineReader")
 
-        override fun read(b: ByteArray, off: Int, len: Int): Int {
+        override fun read(
+            b: ByteArray,
+            off: Int,
+            len: Int,
+        ): Int {
             if (position >= data.size) {
                 return -1
             }

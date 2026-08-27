@@ -233,7 +233,9 @@ data class MergeUsersResult(
     val obsoletedMergedUsers: Int,
 )
 
-enum class OnlineStatus(val code: Int) {
+enum class OnlineStatus(
+    val code: Int,
+) {
     OFFLINE(0),
     ONLINE(1),
     BUSY(2),

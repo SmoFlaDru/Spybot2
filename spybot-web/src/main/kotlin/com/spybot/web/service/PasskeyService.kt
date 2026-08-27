@@ -10,8 +10,8 @@ import com.webauthn4j.converter.util.ObjectConverter
 import com.webauthn4j.data.AuthenticationParameters
 import com.webauthn4j.data.PublicKeyCredentialType
 import com.webauthn4j.data.RegistrationParameters
-import com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier
 import com.webauthn4j.data.attestation.authenticator.AttestedCredentialData
+import com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier
 import com.webauthn4j.data.client.Origin
 import com.webauthn4j.data.client.challenge.DefaultChallenge
 import com.webauthn4j.server.ServerProperty
@@ -40,13 +40,14 @@ class PasskeyService(
         val state = PasskeySessionState(challenge = challenge())
         request.session.setAttribute(PASSKEY_STATE_KEY, state)
         return mapOf(
-            "publicKey" to mapOf(
-                "challenge" to state.challenge,
-                "timeout" to 60000,
-                "rpId" to rpId(),
-                "allowCredentials" to emptyList<Map<String, Any>>(),
-                "userVerification" to "preferred",
-            ),
+            "publicKey" to
+                mapOf(
+                    "challenge" to state.challenge,
+                    "timeout" to 60000,
+                    "rpId" to rpId(),
+                    "allowCredentials" to emptyList<Map<String, Any>>(),
+                    "userVerification" to "preferred",
+                ),
         )
     }
 
@@ -65,28 +66,33 @@ class PasskeyService(
                 )
             }
         return mapOf(
-            "publicKey" to mapOf(
-                "challenge" to state.challenge,
-                "rp" to mapOf(
-                    "name" to properties.fidoServerName,
-                    "id" to rpId(),
+            "publicKey" to
+                mapOf(
+                    "challenge" to state.challenge,
+                    "rp" to
+                        mapOf(
+                            "name" to properties.fidoServerName,
+                            "id" to rpId(),
+                        ),
+                    "user" to
+                        mapOf(
+                            "id" to encodeBase64Url(userId.toString().toByteArray()),
+                            "name" to displayName,
+                            "displayName" to displayName,
+                        ),
+                    "pubKeyCredParams" to
+                        listOf(
+                            mapOf("type" to PublicKeyCredentialType.PUBLIC_KEY.value, "alg" to COSEAlgorithmIdentifier.ES256.value),
+                            mapOf("type" to PublicKeyCredentialType.PUBLIC_KEY.value, "alg" to COSEAlgorithmIdentifier.RS256.value),
+                        ),
+                    "timeout" to 60000,
+                    "excludeCredentials" to excludeCredentials,
+                    "authenticatorSelection" to
+                        mapOf(
+                            "residentKey" to "preferred",
+                            "userVerification" to "preferred",
+                        ),
                 ),
-                "user" to mapOf(
-                    "id" to encodeBase64Url(userId.toString().toByteArray()),
-                    "name" to displayName,
-                    "displayName" to displayName,
-                ),
-                "pubKeyCredParams" to listOf(
-                    mapOf("type" to PublicKeyCredentialType.PUBLIC_KEY.value, "alg" to COSEAlgorithmIdentifier.ES256.value),
-                    mapOf("type" to PublicKeyCredentialType.PUBLIC_KEY.value, "alg" to COSEAlgorithmIdentifier.RS256.value),
-                ),
-                "timeout" to 60000,
-                "excludeCredentials" to excludeCredentials,
-                "authenticatorSelection" to mapOf(
-                    "residentKey" to "preferred",
-                    "userVerification" to "preferred",
-                ),
-            ),
         )
     }
 
@@ -95,29 +101,31 @@ class PasskeyService(
         responseJson: String,
     ): Map<String, Any?> =
         runCatching {
-        val state = request.session.getAttribute(PASSKEY_STATE_KEY) as? PasskeySessionState
-            ?: return mapOf("status" to "ERR", "verified" to false, "message" to "FIDO Status can't be found, please try again")
-        val userId = state.userId ?: return mapOf("status" to "ERR", "verified" to false, "message" to "Missing passkey registration user")
-        val serverProperty = serverProperty(request, state.challenge)
-        val registrationData =
-            webAuthnManager.verifyRegistrationResponseJSON(
-                responseJson,
-                RegistrationParameters(serverProperty, false),
+            val state =
+                request.session.getAttribute(PASSKEY_STATE_KEY) as? PasskeySessionState
+                    ?: return mapOf("status" to "ERR", "verified" to false, "message" to "FIDO Status can't be found, please try again")
+            val userId =
+                state.userId ?: return mapOf("status" to "ERR", "verified" to false, "message" to "Missing passkey registration user")
+            val serverProperty = serverProperty(request, state.challenge)
+            val registrationData =
+                webAuthnManager.verifyRegistrationResponseJSON(
+                    responseJson,
+                    RegistrationParameters(serverProperty, false),
+                )
+            val attestedCredentialData = AuthenticatorImpl.createFromRegistrationData(registrationData).attestedCredentialData
+            val encodedToken = encodeBase64Url(attestedCredentialDataConverter.convert(attestedCredentialData))
+            val credentialId = encodeBase64Url(attestedCredentialData.credentialId)
+            val userAgent = parseUserAgent(request.getHeader("User-Agent"))
+            queryService.createPasskey(
+                userId = userId,
+                name = userAgent.deviceName,
+                platform = userAgent.platform,
+                credentialId = credentialId,
+                token = encodedToken,
+                addedOn = Instant.now(),
             )
-        val attestedCredentialData = AuthenticatorImpl.createFromRegistrationData(registrationData).attestedCredentialData
-        val encodedToken = encodeBase64Url(attestedCredentialDataConverter.convert(attestedCredentialData))
-        val credentialId = encodeBase64Url(attestedCredentialData.credentialId)
-        val userAgent = parseUserAgent(request.getHeader("User-Agent"))
-        queryService.createPasskey(
-            userId = userId,
-            name = userAgent.deviceName,
-            platform = userAgent.platform,
-            credentialId = credentialId,
-            token = encodedToken,
-            addedOn = Instant.now(),
-        )
-        request.session.removeAttribute(PASSKEY_STATE_KEY)
-        return mapOf("status" to "OK", "verified" to true)
+            request.session.removeAttribute(PASSKEY_STATE_KEY)
+            return mapOf("status" to "OK", "verified" to true)
         }.getOrElse {
             mapOf("status" to "ERR", "verified" to false, "message" to "Error on server, please try again later")
         }
@@ -128,35 +136,41 @@ class PasskeyService(
         responseJson: String,
     ): Map<String, Any?> =
         runCatching {
-        val state = request.session.getAttribute(PASSKEY_STATE_KEY) as? PasskeySessionState
-            ?: return mapOf("verified" to false, "message" to "Missing authentication challenge")
-        val credentialId = objectConverter.jsonMapper.readTree(responseJson).path("id").asText()
-        val stored = queryService.findPasskeyByCredentialId(credentialId)
-            ?: return mapOf("verified" to false, "message" to "Unknown passkey")
-        val attestedCredentialData = attestedCredentialDataConverter.convert(decodeBase64Url(stored.token))
-        val authenticator = AuthenticatorImpl(attestedCredentialData, null, 0)
-        webAuthnManager.verifyAuthenticationResponseJSON(
-            responseJson,
-            AuthenticationParameters(
-                serverProperty(request, state.challenge),
-                authenticator,
-                false,
-            ),
-        )
+            val state =
+                request.session.getAttribute(PASSKEY_STATE_KEY) as? PasskeySessionState
+                    ?: return mapOf("verified" to false, "message" to "Missing authentication challenge")
+            val credentialId =
+                objectConverter.jsonMapper
+                    .readTree(responseJson)
+                    .path("id")
+                    .asText()
+            val stored =
+                queryService.findPasskeyByCredentialId(credentialId)
+                    ?: return mapOf("verified" to false, "message" to "Unknown passkey")
+            val attestedCredentialData = attestedCredentialDataConverter.convert(decodeBase64Url(stored.token))
+            val authenticator = AuthenticatorImpl(attestedCredentialData, null, 0)
+            webAuthnManager.verifyAuthenticationResponseJSON(
+                responseJson,
+                AuthenticationParameters(
+                    serverProperty(request, state.challenge),
+                    authenticator,
+                    false,
+                ),
+            )
 
-        queryService.updatePasskeyLastUsed(stored.id)
-        request.session.setAttribute(
-            "passkey",
-            mapOf(
-                "passkey" to true,
-                "name" to stored.name,
-                "id" to stored.id,
-                "platform" to stored.platform,
-            ),
-        )
-        loginUser(stored.userId, request, response)
-        request.session.removeAttribute(PASSKEY_STATE_KEY)
-        return mapOf("verified" to true, "user" to stored.userId)
+            queryService.updatePasskeyLastUsed(stored.id)
+            request.session.setAttribute(
+                "passkey",
+                mapOf(
+                    "passkey" to true,
+                    "name" to stored.name,
+                    "id" to stored.id,
+                    "platform" to stored.platform,
+                ),
+            )
+            loginUser(stored.userId, request, response)
+            request.session.removeAttribute(PASSKEY_STATE_KEY)
+            return mapOf("verified" to true, "user" to stored.userId)
         }.getOrElse {
             mapOf("verified" to false, "message" to "Passkey authentication failed")
         }

@@ -93,7 +93,9 @@ tasks.register("verifyFrontendAssets") {
                 buildString {
                     appendLine("Missing frontend build artifacts:")
                     missing.forEach { appendLine(" - ${it.absolutePath}") }
-                    append("Run `npm ci && npm run package` in `frontend/`, or build via Docker which now performs the frontend packaging step.")
+                    append(
+                        "Run `npm ci && npm run package` in `frontend/`, or build via Docker which now performs the frontend packaging step.",
+                    )
                 },
             )
         }
@@ -116,10 +118,12 @@ tasks.named<Test>("test") {
 
 tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
     dependsOn(tasks.named("precompileJte"), tasks.named("verifyFrontendAssets"))
-    from(fileTree(layout.projectDirectory.dir("jte-classes")) {
-        include("**/*.class")
-        include("**/*.bin")
-    }) {
+    from(
+        fileTree(layout.projectDirectory.dir("jte-classes")) {
+            include("**/*.class")
+            include("**/*.bin")
+        },
+    ) {
         into("BOOT-INF/classes")
     }
     archiveFileName.set("app.jar")

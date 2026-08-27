@@ -11,7 +11,8 @@ class RecorderLoopGateway(
     private val client: TeamSpeakQueryClient,
     private val domainService: RecorderDomainService,
     private val properties: SpybotProperties,
-) : TeamSpeakGateway, com.spybot.core.service.RecorderMessageGateway {
+) : TeamSpeakGateway,
+    com.spybot.core.service.RecorderMessageGateway {
     private val log = LoggerFactory.getLogger(javaClass)
     private val stopping = AtomicBoolean(false)
 
@@ -60,11 +61,17 @@ class RecorderLoopGateway(
         client.close()
     }
 
-    override fun pokeClient(clientId: Int, message: String) {
+    override fun pokeClient(
+        clientId: Int,
+        message: String,
+    ) {
         client.pokeClient(clientId, message)
     }
 
-    override fun sendTextMessage(clientId: Int, message: String) {
+    override fun sendTextMessage(
+        clientId: Int,
+        message: String,
+    ) {
         client.sendTextMessage(clientId, message)
     }
 

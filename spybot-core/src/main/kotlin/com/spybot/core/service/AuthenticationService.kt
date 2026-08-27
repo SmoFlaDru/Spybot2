@@ -7,8 +7,7 @@ import org.springframework.stereotype.Service
 class AuthenticationService(
     private val queryService: SpybotQueryService,
 ) {
-    fun loadPrincipal(userId: Long): MergedUserPrincipal? =
-        queryService.findMergedUserById(userId)?.let(::MergedUserPrincipal)
+    fun loadPrincipal(userId: Long): MergedUserPrincipal? = queryService.findMergedUserById(userId)?.let(::MergedUserPrincipal)
 
     fun authenticateByLoginCode(code: String?): MergedUserPrincipal? {
         if (code.isNullOrBlank()) {

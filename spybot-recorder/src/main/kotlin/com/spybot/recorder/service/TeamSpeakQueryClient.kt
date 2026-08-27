@@ -19,9 +19,15 @@ interface TeamSpeakQueryClient {
 
     fun waitForEvent(): TeamSpeakEvent?
 
-    fun pokeClient(clientId: Int, message: String)
+    fun pokeClient(
+        clientId: Int,
+        message: String,
+    )
 
-    fun sendTextMessage(clientId: Int, message: String)
+    fun sendTextMessage(
+        clientId: Int,
+        message: String,
+    )
 
     fun close()
 }
