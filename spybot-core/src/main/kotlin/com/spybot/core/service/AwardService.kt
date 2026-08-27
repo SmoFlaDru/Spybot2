@@ -89,7 +89,8 @@ class AwardService(
 
         val now = LocalDate.now()
         val weekNumber = now.get(java.time.temporal.IsoFields.WEEK_OF_WEEK_BASED_YEAR)
-        return "<strong>$userName</strong> earned the $metal award for being the$specifier most active user of week&nbsp;$weekNumber in ${now.year}. Congratulations! $detail"
+        return "<strong>$userName</strong> earned the $metal award for being the$specifier most active user of " +
+            "week&nbsp;$weekNumber in ${now.year}. Congratulations! $detail"
     }
 
     private fun ordinalWord(number: Int): String =
