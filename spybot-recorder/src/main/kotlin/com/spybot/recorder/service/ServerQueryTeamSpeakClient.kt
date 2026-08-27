@@ -96,11 +96,11 @@ class ServerQueryTeamSpeakClient(
                 queuedEvents.removeFirst()
             } else {
                 try {
-                    reader?.readLine()
+                    reader?.readLine() ?: throw TeamSpeakQueryException(-1, "connection closed")
                 } catch (_: SocketTimeoutException) {
-                    null
+                    return null
                 }
-            } ?: return null
+            }
 
         if (!line.startsWith("notify")) {
             return null

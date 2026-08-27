@@ -1,12 +1,29 @@
 package com.spybot.recorder.service
 
+import com.spybot.core.config.SpybotProperties
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
 
 class ServerQueryTeamSpeakClientTest {
+    @Test
+    fun `waitForEvent throws instead of returning null forever when the connection reaches EOF`() {
+        // Regression test for the production incident this caused: once the remote side closed
+        // the socket, readLine() returned null immediately (no blocking) on every call, and
+        // waitForEvent() treated that exactly like a normal read timeout - returning null instead
+        // of signalling connection loss. RecorderLoopGateway's event loop then spun at ~100% CPU
+        // forever instead of hitting the reconnect/backoff path.
+        val client = ServerQueryTeamSpeakClient(SpybotProperties())
+        val readerField = ServerQueryTeamSpeakClient::class.java.getDeclaredField("reader")
+        readerField.isAccessible = true
+        readerField.set(client, ServerQueryTeamSpeakClient.LineReader(ChunkedInputStream(ByteArray(0), chunkSize = 4096)))
+
+        assertThrows(RuntimeException::class.java) { client.waitForEvent() }
+    }
+
     @Test
     fun `reads plain lines separated by newlines`() {
         val reader =
