@@ -1,8 +1,6 @@
 services:
   spybot-web:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/smofladru/spybot2-web:${SPYBOT_IMAGE_TAG:-latest}
     init: true
     restart: unless-stopped
     env_file:
@@ -16,9 +14,7 @@ services:
     secrets:
       - db_password
   spybot-recorder:
-    build:
-      context: .
-      dockerfile: spybot-recorder/Dockerfile
+    image: ghcr.io/smofladru/spybot2-recorder:${SPYBOT_IMAGE_TAG:-latest}
     init: true
     restart: unless-stopped
     env_file:

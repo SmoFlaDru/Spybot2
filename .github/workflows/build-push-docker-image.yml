@@ -3,21 +3,23 @@ name: Create, publish and deploy Docker image
 on:
   push:
     branches: ['master']
-# Defines two custom environment variables for the workflow. These are used for the Container registry domain, and a name for the Docker image that this workflow builds.
+# Defines a custom environment variable for the workflow, used for the Container registry domain.
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 jobs:
-  build-push-deploy-image:
+  build-push:
     runs-on: ubuntu-latest
     # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
     permissions:
       contents: read
       packages: write
-      attestations: write
-      id-token: write
-    outputs:
-      image_name: ${{ steps.get-build-name.outputs.image_name }}
+    strategy:
+      matrix:
+        include:
+          - image: web
+            dockerfile: Dockerfile
+          - image: recorder
+            dockerfile: spybot-recorder/Dockerfile
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -32,41 +34,42 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      # GHCR image names must be lowercase, but the repository owner/name (SmoFlaDru/Spybot2) isn't.
+      - name: Compute image name
+        id: image
+        env:
+          IMAGE: ${{ matrix.image }}
+        run: echo "name=$REGISTRY/${GITHUB_REPOSITORY,,}-$IMAGE" >> "$GITHUB_OUTPUT"
       # This step uses [docker/metadata-action](https://github.com/docker/metadata-action#about) to extract tags and labels that will be applied to the specified image. The `id` "meta" allows the output of this step to be referenced in a subsequent step. The `images` value provides the base name for the tags and labels.
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ steps.image.outputs.name }}
           tags: |
             # branch event
             type=ref,event=branch
             # tag event
             type=ref,event=tag
-            # commit sha (short)
+            # commit sha (long)
             type=sha,format=long
-      # This step uses the `docker/build-push-action` action to build the image, based on your repository's `Dockerfile`. If the build succeeds, it pushes the image to GitHub Packages.
+            # floating tag pointed at the most recent build of this branch
+            type=raw,value=latest
+      # This step uses the `docker/build-push-action` action to build the image from the given Dockerfile. If the build succeeds, it pushes the image to GitHub Packages.
       # It uses the `context` parameter to define the build's context as the set of files located in the specified path. For more information, see "[Usage](https://github.com/docker/build-push-action#usage)" in the README of the `docker/build-push-action` repository.
       # It uses the `tags` and `labels` parameters to tag and label the image with the output from the "meta" step.
       - name: Build and push Docker image
-        id: push
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
           context: .
+          file: ${{ matrix.dockerfile }}
           push: true
           platforms: "linux/arm64"
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-      # This step generates an artifact attestation for the image, which is an unforgeable statement about where and how it was built. It increases supply chain security for people who consume the image. For more information, see "[AUTOTITLE](/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds)."
-#      - name: Generate artifact attestation
-#        uses: actions/attest-build-provenance@v1
-#        with:
-#          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
-#          subject-digest: ${{ steps.push.outputs.digest }}
-#          push-to-registry: true
   deploy:
     name: Deploy to Server
-    needs: build-push-deploy-image
+    needs: build-push
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -91,7 +94,12 @@ jobs:
           password: ${{ secrets.SSH_SECONDARY_PASSWORD }}
           port: ${{ secrets.SSH_SECONDARY_PORT }}
           envs: SECRET,COMMIT_SHA
+          # Pin the deploy to the exact images just built (sha-<commit>), rather than :latest, so a
+          # concurrent push starting a new build elsewhere can't race this deploy onto a half-built
+          # or unintended version.
           script: |
             cd spybot
             echo "$SECRET" > .env
+            echo "SPYBOT_IMAGE_TAG=sha-${COMMIT_SHA}" >> .env
+            docker compose -f docker-compose.yml pull
             docker compose -f docker-compose.yml up -d
