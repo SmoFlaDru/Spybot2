@@ -1,0 +1,57 @@
+@param loggedInUser: com.spybot.core.model.MergedUserView
+@param csrf: org.springframework.security.web.csrf.CsrfToken?
+@param commitHash: String? = null
+@param buildTime: java.time.Instant? = null
+@param overview: com.spybot.web.service.AdminService.AdminOverview
+@template.layout.base(title = "Admin", loggedInUser = loggedInUser, csrf = csrf, commitHash = commitHash, buildTime = buildTime, activePage = "admin", content = @`
+    <div class="row row-cards justify-content-md-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Admin</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row row-cards">
+                        <div class="col-6 col-md-4">
+                            <a href="/admin/merged-users" class="card card-link">
+                                <div class="card-body text-center">
+                                    <div class="h1 mb-0">${overview.mergedUsersCount}</div>
+                                    <div class="text-secondary">Merged users</div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <a href="/admin/ts-users" class="card card-link">
+                                <div class="card-body text-center">
+                                    <div class="h1 mb-0">${overview.tsUsersCount}</div>
+                                    <div class="text-secondary">TeamSpeak users</div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <a href="/admin/news-events" class="card card-link">
+                                <div class="card-body text-center">
+                                    <div class="h1 mb-0">${overview.newsEventsCount}</div>
+                                    <div class="text-secondary">News events</div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Tools</h3>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="/admin/merged-users" class="list-group-item list-group-item-action">Merged users</a>
+                    <a href="/admin/ts-users" class="list-group-item list-group-item-action">TeamSpeak users</a>
+                    <a href="/admin/news-events" class="list-group-item list-group-item-action">News events</a>
+                    <a href="/admin/merge-users" class="list-group-item list-group-item-action">Merge users</a>
+                </div>
+            </div>
+        </div>
+    </div>
+`)

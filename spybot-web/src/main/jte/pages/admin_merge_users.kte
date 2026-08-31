@@ -1,0 +1,53 @@
+@param loggedInUser: com.spybot.core.model.MergedUserView
+@param csrf: org.springframework.security.web.csrf.CsrfToken?
+@param commitHash: String? = null
+@param buildTime: java.time.Instant? = null
+@param form: com.spybot.web.controller.AdminController.MergeUsersForm
+@param mergedUsers: java.util.List<com.spybot.core.model.AdminMergedUserRow>
+@param successMessage: String? = null
+@param errorMessage: String? = null
+@template.layout.base(title = "Merge users", loggedInUser = loggedInUser, csrf = csrf, commitHash = commitHash, buildTime = buildTime, activePage = "admin", content = @`
+    <div class="row row-cards justify-content-md-center">
+        <div class="col-md-8">
+            @if(successMessage != null)
+                <div class="alert alert-success">${successMessage}</div>
+            @endif
+            @if(errorMessage != null)
+                <div class="alert alert-danger">${errorMessage}</div>
+            @endif
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Merge users</h3>
+                </div>
+                <form method="post" action="/admin/merge-users">
+                    <input type="hidden" name="${if (csrf != null) csrf.parameterName else "_csrf"}" value="${if (csrf != null) csrf.token else ""}">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Target user (kept)</label>
+                            <select class="form-select" name="targetId" required>
+                                <option value="">Select a user</option>
+                                @for(user in mergedUsers)
+                                    <option value="${user.id}">#${user.id} ${user.name}${if (user.isSuperuser) " (admin)" else ""}${if (user.obsolete) " (obsolete)" else ""}</option>
+                                @endfor
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Source users (merged away, marked obsolete)</label>
+                            <div class="form-selectgroup form-selectgroup-boxes d-block" style="max-height: 400px; overflow-y: auto;">
+                                @for(user in mergedUsers)
+                                    <label class="form-selectgroup-item d-block">
+                                        <input type="checkbox" name="sourceIds" value="${user.id}" class="form-selectgroup-input">
+                                        <span class="form-selectgroup-label">#${user.id} ${user.name}${if (user.isSuperuser) " (admin)" else ""}${if (user.obsolete) " (obsolete)" else ""} &mdash; ${user.tsUserCount} TS user(s)</span>
+                                    </label>
+                                @endfor
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-end">
+                        <button class="btn btn-primary" type="submit">Merge</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+`)

@@ -1,0 +1,30 @@
+@param recentEvents: com.spybot.core.model.RecentEventsPayload
+@for(event in recentEvents.events)
+    <div>
+        <a href="${if (event.websiteLink != null) event.websiteLink!! else "#"}" class="text-reset text-decoration-none">
+            <div class="row">
+                <div class="col-auto">
+                    <span class="avatar">${event.text.replace(Regex("<[^>]*>"), "").trim().let { if (it.isNotBlank()) it.substring(0, 1) else "?" }}</span>
+                </div>
+                <div class="col">
+                    $unsafe{event.text}
+                    <div class="text-muted">
+                        <relative-time datetime="${event.date.toString()}">${event.date.toString()}</relative-time>
+                    </div>
+                </div>
+                @if(event.isRecent)
+                    <div class="col-auto align-self-center">
+                        <div class="badge bg-primary"></div>
+                    </div>
+                @endif
+            </div>
+        </a>
+    </div>
+@endfor
+@if(recentEvents.hasMore)
+    <div class="row" hx-trigger="intersect once" hx-get="/recent_events_fragment?start=${recentEvents.start}" hx-swap="outerHTML">
+        <div class="text-center">
+            Loading more events...
+        </div>
+    </div>
+@endif

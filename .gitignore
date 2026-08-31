@@ -37,6 +37,14 @@ media
 # Gradle
 .idea/**/gradle.xml
 .idea/**/libraries
+.gradle/
+build/
+**/build/
+.kotlin/
+**/.kotlin/
+
+# JTE precompiled output
+**/jte-classes/
 
 # File-based project format
 *.iws
@@ -143,5 +151,9 @@ GitHub.sublime-settings
 # frontend
 node_modules/
 frontend/output
+.buildx-cache/
 
 secrets/
+
+# Claude Code local settings
+.claude/settings.local.json

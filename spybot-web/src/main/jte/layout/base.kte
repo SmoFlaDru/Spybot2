@@ -1,0 +1,171 @@
+@param title: String
+@param loggedInUser: com.spybot.core.model.MergedUserView?
+@param csrf: org.springframework.security.web.csrf.CsrfToken?
+@param activePage: String
+@param content: gg.jte.Content
+@param commitHash: String? = null
+@param buildTime: java.time.Instant? = null
+<!DOCTYPE html>
+<html lang="en" data-bs-theme-base="slate">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta charset="utf-8">
+    <link rel="icon" href="/favicon.png" sizes="144x115">
+    <title>Spybot 2 by Justus and Benno</title>
+    <link rel="stylesheet" href="/main.css">
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/early.js"></script>
+    <script src="/main.js" defer></script>
+</head>
+<body hx-headers='{"X-XSRF-TOKEN": "${if (csrf != null) csrf.token else ""}"}'>
+<script src="/theme.js"></script>
+<div class="page">
+    <div class="sticky-top">
+        <header class="navbar navbar-expand-md navbar-light d-print-none">
+            <div class="container-xl">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu"
+                        aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <h1 class="navbar-brand d-none-navbar-horizontal pe-0 pe-md-3">
+                    <a href="/" class="text-decoration-none">
+                        <img src="/spybot_ai_icon.png" alt="" class="navbar-brand-image me-2" width="110" height="32">
+                        Spybot
+                    </a>
+                </h1>
+                <div class="navbar-nav flex-row order-md-last">
+                    <div class="d-flex me-2">
+                        <button onclick="configureTheme('dark')" class="nav-link px-0 spybot-auto-theme-only" data-bs-toggle="tooltip"
+                                data-bs-placement="bottom" aria-label="Enable dark mode" data-bs-original-title="Enable dark mode">
+                            <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-moon"/></svg>
+                        </button>
+                        <a onclick="configureTheme('light')" class="nav-link px-0 spybot-dark-theme-only" data-bs-toggle="tooltip"
+                           data-bs-placement="bottom" aria-label="Enable light mode" data-bs-original-title="Enable light mode">
+                            <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-sun"/></svg>
+                        </a>
+                        <a onclick="configureTheme('auto')" class="nav-link px-0 spybot-light-theme-only" data-bs-toggle="tooltip"
+                           data-bs-placement="bottom" aria-label="Enable auto theme mode" data-bs-original-title="Enable auto mode">
+                            <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-sun-moon"/></svg>
+                        </a>
+                    </div>
+                    <div class="nav-item d-none d-md-flex me-2">
+                        <div class="btn-list">
+                            <a class="btn" href="https://github.com/SmoFlaDru/Spybot2">
+                                <svg width="24" height="24" class="icon"><use xlink:href="/tabler-sprite.svg#tabler-brand-github"/></svg>
+                                Source code
+                            </a>
+                        </div>
+                    </div>
+                    @if(loggedInUser != null)
+                        <div class="nav-item dropdown">
+                            <a href="/profile" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
+                                <div class="d-block ps-2">
+                                    <div class="mb-1 small text-secondary">Logged in as</div>
+                                    <div>${loggedInUser.name}</div>
+                                </div>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                                @if(loggedInUser.isSuperuser)
+                                    <a href="/admin" class="dropdown-item">Admin</a>
+                                @endif
+                                <a href="/profile" class="dropdown-item">Profile</a>
+                                <a href="/logout" class="dropdown-item">Logout</a>
+                            </div>
+                        </div>
+                    @else
+                        <div class="nav-item d-flex">
+                            <div class="btn-list">
+                                <a class="btn" href="/login">
+                                    <svg width="24" height="24" class="icon"><use xlink:href="/tabler-sprite.svg#tabler-key"/></svg>
+                                    Log in
+                                </a>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+                <div class="collapse navbar-collapse" id="navbar-menu">
+                    <div class="d-flex flex-column flex-md-row flex-fill align-items-stretch align-items-md-center">
+                        <ul class="navbar-nav">
+                            <li class="${if (activePage == "home") "nav-item active" else "nav-item"}">
+                                <a class="nav-link" href="/">
+                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                        <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-home"/></svg>
+                                    </span>
+                                    <span class="nav-link-title">Home</span>
+                                </a>
+                            </li>
+                            <li class="${if (activePage == "timeline") "nav-item active" else "nav-item"}">
+                                <a class="nav-link" href="/timeline">
+                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                        <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-calendar-time"/></svg>
+                                    </span>
+                                    <span class="nav-link-title">Timeline</span>
+                                </a>
+                            </li>
+                            <li class="${if (activePage == "halloffame") "nav-item active" else "nav-item"}">
+                                <a class="nav-link" href="/halloffame">
+                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                        <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-crown"/></svg>
+                                    </span>
+                                    <span class="nav-link-title">Hall of fame</span>
+                                </a>
+                            </li>
+                            @if(loggedInUser != null && loggedInUser.isSuperuser)
+                                <li class="${if (activePage == "admin") "nav-item active" else "nav-item"}">
+                                    <a class="nav-link" href="/admin">
+                                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                            <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-lock"/></svg>
+                                        </span>
+                                        <span class="nav-link-title">Admin</span>
+                                    </a>
+                                </li>
+                            @endif
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </header>
+    </div>
+    <div class="page-wrapper">
+        <div class="page-body">
+            <div class="container-xl">
+                ${content}
+            </div>
+        </div>
+        <footer class="footer footer-transparent">
+            <div class="container-xl">
+                <div class="row text-center align-items-center">
+                    <div class="col-12 col-auto">
+                        <ul class="list-inline list-inline-dots mb-0">
+                            <li class="list-inline-item">Copyright © 2026</li>
+                            <li class="list-inline-item">
+                                <a class="link-secondary" href="https://github.com/SmoFlaDru">
+                                    Benno and Justus
+                                </a>
+                            </li>
+                            <li class="list-inline-item">
+                                <a class="link-secondary" href="/admin">
+                                    <svg width="14" height="14"><use xlink:href="/tabler-sprite.svg#tabler-lock"/></svg>
+                                </a>
+                            </li>
+                            @if(commitHash != null)
+                                <li class="list-inline-item">
+                                    <a class="link-secondary" href="/changelog">
+                                        ${commitHash}@if(buildTime != null) (${buildTime.toString().substring(0, 10)})@endif
+                                    </a>
+                                </li>
+                            @endif
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+</div>
+<div id="modal" class="modal modal-blur fade">
+    <div id="dialog" class="modal-dialog modal-lg modal-dialog-centered" role="document" hx-target="this"></div>
+</div>
+</body>
+</html>

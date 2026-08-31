@@ -5,3 +5,12 @@ repos:
     - id: ruff
       args: [ --fix ]
     - id: ruff-format
+- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+  rev: v2.16.0
+  hooks:
+    - id: pretty-format-kotlin
+      args: [
+        --autofix,
+        --ktlint-version=1.8.0,
+        --formatter-jar-checksum=a3fd620207d5c40da6ca789b95e7f823c54e854b7fade7f613e91096a3706d75,
+      ]

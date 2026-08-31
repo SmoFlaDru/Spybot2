@@ -1,0 +1,5 @@
+gg:
+  jte:
+    usePrecompiledTemplates: false
+    developmentMode: true
+    templateLocation: /workspace/spybot-web/src/main/jte

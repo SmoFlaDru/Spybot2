@@ -1,0 +1,125 @@
+@param loggedInUser: com.spybot.core.model.MergedUserView?
+@param topUsers: java.util.List<com.spybot.core.model.HallOfFameEntry>
+@param csrf: org.springframework.security.web.csrf.CsrfToken?
+@param commitHash: String? = null
+@param buildTime: java.time.Instant? = null
+@template.layout.base(title = "Hall of Fame", loggedInUser = loggedInUser, csrf = csrf, commitHash = commitHash, buildTime = buildTime, activePage = "halloffame", content = @`
+    <div class="row row-cards justify-content-md-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header row g-0">
+                    <h3 class="card-title">Top Users</h3>
+                </div>
+                <div class="list-group list-group-flush list-group-hoverable">
+                    @for(user in topUsers)
+                        <a href="/u/${user.userId}" class="list-group-item text-decoration-none shaker">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <span class="avatar bg-medal ${if (topUsers.indexOf(user) < 5) "medal-gold" else if (topUsers.indexOf(user) < 10) "medal-silver" else if (topUsers.indexOf(user) < 15) "medal-bronze" else ""}">
+                                        @if(topUsers.indexOf(user) == 0)
+                                            <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-trophy"/></svg>
+                                        @else
+                                            ${topUsers.indexOf(user) + 1}
+                                        @endif
+                                    </span>
+                                </div>
+
+                                <div class="col-auto text-truncate">
+                                    <span class="text-reset d-block">${user.user}</span>
+                                </div>
+                                <div class="col">
+                                    <span class="text-muted me-2">${user.numGoldAwards} <svg width="24" height="24" class="golden"><use xlink:href="/tabler-sprite.svg#tabler-award"/></svg></span>
+                                    <span class="text-muted me-2">${user.numSilverAwards} <svg width="24" height="24" class="silver"><use xlink:href="/tabler-sprite.svg#tabler-medal"/></svg></span>
+                                    <span class="text-muted">${user.numBronzeAwards} <svg width="24" height="24" class="bronze"><use xlink:href="/tabler-sprite.svg#tabler-military-award"/></svg></span>
+                                </div>
+                                <div class="col-auto flex-row-reverse text-muted text-truncate mt-n1">${run {
+                                    val totalSeconds = user.time.toLong()
+                                    val hours = totalSeconds / 3600
+                                    val minutes = (totalSeconds % 3600) / 60
+                                    val hoursStr = if (hours > 0) "$hours hours " else ""
+                                    val minutesStr = if (minutes > 0) "$minutes min " else ""
+                                    "$hoursStr$minutesStr"
+                                }}</div>
+                            </div>
+                        </a>
+                    @endfor
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .golden {
+            scale: .5;
+            color: rgb(201, 176, 55);
+            animation: medals .5s ease-out forwards;
+        }
+
+        .silver {
+            scale: .5;
+            color: rgb(150, 150, 150);
+            animation: medals .5s ease-out forwards;
+            animation-delay: .25s;
+        }
+
+        .bronze {
+            scale: .5;
+            color: rgb(127, 67, 6);
+            animation: medals .5s ease-out forwards;
+            animation-delay: .5s;
+        }
+
+        .shaker:hover .bronze {
+            animation: shake .5s;
+            animation-iteration-count: infinite;
+        }
+        .shaker:hover .silver {
+            animation: shake .5s;
+            animation-iteration-count: infinite;
+        }
+        .shaker:hover .golden {
+            animation: shake .5s;
+            animation-iteration-count: infinite;
+        }
+
+        @keyframes shake {
+            0%, 50%, 100% {
+                transform: rotate(0deg);
+            }
+            25% {
+                transform: rotate(15deg);
+            }
+            75% {
+                transform: rotate(-15deg);
+            }
+        }
+
+        @keyframes medals {
+            0% {
+                transform: scale(1);
+            }
+            100% {
+                transform: scale(2);
+            }
+        }
+
+        .bg-medal {
+            --text-opacity: 1;
+            --bg-opacity: 0.1;
+            color: rgba(var(--icon-color), var(--text-opacity)) !important;
+            background-color: rgba(var(--icon-color), var(--bg-opacity)) !important;
+        }
+
+        .medal-gold {
+            --icon-color: 201, 176, 55;
+        }
+
+        .medal-silver {
+            --icon-color: 150, 150, 150;
+        }
+
+        .medal-bronze {
+            --icon-color: 127, 67, 6;
+        }
+    </style>
+`)

@@ -1,0 +1,26 @@
+@param loggedInUser: com.spybot.core.model.MergedUserView?
+@param csrf: org.springframework.security.web.csrf.CsrfToken?
+@param commitHash: String? = null
+@param buildTime: java.time.Instant? = null
+@template.layout.base(title = "TeamSpeak Login", loggedInUser = loggedInUser, csrf = csrf, commitHash = commitHash, buildTime = buildTime, activePage = "login", content = @`
+    <div class="page page-center">
+        <div class="container container-tight py-4">
+            <div class="card card-md">
+                <div class="card-body">
+                    <h2 class="h2 text-center mb-4">Log in with Teamspeak</h2>
+                    <p>
+                        To log in with Teamspeak, follows these steps:
+                    <ul>
+                        <li>Connect to the Teamspeak server</li>
+                        <li>Go to the private chat with the user <b>Spybot</b></li>
+                        <li>Click on the link in the private message</li>
+                    </ul>
+                    </p>
+                    <p>Congrats, you are logged in!</p>
+
+                    <p>We recommend you create a Passkey from the profile page so that you can log in easier the next time.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+`)
