@@ -1,6 +1,7 @@
 services:
   spybot-web:
     build:
+      context: .
       dockerfile: Dockerfile
       cache_from:
         - type=local,src=.buildx-cache/spybot-web
@@ -11,6 +12,14 @@ services:
       #SPRING_PROFILES_ACTIVE: localdev
     volumes:
       - $PWD:/workspace
+  spybot-recorder:
+    build:
+      context: .
+      dockerfile: spybot-recorder/Dockerfile
+      cache_from:
+        - type=local,src=.buildx-cache/spybot-recorder
+      cache_to:
+        - type=local,dest=.buildx-cache/spybot-recorder,mode=max
   caddy:
     ports:
       - "80:80"
