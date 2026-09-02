@@ -748,7 +748,8 @@ class SpybotQueryService(
         dsl
             .fetch(
                 """
-                select a.tsuserid as ts_user_id,
+                select a.id as activity_id,
+                       a.tsuserid as ts_user_id,
                        u.clientid as client_id,
                        a.cid as channel_id,
                        u.name as ts_user_name
@@ -759,12 +760,55 @@ class SpybotQueryService(
                 """.trimIndent(),
             ).map {
                 OpenSessionView(
+                    id = it.int("activity_id"),
                     tsUserId = it.int("ts_user_id"),
                     clientId = it.int("client_id"),
                     channelId = it.int("channel_id"),
                     tsUserName = it.string("ts_user_name"),
                 )
             }
+
+    /**
+     * Closes one specific stale session row by its own id, unlike [closeOpenSessionsForUser]
+     * which closes every open row for the user. A user can briefly have two open rows at once
+     * (e.g. a reconnect's ClientEnter is processed before the old connection's ClientLeave), and
+     * closing by tsUserId in that situation would also close the sibling row that's still
+     * genuinely live - permanently dropping them from the live view until another TeamSpeak event
+     * happens to touch them again.
+     */
+    fun closeOpenSession(
+        activityId: Int,
+        tsUserId: Int,
+        reasonId: Int,
+    ) {
+        dsl.execute(
+            """
+            update tsuseractivity
+            set endtime = now(),
+                discid = ?
+            where id = ?
+              and endtime is null
+            """.trimIndent(),
+            reasonId,
+            activityId,
+        )
+        val stillOpen =
+            dsl.fetchExists(
+                dsl
+                    .selectOne()
+                    .from(TSUSERACTIVITY)
+                    .where(TSUSERACTIVITY.TSUSERID.eq(tsUserId))
+                    .and(TSUSERACTIVITY.ENDTIME.isNull),
+            )
+        if (!stillOpen) {
+            dsl
+                .update(TSUSER)
+                .set(TSUSER.CLIENTID, 0)
+                .set(TSUSER.ISCURRENTLYONLINE, false)
+                .where(TSUSER.ID.eq(tsUserId))
+                .execute()
+        }
+    }
 
     fun queuedMessagesForMergedUser(mergedUserId: Long): List<QueuedClientMessageView> =
         dsl

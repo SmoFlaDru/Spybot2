@@ -272,6 +272,7 @@ data class TeamSpeakClientSnapshot(
 )
 
 data class OpenSessionView(
+    val id: Int,
     val tsUserId: Int,
     val clientId: Int,
     val channelId: Int,
