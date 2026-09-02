@@ -22,6 +22,7 @@ class ServerQueryTeamSpeakClient(
     private var reader: LineReader? = null
     private var output: OutputStream? = null
     private val queuedEvents = ArrayDeque<String>()
+    private var lastCommandAtMs: Long = 0
 
     override fun connect() {
         close()
@@ -143,6 +144,12 @@ class ServerQueryTeamSpeakClient(
         }
     }
 
+    override fun keepAlive() {
+        if (System.currentTimeMillis() - lastCommandAtMs >= KEEPALIVE_INTERVAL_MS) {
+            execute("version")
+        }
+    }
+
     override fun pokeClient(
         clientId: Int,
         message: String,
@@ -204,6 +211,7 @@ class ServerQueryTeamSpeakClient(
         val target = output ?: error("TeamSpeak connection is not established")
         target.write((commandLine + "\n").toByteArray(StandardCharsets.UTF_8))
         target.flush()
+        lastCommandAtMs = System.currentTimeMillis()
 
         var bodyLine: String? = null
         while (true) {
@@ -364,5 +372,8 @@ class ServerQueryTeamSpeakClient(
 
     companion object {
         private const val EVENT_TIMEOUT_MS = 1000
+
+        // TS3 ServerQuery drops idle connections after ~300s of no commands; ping well before that.
+        private const val KEEPALIVE_INTERVAL_MS = 240_000L
     }
 }
