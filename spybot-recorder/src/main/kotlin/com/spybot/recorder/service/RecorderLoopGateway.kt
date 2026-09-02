@@ -31,6 +31,7 @@ class RecorderLoopGateway(
                     client.waitForEvent()?.let { event ->
                         domainService.handleEvent(event, this) { channelId -> client.getChannelName(channelId) }
                     }
+                    client.keepAlive()
                 }
             } catch (error: Exception) {
                 if (!stopping.get()) {

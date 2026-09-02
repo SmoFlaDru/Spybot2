@@ -32,7 +32,7 @@ class RecorderDomainService(
                 remaining.remove(keepAlive)
             } else {
                 log.info("Closing stale session for {}", openSession.tsUserName)
-                queryService.closeOpenSessionsForUser(openSession.tsUserId, -2)
+                queryService.closeOpenSession(openSession.id, openSession.tsUserId, -2)
             }
         }
 
