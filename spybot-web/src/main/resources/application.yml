@@ -12,6 +12,12 @@ spring:
     locations: classpath:db/migration
   mvc:
     static-path-pattern: /**
+  web:
+    resources:
+      cache:
+        cachecontrol:
+          max-age: 1d
+          cache-public: true
 
 gg:
   jte:
