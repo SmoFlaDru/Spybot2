@@ -3,6 +3,8 @@ spring:
     name: spybot-recorder
   main:
     web-application-type: none
+  jooq:
+    sql-dialect: Postgres
 
 management:
   endpoints:
