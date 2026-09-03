@@ -15,7 +15,7 @@ env:
   REGISTRY: ghcr.io
 jobs:
   build-push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
     permissions:
       contents: read
@@ -28,8 +28,6 @@ jobs:
           - image: recorder
             dockerfile: spybot-recorder/Dockerfile
     steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Checkout repository
@@ -74,6 +72,8 @@ jobs:
           platforms: "linux/arm64"
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
   deploy:
     name: Deploy to Server
     needs: build-push
