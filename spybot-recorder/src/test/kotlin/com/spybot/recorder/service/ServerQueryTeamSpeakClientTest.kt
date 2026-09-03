@@ -6,9 +6,78 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import java.io.InputStream
+import java.net.ServerSocket
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
+import kotlin.concurrent.thread
 
 class ServerQueryTeamSpeakClientTest {
+    @Test
+    fun `getClients sends the uid flag with its required dash so client_unique_identifier comes back`() {
+        // Regression test for the production incident this caused: "clientlist uid" (missing the
+        // "-" TS3 ServerQuery requires on flags) is not the same command as "clientlist -uid", so
+        // the server never included client_unique_identifier in the response. getClients() then
+        // silently filtered out every client (uniqueIdentifier is required to build a snapshot),
+        // so handleInitialClients() saw an empty client list on every restart and closed every
+        // already-connected user's session as "stale" - dropping them from the live view until
+        // they generated a fresh TeamSpeak-side ClientEnter event by actually reconnecting.
+        val serverSocket = ServerSocket(0)
+        val requestedClientListCommand = CompletableFuture<String>()
+        val server =
+            thread {
+                serverSocket.accept().use { socket ->
+                    val output = socket.getOutputStream()
+                    val input = socket.getInputStream().bufferedReader(StandardCharsets.UTF_8)
+                    output.write("TS3\n\rWelcome to the TeamSpeak 3 ServerQuery interface.\n\r".toByteArray(StandardCharsets.UTF_8))
+                    output.flush()
+
+                    input.readLine() // login
+                    output.write("error id=0 msg=ok\n\r".toByteArray(StandardCharsets.UTF_8))
+                    output.flush()
+
+                    input.readLine() // use
+                    output.write("error id=0 msg=ok\n\r".toByteArray(StandardCharsets.UTF_8))
+                    output.flush()
+
+                    requestedClientListCommand.complete(input.readLine())
+                    output.write(
+                        (
+                            "clid=5 cid=1 client_database_id=2 client_nickname=Foo client_type=0 " +
+                                "client_unique_identifier=abc==\n\r" +
+                                "error id=0 msg=ok\n\r"
+                        ).toByteArray(StandardCharsets.UTF_8),
+                    )
+                    output.flush()
+                }
+            }
+
+        val client =
+            ServerQueryTeamSpeakClient(
+                SpybotProperties(
+                    teamspeak =
+                        SpybotProperties.TeamSpeakProperties(
+                            host = "localhost",
+                            port = serverSocket.localPort,
+                            user = "serveradmin",
+                            password = "secret",
+                        ),
+                ),
+            )
+        try {
+            client.connect()
+            val clients = client.getClients()
+
+            assertEquals("clientlist -uid", requestedClientListCommand.get(2, TimeUnit.SECONDS))
+            assertEquals(1, clients.size)
+            assertEquals("abc==", clients.first().uniqueIdentifier)
+        } finally {
+            client.close()
+            serverSocket.close()
+            server.join(2000)
+        }
+    }
+
     @Test
     fun `waitForEvent throws instead of returning null forever when the connection reaches EOF`() {
         // Regression test for the production incident this caused: once the remote side closed
