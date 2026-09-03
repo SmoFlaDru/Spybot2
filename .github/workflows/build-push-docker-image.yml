@@ -3,6 +3,13 @@ name: Create, publish and deploy Docker image
 on:
   push:
     branches: ['master']
+# Two pushes to master close together (e.g. two PRs merged back-to-back) each start their own
+# build+deploy run. Without this, both runs deploy independently and whichever's slower build
+# happens to finish last wins - even if it's the older commit. Cancelling the older run when a
+# newer push arrives guarantees the newest commit is always what ends up deployed.
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
 # Defines a custom environment variable for the workflow, used for the Container registry domain.
 env:
   REGISTRY: ghcr.io
