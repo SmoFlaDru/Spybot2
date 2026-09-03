@@ -8,7 +8,10 @@ env:
   REGISTRY: ghcr.io
 jobs:
   build-push:
-    runs-on: ubuntu-latest
+    # Native arm64 runner: the images are linux/arm64 only (the deploy target), and building that
+    # under QEMU emulation on an x86 runner is roughly 5-10x slower than building it natively here.
+    # Free for public repos, same as ubuntu-latest - no extra compute cost.
+    runs-on: ubuntu-24.04-arm
     # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
     permissions:
       contents: read
@@ -21,8 +24,6 @@ jobs:
           - image: recorder
             dockerfile: spybot-recorder/Dockerfile
     steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Checkout repository
@@ -67,6 +68,12 @@ jobs:
           platforms: "linux/arm64"
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # Persist BuildKit's layer/cache-mount state (Gradle deps, npm packages, compiled
+          # layers) in the GitHub Actions cache, scoped per image so web and recorder don't evict
+          # each other. Without this, every run starts from a cold cache since each job gets a
+          # fresh runner with nothing left over from the last build.
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
   deploy:
     name: Deploy to Server
     needs: build-push
