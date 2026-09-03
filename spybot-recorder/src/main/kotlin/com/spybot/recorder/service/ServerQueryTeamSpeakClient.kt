@@ -204,7 +204,7 @@ class ServerQueryTeamSpeakClient(
                     append(encodeValue(value))
                 }
                 options.forEach {
-                    append(' ')
+                    append(" -")
                     append(it)
                 }
             }
