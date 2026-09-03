@@ -31,120 +31,119 @@
                 <div class="card-header justify-content-md-center">
                     <h3 class="card-title ">Statistics</h3>
                 </div>
-                <div class="row row0 justify-content-center">
-                    <div class="col-md-6">
-                        <div class="card-body">
-                            <div class="datagrid">
-                                <div class="datagrid-item">
-                                    <div class="datagrid-title">
-                                        <span>Current Status</span>
-                                    </div>
-                                    <div class="datagrid-content">
-                                        @if(page.headline.online)
-                                            <span class="text-success">online</span>
-                                        @else
-                                            <span class="text-danger">offline</span>
-                                        @endif
-                                    </div>
-                                </div>
+                <div class="card-body">
+                    <div class="datagrid">
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">
+                                <svg width="16" height="16" class="icon me-1"><use xlink:href="/tabler-sprite.svg#tabler-${if (page.headline.online) "circle-check" else "circle-x"}"/></svg>
+                                Current Status
+                            </div>
+                            <div class="datagrid-content">
+                                @if(page.headline.online)
+                                    <span class="text-success">online</span>
+                                @else
+                                    <span class="text-danger">offline</span>
+                                @endif
+                            </div>
+                        </div>
 
-                                @if(!page.headline.online)
-                                    <div class="datagrid-item">
-                                        <div class="datagrid-title">
-                                            Last Seen
-                                        </div>
-                                        <div class="datagrid-content">
-                                            <span>${page.headline.lastSeen?.toString() ?: ""}</span>
-                                        </div>
-                                    </div>
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">
+                                <svg width="16" height="16" class="icon me-1"><use xlink:href="/tabler-sprite.svg#tabler-device-gamepad-2"/></svg>
+                                Currently Playing
+                            </div>
+                            <div class="datagrid-content">
+                                @if(page.gameId == 0)
+                                    Not in Game
+                                @else
+                                    <span class="small"><svg width="20" height="20"><use xlink:href="/tabler-sprite.svg#tabler-tank"/></svg> ${page.gameName}</span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">
+                                <svg width="16" height="16" class="icon me-1"><use xlink:href="/tabler-sprite.svg#tabler-calendar-event"/></svg>
+                                First Seen
+                            </div>
+                            <div class="datagrid-content">
+                                <span>${page.headline.firstSeen?.toString() ?: ""}</span>
+                            </div>
+                        </div>
+
+                        @if(!page.headline.online)
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">
+                                    <svg width="16" height="16" class="icon me-1"><use xlink:href="/tabler-sprite.svg#tabler-eye"/></svg>
+                                    Last Seen
+                                </div>
+                                <div class="datagrid-content">
+                                    <span>${page.headline.lastSeen?.toString() ?: ""}</span>
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">
+                                <svg width="16" height="16" class="icon me-1"><use xlink:href="/tabler-sprite.svg#tabler-clock"/></svg>
+                                Total Time
+                            </div>
+                            <div class="datagrid-content">
+                                ${page.totalTime}h
+                            </div>
+                        </div>
+
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">
+                                <svg width="16" height="16" class="icon me-1"><use xlink:href="/tabler-sprite.svg#tabler-flame"/></svg>
+                                Longest streak
+                            </div>
+                            <div class="datagrid-content">
+                                <span>${page.streak?.length ?: 0} days</span>
+                            </div>
+                        </div>
+
+                        <div class="datagrid-item datagrid-item-full">
+                            <div class="datagrid-title">
+                                <svg width="16" height="16" class="icon me-1"><use xlink:href="/tabler-sprite.svg#tabler-tags"/></svg>
+                                Former Names
+                            </div>
+
+                            <div class="datagrid-content">
+                                @if(page.headline.names.isEmpty())
+                                    No former names known
                                 @endif
 
-                                <div class="datagrid-item">
-                                    <div class="datagrid-title">
-                                        First Seen
-                                    </div>
-                                    <div class="datagrid-content">
-                                        <span>${page.headline.firstSeen?.toString() ?: ""}</span>
-                                    </div>
-                                </div>
-
-                                <div class="datagrid-item">
-                                    <div class="datagrid-title">
-                                        Total Time
-                                    </div>
-                                    <div class="datagrid-content">
-                                        ${page.totalTime}h
-                                    </div>
-                                </div>
-
-                                <div class="datagrid-item">
-                                    <div class="datagrid-title">
-                                        Online Time
-                                    </div>
-                                    <div class="datagrid-content">
-                                        ${String.format("%.0f", page.headline.onlineTime)}h
-                                    </div>
-                                </div>
-
-                                <div class="datagrid-item">
-                                    <div class="datagrid-title">
-                                        AFK Time
-                                    </div>
-                                    <div class="datagrid-content">
-                                        <span>${String.format("%.0f", page.headline.afkTime)}h</span>
-                                    </div>
-                                </div>
-
-                                <div class="datagrid-item">
-                                    <div class="datagrid-title">
-                                        Longest streak
-                                    </div>
-                                    <div class="datagrid-content">
-                                        <span>${page.streak?.length ?: 0} days</span>
-                                    </div>
-                                </div>
+                                <ul style="overflow: scroll">
+                                    @for(name in page.headline.names)
+                                        <li>
+                                            <span class="small">${name}</span>
+                                        </li>
+                                    @endfor
+                                </ul>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-md-6 d-flex flex-column justify-content-center align-items-center">
-                        <datagrid class="mt-auto">
-                            <div class="datagrid-item">
-                                <div class="datagrid-title">
-                                    Former Names
-                                </div>
-
-                                <div class="datagrid-content">
-                                    @if(page.headline.names.isEmpty())
-                                        No former names known
-                                    @endif
-
-                                    <ul style="overflow: scroll">
-                                        @for(name in page.headline.names)
-                                            <li>
-                                                <span class="small">${name}</span>
-                                            </li>
-                                        @endfor
-                                    </ul>
-                                </div>
+                    <div class="mt-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-secondary small">
+                                <svg width="14" height="14" class="icon text-green me-1"><use xlink:href="/tabler-sprite.svg#tabler-clock-play"/></svg>
+                                Online <strong>${String.format("%.0f", page.headline.onlineTime)}h</strong>
+                            </span>
+                            <span class="text-secondary small">
+                                AFK <strong>${String.format("%.0f", page.headline.afkTime)}h</strong>
+                                <svg width="14" height="14" class="icon text-red ms-1"><use xlink:href="/tabler-sprite.svg#tabler-clock-pause"/></svg>
+                            </span>
+                        </div>
+                        <div class="progress-stacked">
+                            <div class="progress" role="progressbar" style="width: ${if (page.headline.onlineTime + page.headline.afkTime > 0.0) String.format("%.1f", page.headline.onlineTime / (page.headline.onlineTime + page.headline.afkTime) * 100) else "0.0"}%">
+                                <div class="progress-bar bg-green"></div>
                             </div>
-
-                            <div class="datagrid-item">
-                                <div class="datagrid-title">
-                                    Currently Playing
-                                </div>
-                                <div class="datagrid-content">
-                                    @if(page.gameId == 0)
-                                        Not in Game
-                                    @else
-                                        <p class="small"><svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-tank"/></svg>${page.gameName}</p>
-                                    @endif
-                                </div>
+                            <div class="progress" role="progressbar" style="width: ${if (page.headline.onlineTime + page.headline.afkTime > 0.0) String.format("%.1f", page.headline.afkTime / (page.headline.onlineTime + page.headline.afkTime) * 100) else "0.0"}%">
+                                <div class="progress-bar bg-red"></div>
                             </div>
-
-                        </datagrid>
-
-                        <div id="online-pie" class="chart-lg d-flex mt-auto"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -164,53 +163,6 @@
     <script>
         onChartReady(() => {
             const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
-
-            const onlinePieChartOptions = () => {
-                return {
-                    chart: {
-                        type: "pie",
-                        fontFamily: 'inherit',
-                        height: "50%",
-                        sparkline: {
-                            enabled: true
-                        },
-                        animations: {
-                            enabled: true,
-                            easing: 'easein',
-                            speed: 1000,
-                            animateGradually: {
-                                enabled: true,
-                                delay: 150
-                            },
-                            dynamicAnimation: {
-                                enabled: true,
-                                speed: 750
-                            }
-                        },
-                    },
-                    fill: {
-                        opacity: 1,
-                    },
-                    series: [${page.headline.afkTime}, ${page.headline.onlineTime}],
-                    labels: ["AFK", "ONLINE"],
-                    dataLabels: {
-                        enabled: true,
-                    },
-                    tooltip: {
-                        theme: 'dark'
-                    },
-                    grid: {
-                        strokeDashArray: 4,
-                    },
-                    colors: [tabler.tabler.getColor("red", 0.8), tabler.tabler.getColor("green", 0.8)],
-                    legend: {
-                        show: true,
-                        position: 'bottom',
-                    },
-                }
-            };
-            const onlinePieChart = new ApexCharts(document.getElementById('online-pie'), onlinePieChartOptions());
-            onlinePieChart.render();
 
             const heatmapOptions = () => {
                 const rawMonthData = [${page.months.joinToString(", ") { "{ year: ${it.year}, month: ${it.month}, activity: ${it.activity} }" }}]
@@ -299,12 +251,15 @@
             heatmap.render();
 
             onChartRenderTrigger(false, () => {
-                onlinePieChart.updateOptions(onlinePieChartOptions());
                 heatmap.updateOptions(heatmapOptions());
             });
         });
     </script>
     <style>
+        .datagrid-item-full {
+            grid-column: 1 / -1;
+        }
+
         .medal {
             scale: .5;
             animation: medals 1s ease-out forwards;

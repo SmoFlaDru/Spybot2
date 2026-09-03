@@ -1,5 +1,6 @@
 package com.spybot.core.service
 
+import com.spybot.core.model.ActiveUsersStat
 import com.spybot.core.model.ActivityChartView
 import com.spybot.core.model.AdminMergedUserRow
 import com.spybot.core.model.AdminNewsEventRow
@@ -1079,6 +1080,28 @@ class SpybotQueryService(
                     userId = it.long("user_id"),
                 )
             }
+
+    fun activeUsersStat(): ActiveUsersStat {
+        val record =
+            dsl.fetchOne(
+                """
+                WITH start_of_week AS (
+                    SELECT DATE_TRUNC('week', CURRENT_DATE)::DATE AS date
+                )
+                SELECT
+                    COUNT(DISTINCT mu.id) AS users_this_week,
+                    COUNT(DISTINCT mu.id) FILTER (WHERE starttime > CURRENT_DATE) AS users_today
+                FROM start_of_week, tsuseractivity
+                INNER JOIN tsuser tu ON tsuserid = tu.id
+                INNER JOIN spybot_mergeduser mu ON tu.merged_user_id = mu.id
+                WHERE starttime > start_of_week.date
+                """.trimIndent(),
+            )
+        return ActiveUsersStat(
+            usersThisWeek = record?.get("users_this_week", Int::class.java) ?: 0,
+            usersToday = record?.get("users_today", Int::class.java) ?: 0,
+        )
+    }
 
     fun weekTrend(): WeekTrendView {
         val record =

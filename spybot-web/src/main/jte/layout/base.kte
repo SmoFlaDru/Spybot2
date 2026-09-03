@@ -37,19 +37,56 @@
                 </h1>
                 <div class="navbar-nav flex-row order-md-last">
                     <div class="d-flex me-2">
-                        <button onclick="configureTheme('dark')" class="nav-link px-0 spybot-auto-theme-only" data-bs-toggle="tooltip"
-                                data-bs-placement="bottom" aria-label="Enable dark mode" data-bs-original-title="Enable dark mode">
-                            <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-moon"/></svg>
-                        </button>
-                        <a onclick="configureTheme('light')" class="nav-link px-0 spybot-dark-theme-only" data-bs-toggle="tooltip"
-                           data-bs-placement="bottom" aria-label="Enable light mode" data-bs-original-title="Enable light mode">
-                            <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-sun"/></svg>
-                        </a>
-                        <a onclick="configureTheme('auto')" class="nav-link px-0 spybot-light-theme-only" data-bs-toggle="tooltip"
-                           data-bs-placement="bottom" aria-label="Enable auto theme mode" data-bs-original-title="Enable auto mode">
+                        <button type="button" id="theme-switch-btn" class="nav-link px-0" aria-label="Change theme">
                             <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-sun-moon"/></svg>
-                        </a>
+                        </button>
+                        <template id="theme-switch-popover-content">
+                            <div class="text-center mb-2 fw-bold">Theme</div>
+                            <div class="btn-group w-100" role="group" aria-label="Theme">
+                                <input type="radio" class="btn-check" name="spybot-theme-radio" id="theme-radio-light" value="light" autocomplete="off" onchange="configureTheme(this.value)">
+                                <label class="btn btn-sm px-3" for="theme-radio-light">
+                                    <svg width="16" height="16" class="icon me-1"><use xlink:href="/tabler-sprite.svg#tabler-sun"/></svg>
+                                    Light
+                                </label>
+
+                                <input type="radio" class="btn-check" name="spybot-theme-radio" id="theme-radio-dark" value="dark" autocomplete="off" onchange="configureTheme(this.value)">
+                                <label class="btn btn-sm px-3" for="theme-radio-dark">
+                                    <svg width="16" height="16" class="icon me-1"><use xlink:href="/tabler-sprite.svg#tabler-moon"/></svg>
+                                    Dark
+                                </label>
+
+                                <input type="radio" class="btn-check" name="spybot-theme-radio" id="theme-radio-auto" value="auto" autocomplete="off" onchange="configureTheme(this.value)">
+                                <label class="btn btn-sm px-3" for="theme-radio-auto">
+                                    <svg width="16" height="16" class="icon me-1"><use xlink:href="/tabler-sprite.svg#tabler-device-desktop"/></svg>
+                                    System
+                                </label>
+                            </div>
+                        </template>
                     </div>
+                    <script>
+                        onChartReady(() => {
+                            const themeBtn = document.getElementById('theme-switch-btn')
+                            const themePopover = new tabler.Popover(themeBtn, {
+                                html: true,
+                                sanitize: false,
+                                placement: 'bottom',
+                                content: () => document.getElementById('theme-switch-popover-content').innerHTML,
+                            })
+                            themeBtn.addEventListener('shown.bs.popover', () => {
+                                const current = document.body.getAttribute('data-spybot-theme') || 'auto'
+                                const radio = document.getElementById('theme-radio-' + current)
+                                if (radio) {
+                                    radio.checked = true
+                                }
+                            })
+                            document.addEventListener('click', (event) => {
+                                if (themeBtn.contains(event.target) || event.target.closest('.popover')) {
+                                    return
+                                }
+                                themePopover.hide()
+                            }, true)
+                        })
+                    </script>
                     <div class="nav-item d-none d-md-flex me-2">
                         <div class="btn-list">
                             <a class="btn" href="https://github.com/SmoFlaDru/Spybot2">
@@ -90,7 +127,7 @@
                         <ul class="navbar-nav">
                             <li class="${if (activePage == "home") "nav-item active" else "nav-item"}">
                                 <a class="nav-link" href="/">
-                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <span class="nav-link-icon">
                                         <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-home"/></svg>
                                     </span>
                                     <span class="nav-link-title">Home</span>
@@ -98,7 +135,7 @@
                             </li>
                             <li class="${if (activePage == "timeline") "nav-item active" else "nav-item"}">
                                 <a class="nav-link" href="/timeline">
-                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <span class="nav-link-icon">
                                         <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-calendar-time"/></svg>
                                     </span>
                                     <span class="nav-link-title">Timeline</span>
@@ -106,7 +143,7 @@
                             </li>
                             <li class="${if (activePage == "halloffame") "nav-item active" else "nav-item"}">
                                 <a class="nav-link" href="/halloffame">
-                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <span class="nav-link-icon">
                                         <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-crown"/></svg>
                                     </span>
                                     <span class="nav-link-title">Hall of fame</span>
@@ -115,7 +152,7 @@
                             @if(loggedInUser != null && loggedInUser.isSuperuser)
                                 <li class="${if (activePage == "admin") "nav-item active" else "nav-item"}">
                                     <a class="nav-link" href="/admin">
-                                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                        <span class="nav-link-icon">
                                             <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-lock"/></svg>
                                         </span>
                                         <span class="nav-link-title">Admin</span>

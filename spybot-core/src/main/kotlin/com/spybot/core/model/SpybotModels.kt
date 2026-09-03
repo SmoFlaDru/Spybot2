@@ -95,6 +95,11 @@ data class TopUserWeek(
     val userId: Long,
 )
 
+data class ActiveUsersStat(
+    val usersThisWeek: Int,
+    val usersToday: Int,
+)
+
 data class WeekTrendView(
     val currentWeekSum: Double,
     val compareWeekSum: Double,
@@ -190,6 +195,7 @@ data class HomePageView(
     val activityChart: ActivityChartView,
     val timeOfDay: List<Pair<String, Double>>,
     val topUsersOfWeek: List<TopUserWeek>,
+    val activeUsers: ActiveUsersStat,
     val weekTrend: WeekTrendView,
     val weekComparison: List<WeekComparisonPoint>,
     val channelPopularity: List<ChannelPopularityEntry>,
