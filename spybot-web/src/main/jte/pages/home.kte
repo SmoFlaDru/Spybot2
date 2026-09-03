@@ -158,13 +158,13 @@
                 <div class="col-md-6">
                     <div class="row row-cards">
                         <div class="col-md-12">
-                            <div class="card">
+                            <div class="card card-sm">
                                 <div class="ribbon bg-red">NEW</div>
                                 <div class="card-header">
-                                    <h3 class="card-title my-2">Spybot 2 release 2.4</h3>
+                                    <h3 class="card-title my-2">Spybot 2 release 3.0</h3>
                                 </div>
                                 <div class="card-body">
-                                    <p class="text-muted">Benno and Justus rewrote the OG teamspeak spybot as the glorious Spybot 2. It is now written in Python as opposed to PHP and more modern, maintainable and beautiful. In addition, Spybot 2 has more charts. Btw, did you know Spybot 2 supports dark mode? Try the toggle in the top right.</p>
+                                    <p class="text-muted">Benno rewrote Spybot 2 again, this time as a Kotlin/Spring Boot app instead of Python. Read the <a href="/changelog">changelog</a> for details.</p>
                                 </div>
                             </div>
                         </div>
@@ -265,6 +265,23 @@
                                                 </div>
                                             </a>
                                         @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="card card-sm">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-auto">
+                                            <span class="bg-blue text-white avatar">
+                                                <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-users"/></svg>
+                                            </span>
+                                        </div>
+                                        <div class="col">
+                                            <div class="font-weight-medium">${home.activeUsers.usersThisWeek} Users this week</div>
+                                            <div class="text-secondary">${home.activeUsers.usersToday} today</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

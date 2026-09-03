@@ -18,6 +18,7 @@ class SpybotPageService(
             activityChart = queryService.activityChart(timeSpan),
             timeOfDay = queryService.timeOfDayHistogram(),
             topUsersOfWeek = queryService.topUsersOfWeek(),
+            activeUsers = queryService.activeUsersStat(),
             weekTrend = queryService.weekTrend(),
             weekComparison = queryService.weekComparison(),
             channelPopularity = queryService.channelPopularity(),
