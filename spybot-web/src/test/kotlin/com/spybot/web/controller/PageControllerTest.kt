@@ -1,5 +1,6 @@
 package com.spybot.web.controller
 
+import com.spybot.core.model.ActiveUsersStat
 import com.spybot.core.model.ActivityChartView
 import com.spybot.core.model.ChannelPopularityEntry
 import com.spybot.core.model.HomePageView
@@ -37,6 +38,7 @@ class PageControllerTest {
                     ),
                 timeOfDay = listOf("08:00" to 1.5),
                 topUsersOfWeek = listOf(TopUserWeek(time = 12.0, userName = "Benno", userId = 1)),
+                activeUsers = ActiveUsersStat(usersThisWeek = 5, usersToday = 2),
                 weekTrend =
                     WeekTrendView(
                         currentWeekSum = 24.0,
