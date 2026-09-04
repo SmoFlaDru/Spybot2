@@ -1,8 +1,7 @@
 from testcontainers.postgres import PostgresContainer
+from xmlrunner.extra.djangotestrunner import XMLTestRunner
 
 from Spybot2 import settings
-
-from xmlrunner.extra.djangotestrunner import XMLTestRunner
 
 
 class TestContainerRunner(XMLTestRunner):

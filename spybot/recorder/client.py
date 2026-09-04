@@ -1,19 +1,19 @@
 from urllib.parse import quote_plus
 
-from ts3 import escape
 from django.utils import timezone
+from ts3 import escape
 
-from Spybot2 import settings
 from spybot.models import (
     TSID,
+    LoginLink,
+    MergedUser,
+    QueuedClientMessage,
+    TSChannel,
     TSUser,
     TSUserActivity,
-    TSChannel,
-    QueuedClientMessage,
-    MergedUser,
-    LoginLink,
 )
 from spybot.recorder.ts import TS
+from Spybot2 import settings
 
 
 class Client:

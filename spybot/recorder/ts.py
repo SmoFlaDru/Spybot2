@@ -1,8 +1,7 @@
 import time
-from typing import Optional
 
 from django.conf import settings
-from ts3.query import TS3ServerConnection, TS3TimeoutError, TS3QueryError
+from ts3.query import TS3QueryError, TS3ServerConnection, TS3TimeoutError
 
 
 # TODO maybe make this thread safe singleton
@@ -54,7 +53,7 @@ class TS:
         # TODO not really sure about that command
         return self.ts3conn.exec_("channellist").parsed
 
-    def get_channel_name(self, channel_id: int) -> Optional[str]:
+    def get_channel_name(self, channel_id: int) -> str | None:
         try:
             return self.ts3conn.exec_("channelinfo", cid=channel_id).parsed[0][
                 "channel_name"

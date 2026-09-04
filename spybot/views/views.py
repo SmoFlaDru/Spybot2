@@ -2,7 +2,6 @@ import datetime
 import math
 import time
 from datetime import timedelta
-from typing import List
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -21,9 +20,9 @@ from spybot.models import (
     UserPasskey,
 )
 from spybot.remote.steam_api import (
-    get_steam_users_playing_info,
-    SteamAccountInfo,
     OnlineStatus,
+    SteamAccountInfo,
+    get_steam_users_playing_info,
 )
 from spybot.templatetags import ts_filters
 from spybot.views.common import get_context, get_user
@@ -31,7 +30,7 @@ from spybot.views.fragments.activity_chart import activity_chart_data
 from spybot.views.fragments.profile_steamids import profile_steamids_data
 
 
-def get_passkeys(user: MergedUser) -> List[UserPasskey]:
+def get_passkeys(user: MergedUser) -> list[UserPasskey]:
     return UserPasskey.objects.filter(user=user).all()
 
 
@@ -224,7 +223,7 @@ def user(request, user_id: int):
     game_id = 0
 
     if u.get("online") == 1:
-        accounts: List[SteamAccountInfo] = get_steam_accounts(
+        accounts: list[SteamAccountInfo] = get_steam_accounts(
             [
                 str(acc.steam_id)
                 for acc in MergedUser.objects.get(id=user_id).steamids.all()
@@ -296,7 +295,7 @@ def live_fragment(request):
     return render(request, "spybot/home/live_fragment.html", context)
 
 
-def get_steam_accounts(steam_ids: List[str]) -> List[SteamAccountInfo]:
+def get_steam_accounts(steam_ids: list[str]) -> list[SteamAccountInfo]:
     return get_steam_users_playing_info(steam_ids) if steam_ids else []
 
 

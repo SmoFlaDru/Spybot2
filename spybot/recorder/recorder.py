@@ -1,10 +1,9 @@
 import signal
 import traceback
 
+from django import db
 from ts3 import TS3Error
 from ts3.response import TS3ParserError
-
-from django import db
 
 from spybot.recorder.client import Client
 from spybot.recorder.ts import TS

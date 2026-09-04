@@ -1,5 +1,6 @@
+from datetime import UTC, datetime
+
 from django import template
-from datetime import datetime, timezone
 
 register = template.Library()
 
@@ -40,7 +41,7 @@ def relative_time(date):
 
     class FormatDelta:
         def __init__(self, dt):
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             delta = now - dt
             self.day = delta.days
             self.second = delta.seconds
@@ -53,7 +54,7 @@ def relative_time(date):
             for period in ["year", "month", "day", "hour", "minute", "second"]:
                 n = getattr(self, period)
                 if n >= 1:
-                    return "{0} ago".format(formatn(n, period))
+                    return f"{formatn(n, period)} ago"
             return "just now"
 
     return FormatDelta(date).format()

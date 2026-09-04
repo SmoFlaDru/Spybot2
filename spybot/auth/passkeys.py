@@ -11,14 +11,14 @@ from django.views.decorators.csrf import csrf_exempt
 from fido2.server import Fido2Server
 from fido2.utils import websafe_decode, websafe_encode
 from fido2.webauthn import (
-    PublicKeyCredentialRpEntity,
     AttestedCredentialData,
+    PublicKeyCredentialRpEntity,
     PublicKeyCredentialUserEntity,
 )
 from user_agents.parsers import parse as user_agent_parse
 
+from spybot.models import MergedUser, UserPasskey
 from Spybot2 import settings
-from spybot.models import UserPasskey, MergedUser
 
 log = logging.getLogger(__name__)
 
