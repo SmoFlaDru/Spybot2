@@ -13,6 +13,21 @@ services:
       - db
     secrets:
       - db_password
+    # Flyway runs as part of spybot-web's own startup (before it starts accepting requests), so a
+    # passing healthcheck means migrations have already completed successfully. spybot-recorder
+    # depends on this (condition: service_healthy below) so it never queries a column a pending
+    # migration hasn't added yet. No curl/wget in this JRE base image, so this uses bash's /dev/tcp
+    # instead of a separate HTTP client.
+    healthcheck:
+      test:
+        - CMD
+        - bash
+        - -c
+        - exec 3<>/dev/tcp/127.0.0.1/8000 && printf 'GET /actuator/health HTTP/1.0\r\n\r\n' >&3 && grep -q '"status":"UP"' <&3
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 15s
   spybot-recorder:
     image: ghcr.io/smofladru/spybot2-recorder:${SPYBOT_IMAGE_TAG:-latest}
     init: true
@@ -22,7 +37,10 @@ services:
     environment:
       DB_PASSWORD_FILE: /run/secrets/db_password
     depends_on:
-      - db
+      db:
+        condition: service_started
+      spybot-web:
+        condition: service_healthy
     secrets:
       - db_password
   caddy:

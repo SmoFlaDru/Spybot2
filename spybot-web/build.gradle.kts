@@ -27,7 +27,7 @@ dependencies {
     implementation("gg.jte:jte-spring-boot-starter-4:${providers.gradleProperty("jteVersion").get()}")
     compileOnly("gg.jte:jte-kotlin:${providers.gradleProperty("jteVersion").get()}")
     implementation(kotlin("reflect"))
-    implementation("org.flywaydb:flyway-core")
+    implementation("org.springframework.boot:spring-boot-flyway")
     implementation("org.flywaydb:flyway-database-postgresql")
     runtimeOnly("org.postgresql:postgresql")
     implementation("io.sentry:sentry-spring-boot-4:${providers.gradleProperty("sentryVersion").get()}")

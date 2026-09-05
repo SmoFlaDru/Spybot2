@@ -266,6 +266,7 @@ data class TeamSpeakChannelSnapshot(
     val id: Int,
     val name: String,
     val order: Int,
+    val parentId: Int,
 )
 
 data class TeamSpeakClientSnapshot(

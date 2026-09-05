@@ -583,15 +583,17 @@ class SpybotQueryService(
             channels.forEach { channel ->
                 tx.execute(
                     """
-                    insert into tschannel (id, name, "order")
-                    values (?, ?, ?)
+                    insert into tschannel (id, name, "order", pid)
+                    values (?, ?, ?, ?)
                     on conflict (id) do update
                     set name = excluded.name,
-                        "order" = excluded."order"
+                        "order" = excluded."order",
+                        pid = excluded.pid
                     """.trimIndent(),
                     channel.id,
                     channel.name,
                     channel.order,
+                    channel.parentId,
                 )
             }
         }

@@ -85,6 +85,7 @@ class ServerQueryTeamSpeakClient(
                 id = record["cid"]?.toIntOrNull() ?: return@mapNotNull null,
                 name = record["channel_name"].orEmpty(),
                 order = record["channel_order"]?.toIntOrNull() ?: 0,
+                parentId = record["pid"]?.toIntOrNull() ?: 0,
             )
         }
 
