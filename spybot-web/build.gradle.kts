@@ -30,6 +30,8 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
     runtimeOnly("org.postgresql:postgresql")
+    implementation("io.sentry:sentry-spring-boot-starter-jakarta:${providers.gradleProperty("sentryVersion").get()}")
+    implementation("io.sentry:sentry-logback:${providers.gradleProperty("sentryVersion").get()}")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
