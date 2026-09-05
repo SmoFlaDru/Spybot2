@@ -18,7 +18,9 @@ class RecorderDomainService(
     private val log = LoggerFactory.getLogger(javaClass)
 
     fun syncChannels(channels: List<TeamSpeakChannelSnapshot>) {
-        queryService.upsertChannels(channels.map { it.copy(name = escapeTeamSpeak(it.name)) })
+        queryService.upsertChannels(
+            resolveChannelDisplayOrder(channels).map { it.copy(name = escapeTeamSpeak(it.name)) },
+        )
     }
 
     fun handleInitialClients(
