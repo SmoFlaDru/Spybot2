@@ -16,7 +16,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation(kotlin("reflect"))
-    implementation("io.sentry:sentry-spring-boot-starter-jakarta:${providers.gradleProperty("sentryVersion").get()}")
+    implementation("io.sentry:sentry-spring-boot-4:${providers.gradleProperty("sentryVersion").get()}")
     implementation("io.sentry:sentry-logback:${providers.gradleProperty("sentryVersion").get()}")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
