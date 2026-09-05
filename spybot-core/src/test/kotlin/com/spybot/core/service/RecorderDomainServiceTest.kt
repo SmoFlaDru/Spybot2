@@ -3,10 +3,12 @@ package com.spybot.core.service
 import com.spybot.core.config.SpybotProperties
 import com.spybot.core.model.OpenSessionView
 import com.spybot.core.model.QueuedClientMessageView
+import com.spybot.core.model.TeamSpeakChannelSnapshot
 import com.spybot.core.model.TeamSpeakClientSnapshot
 import com.spybot.core.model.TeamSpeakIdentity
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -14,6 +16,24 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 class RecorderDomainServiceTest {
+    @Test
+    fun `syncChannels resolves the real TeamSpeak display order before upserting`() {
+        // Raw channel_order values are previous-sibling pointers (0 = first), not a flat rank -
+        // channel 2's raw order (1) happens to sort before channel 20's raw order (0) even
+        // though channel 20 is the actual first child. syncChannels must translate that into the
+        // real walked order (20 before 2) before it ever reaches the query layer.
+        val queryService: SpybotQueryService = mock()
+        val root = TeamSpeakChannelSnapshot(id = 2, name = "Root", order = 1, parentId = 0)
+        val child = TeamSpeakChannelSnapshot(id = 20, name = "Child", order = 0, parentId = 0)
+
+        val service = RecorderDomainService(queryService, SpybotProperties(publicBaseUrl = "https://spybot.local"))
+        service.syncChannels(listOf(root, child))
+
+        verify(queryService).upsertChannels(
+            argThat { channels -> channels.map { it.id } == listOf(20, 2) && channels.map { it.order } == listOf(0, 1) },
+        )
+    }
+
     @Test
     fun `handleInitialClients creates login link and flushes queued messages`() {
         val queryService: SpybotQueryService = mock()
