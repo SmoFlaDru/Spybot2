@@ -13,6 +13,10 @@ dependencyManagement {
     }
 }
 
+// Resolves the Sentry OpenTelemetry javaagent jar so it can be copied into the Docker image,
+// keeping its version in lockstep with sentryVersion instead of a hardcoded download URL.
+val sentryAgent by configurations.creating
+
 dependencies {
     implementation(project(":spybot-core"))
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -32,6 +36,7 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
     implementation("io.sentry:sentry-spring-boot-4:${providers.gradleProperty("sentryVersion").get()}")
     implementation("io.sentry:sentry-logback:${providers.gradleProperty("sentryVersion").get()}")
+    sentryAgent("io.sentry:sentry-opentelemetry-agent:${providers.gradleProperty("sentryVersion").get()}")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
@@ -118,8 +123,15 @@ tasks.named<Test>("test") {
     classpath += files(layout.projectDirectory.dir("jte-classes"))
 }
 
+val copySentryAgent =
+    tasks.register<Copy>("copySentryAgent") {
+        from(sentryAgent)
+        into(layout.buildDirectory.dir("sentry-agent"))
+        rename { "sentry-opentelemetry-agent.jar" }
+    }
+
 tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
-    dependsOn(tasks.named("precompileJte"), tasks.named("verifyFrontendAssets"))
+    dependsOn(tasks.named("precompileJte"), tasks.named("verifyFrontendAssets"), copySentryAgent)
     from(
         fileTree(layout.projectDirectory.dir("jte-classes")) {
             include("**/*.class")
