@@ -23,6 +23,13 @@ gg:
   jte:
     usePrecompiledTemplates: true
 
+sentry:
+  dsn: ${SENTRY_DSN:}
+  enabled: ${SENTRY_ENABLED:false}
+  traces-sample-rate: 1.0
+  logging:
+    minimum-breadcrumb-level: info
+    minimum-event-level: error
 
 logging:
   level:
