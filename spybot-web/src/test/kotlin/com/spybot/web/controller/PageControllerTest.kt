@@ -4,11 +4,13 @@ import com.spybot.core.model.ActiveUsersStat
 import com.spybot.core.model.ActivityChartView
 import com.spybot.core.model.ChannelPopularityEntry
 import com.spybot.core.model.HomePageView
+import com.spybot.core.model.LikedNameView
 import com.spybot.core.model.RecentEventView
 import com.spybot.core.model.RecentEventsPayload
 import com.spybot.core.model.SelectorOption
 import com.spybot.core.model.TopUserWeek
 import com.spybot.core.model.WeekTrendView
+import com.spybot.core.service.LikedNameService
 import com.spybot.core.service.SpybotQueryService
 import com.spybot.web.service.ChangelogService
 import com.spybot.web.service.SpybotPageService
@@ -71,7 +73,14 @@ class PageControllerTest {
         Mockito.`when`(pageService.home(7)).thenReturn(homePage)
         Mockito.`when`(request.getAttribute("_csrf")).thenReturn(csrfToken)
 
-        val controller = PageController(pageService, queryService, ChangelogService(), Mockito.mock(NameGenService::class.java))
+        val controller =
+            PageController(
+                pageService,
+                queryService,
+                ChangelogService(),
+                Mockito.mock(NameGenService::class.java),
+                Mockito.mock(LikedNameService::class.java),
+            )
         val viewName = controller.home(7, null, model, request)
 
         assertEquals("pages/home", viewName)
@@ -89,13 +98,17 @@ class PageControllerTest {
         val model = ConcurrentModel()
         val generated = GeneratedName("Carry Potter", "Harry Potter", "carry", "Fictional character", "International", 0.97)
 
+        val likedNameService = Mockito.mock(LikedNameService::class.java)
+        val top = listOf(LikedNameView("Nuke Skywalker", "Luke Skywalker", "nuke", 9))
         Mockito.`when`(pageService.loggedInUser(null)).thenReturn(null)
         Mockito.`when`(nameGenService.generate()).thenReturn(generated)
+        Mockito.`when`(likedNameService.top(30)).thenReturn(top)
 
-        val controller = PageController(pageService, queryService, ChangelogService(), nameGenService)
+        val controller = PageController(pageService, queryService, ChangelogService(), nameGenService, likedNameService)
         val viewName = controller.nameGenerator(null, model, request)
 
         assertEquals("pages/namegen", viewName)
         assertSame(generated, model.getAttribute("generatedName"))
+        assertSame(top, model.getAttribute("topNames"))
     }
 }

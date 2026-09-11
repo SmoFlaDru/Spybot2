@@ -51,6 +51,13 @@ class NameGenServiceTest {
     }
 
     @Test
+    fun `find returns the pool entry for a generated name and nothing for anything else`() {
+        assertEquals("Harry Potter", service.find("Carry Potter")?.realName)
+        assertEquals(null, service.find("Totally Madeup"))
+        assertEquals(null, service.find("carry potter"), "lookups are exact - the client sends back what we rendered")
+    }
+
+    @Test
     fun `dump pool for review`() {
         // Not an assertion - the quality gate is a human reading this in the test output.
         println("---- generated pool (${pool.size}) ----")
