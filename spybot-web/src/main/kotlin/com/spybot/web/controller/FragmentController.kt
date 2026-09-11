@@ -1,8 +1,10 @@
 package com.spybot.web.controller
 
 import com.spybot.core.security.MergedUserPrincipal
+import com.spybot.core.service.LikedNameService
 import com.spybot.core.service.SpybotQueryService
 import com.spybot.web.service.SpybotPageService
+import com.spybot.web.service.namegen.Likers
 import com.spybot.web.service.namegen.NameGenService
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -16,6 +18,7 @@ class FragmentController(
     private val pageService: SpybotPageService,
     private val queryService: SpybotQueryService,
     private val nameGenService: NameGenService,
+    private val likedNameService: LikedNameService,
 ) {
     @GetMapping("/live_fragment")
     fun liveFragment(
@@ -73,8 +76,14 @@ class FragmentController(
     fun addSteamIdModal(): String = "fragments/add_steamid_modal"
 
     @GetMapping("/namegen_fragment")
-    fun nameGeneratorFragment(model: Model): String {
-        model.addAttribute("generatedName", nameGenService.generate())
+    fun nameGeneratorFragment(
+        @AuthenticationPrincipal principal: MergedUserPrincipal?,
+        model: Model,
+        request: HttpServletRequest,
+    ): String {
+        val generatedName = nameGenService.generate()
+        model.addAttribute("generatedName", generatedName)
+        model.addAttribute("likeStatus", likedNameService.status(generatedName.displayName, Likers.of(principal, request)))
         return "fragments/namegen_fragment"
     }
 }
