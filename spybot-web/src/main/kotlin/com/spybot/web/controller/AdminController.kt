@@ -220,7 +220,7 @@ class AdminController(
                 "Merged ${result.sourceIds.size} user(s) into #${result.targetId}. " +
                     "Moved TS users=${result.movedTsUsers}, Steam IDs=${result.movedSteamIds}, " +
                     "Awards=${result.movedAwards}, Messages=${result.movedQueuedMessages}, " +
-                    "Login links=${result.movedLoginLinks}, Passkeys=${result.movedPasskeys}. " +
+                    "Login links=${result.movedLoginLinks}, Passkeys=${result.movedPasskeys}, Name likes=${result.movedNameLikes}. " +
                     "Obsoleted merged users=${result.obsoletedMergedUsers}."
             redirectAttributes.addFlashAttribute("successMessage", summary)
             "redirect:/admin/merge-users"
