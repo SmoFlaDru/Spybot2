@@ -4,6 +4,7 @@ import com.spybot.core.security.MergedUserPrincipal
 import com.spybot.core.service.SpybotQueryService
 import com.spybot.web.service.ChangelogService
 import com.spybot.web.service.SpybotPageService
+import com.spybot.web.service.namegen.NameGenService
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -19,6 +20,7 @@ class PageController(
     private val pageService: SpybotPageService,
     private val queryService: SpybotQueryService,
     private val changelogService: ChangelogService,
+    private val nameGenService: NameGenService,
 ) {
     @GetMapping("/")
     fun home(
@@ -133,5 +135,17 @@ class PageController(
         model.addAttribute("entries", changelogService.entries())
         model.addAttribute("csrf", request.getAttribute("_csrf"))
         return "pages/changelog"
+    }
+
+    @GetMapping("/namegen")
+    fun nameGenerator(
+        @AuthenticationPrincipal principal: MergedUserPrincipal?,
+        model: Model,
+        request: HttpServletRequest,
+    ): String {
+        model.addAttribute("loggedInUser", pageService.loggedInUser(principal))
+        model.addAttribute("generatedName", nameGenService.generate())
+        model.addAttribute("csrf", request.getAttribute("_csrf"))
+        return "pages/namegen"
     }
 }

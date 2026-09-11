@@ -12,6 +12,8 @@ import com.spybot.core.model.WeekTrendView
 import com.spybot.core.service.SpybotQueryService
 import com.spybot.web.service.ChangelogService
 import com.spybot.web.service.SpybotPageService
+import com.spybot.web.service.namegen.GeneratedName
+import com.spybot.web.service.namegen.NameGenService
 import jakarta.servlet.http.HttpServletRequest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertSame
@@ -69,12 +71,31 @@ class PageControllerTest {
         Mockito.`when`(pageService.home(7)).thenReturn(homePage)
         Mockito.`when`(request.getAttribute("_csrf")).thenReturn(csrfToken)
 
-        val controller = PageController(pageService, queryService, ChangelogService())
+        val controller = PageController(pageService, queryService, ChangelogService(), Mockito.mock(NameGenService::class.java))
         val viewName = controller.home(7, null, model, request)
 
         assertEquals("pages/home", viewName)
         assertSame(homePage, model.getAttribute("home"))
         assertSame(csrfToken, model.getAttribute("csrf"))
         assertEquals(null, model.getAttribute("loggedInUser"))
+    }
+
+    @Test
+    fun `namegen maps to pages namegen view and populates a generated name`() {
+        val pageService = Mockito.mock(SpybotPageService::class.java)
+        val queryService = Mockito.mock(SpybotQueryService::class.java)
+        val nameGenService = Mockito.mock(NameGenService::class.java)
+        val request = Mockito.mock(HttpServletRequest::class.java)
+        val model = ConcurrentModel()
+        val generated = GeneratedName("Carry Potter", "Harry Potter", "carry", "Fictional character", "International", 0.97)
+
+        Mockito.`when`(pageService.loggedInUser(null)).thenReturn(null)
+        Mockito.`when`(nameGenService.generate()).thenReturn(generated)
+
+        val controller = PageController(pageService, queryService, ChangelogService(), nameGenService)
+        val viewName = controller.nameGenerator(null, model, request)
+
+        assertEquals("pages/namegen", viewName)
+        assertSame(generated, model.getAttribute("generatedName"))
     }
 }
