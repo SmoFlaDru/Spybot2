@@ -1,0 +1,5 @@
+@param liked: com.spybot.core.model.LikedNameView
+<button type="button" class="btn btn-danger" disabled>
+    <svg width="24" height="24" class="icon"><use xlink:href="/tabler-sprite.svg#tabler-heart"/></svg>
+    Liked &middot; ${liked.likes}
+</button>

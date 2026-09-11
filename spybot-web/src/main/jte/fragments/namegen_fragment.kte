@@ -7,9 +7,18 @@
             ${generatedName.realName} <span class="mx-1">&times;</span> <code>${generatedName.slang}</code>
             <span class="d-block d-sm-inline ms-sm-2">&middot; ${generatedName.category}</span>
         </div>
-        <button class="btn btn-primary" hx-get="/namegen_fragment" hx-target="#namegen_fragment" hx-swap="outerHTML">
-            <svg width="24" height="24" class="icon"><use xlink:href="/tabler-sprite.svg#tabler-arrows-shuffle"/></svg>
-            Generate another
-        </button>
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+            <form hx-post="/namegen/like" hx-target="this" hx-swap="outerHTML" class="m-0">
+                <input type="hidden" name="name" value="${generatedName.displayName}">
+                <button type="submit" class="btn btn-outline-danger">
+                    <svg width="24" height="24" class="icon"><use xlink:href="/tabler-sprite.svg#tabler-heart"/></svg>
+                    Like this one
+                </button>
+            </form>
+            <button class="btn btn-primary" hx-get="/namegen_fragment" hx-target="#namegen_fragment" hx-swap="outerHTML">
+                <svg width="24" height="24" class="icon"><use xlink:href="/tabler-sprite.svg#tabler-arrows-shuffle"/></svg>
+                Generate another
+            </button>
+        </div>
     </div>
 </div>
