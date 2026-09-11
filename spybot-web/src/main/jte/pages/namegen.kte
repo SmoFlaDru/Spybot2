@@ -1,0 +1,16 @@
+@param loggedInUser: com.spybot.core.model.MergedUserView?
+@param csrf: org.springframework.security.web.csrf.CsrfToken?
+@param commitHash: String? = null
+@param buildTime: java.time.Instant? = null
+@param generatedName: com.spybot.web.service.namegen.GeneratedName
+@template.layout.base(title = "Steam name generator", loggedInUser = loggedInUser, csrf = csrf, commitHash = commitHash, buildTime = buildTime, activePage = "namegen", content = @`
+    <div class="row row-cards justify-content-md-center">
+        <div class="col-md-8 col-lg-6">
+            @template.fragments.namegen_fragment(generatedName = generatedName)
+            <p class="text-secondary text-center small mt-3">
+                Every name is a Counter-Strike term that sounds like part of a famous person's name &ndash;
+                matched by pronunciation, not spelling.
+            </p>
+        </div>
+    </div>
+`)

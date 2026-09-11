@@ -149,6 +149,14 @@
                                     <span class="nav-link-title">Hall of fame</span>
                                 </a>
                             </li>
+                            <li class="${if (activePage == "namegen") "nav-item active" else "nav-item"}">
+                                <a class="nav-link" href="/namegen">
+                                    <span class="nav-link-icon">
+                                        <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-masks-theater"/></svg>
+                                    </span>
+                                    <span class="nav-link-title">Name generator</span>
+                                </a>
+                            </li>
                             @if(loggedInUser != null && loggedInUser.isSuperuser)
                                 <li class="${if (activePage == "admin") "nav-item active" else "nav-item"}">
                                     <a class="nav-link" href="/admin">
