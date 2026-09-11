@@ -35,19 +35,41 @@ class NameGenServiceTest {
     }
 
     @Test
-    fun `generated names are two capitalised words that differ from the source name`() {
+    fun `a name that already is a CS term is offered unchanged and ranked first`() {
+        val flick = pool.single { it.displayName == "Hansi Flick" }
+        assertEquals("flick", flick.slang)
+        assertEquals(1.0, flick.score)
+        assertTrue("Kit Harington" in names, "spelling match on the first name")
+        assertTrue("Robert Plant" in names, "spelling match on the last name")
+    }
+
+    @Test
+    fun `generated names are two capitalised words`() {
         repeat(200) {
             val name = service.generate()
             val words = name.displayName.split(" ")
             assertEquals(2, words.size, name.displayName)
             assertTrue(words.all { it.first().isUpperCase() }, name.displayName)
-            assertTrue(name.displayName != name.realName, name.displayName)
         }
+    }
+
+    @Test
+    fun `constructed puns always change the source name`() {
+        pool
+            .filter { it.score < 1.0 }
+            .forEach { assertTrue(it.displayName != it.realName, it.displayName) }
     }
 
     @Test
     fun `every pool entry clears the threshold`() {
         assertTrue(pool.all { it.score >= PhoneticMatcher.THRESHOLD })
+    }
+
+    @Test
+    fun `find returns the pool entry for a generated name and nothing for anything else`() {
+        assertEquals("Harry Potter", service.find("Carry Potter")?.realName)
+        assertEquals(null, service.find("Totally Madeup"))
+        assertEquals(null, service.find("carry potter"), "lookups are exact - the client sends back what we rendered")
     }
 
     @Test

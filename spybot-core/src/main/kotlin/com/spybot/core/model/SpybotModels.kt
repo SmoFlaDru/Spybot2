@@ -236,6 +236,7 @@ data class MergeUsersResult(
     val movedQueuedMessages: Int,
     val movedLoginLinks: Int,
     val movedPasskeys: Int,
+    val movedNameLikes: Int,
     val obsoletedMergedUsers: Int,
 )
 
@@ -291,6 +292,31 @@ data class TeamSpeakIdentity(
     val mergedUserId: Long,
     val tsUserName: String,
     val mergedUserName: String,
+)
+
+/** Who is liking: a logged-in merged user, or an anonymous visitor identified by cookie. */
+sealed interface Liker {
+    data class User(
+        val mergedUserId: Long,
+    ) : Liker
+
+    data class Visitor(
+        val visitorId: String,
+    ) : Liker
+}
+
+/** How many people like a name, and whether the current viewer is one of them. */
+data class NameLikeStatus(
+    val likes: Int,
+    val likedByMe: Boolean,
+)
+
+data class LikedNameView(
+    val displayName: String,
+    val realName: String,
+    val slang: String,
+    val likes: Int,
+    val likedByMe: Boolean,
 )
 
 data class QueuedClientMessageView(

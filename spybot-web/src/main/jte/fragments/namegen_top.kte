@@ -1,0 +1,31 @@
+@param topNames: java.util.List<com.spybot.core.model.LikedNameView>
+<div class="card" id="namegen_top" hx-trigger="namegen_likes_changed from:body" hx-get="/namegen/top" hx-swap="outerHTML">
+    <div class="card-header">
+        <h3 class="card-title">
+            <svg width="24" height="24" class="icon me-1"><use xlink:href="/tabler-sprite.svg#tabler-trophy"/></svg>
+            Most liked names
+        </h3>
+    </div>
+    @if(topNames.isEmpty())
+        <div class="card-body text-secondary text-center">No likes yet &ndash; be the first.</div>
+    @else
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table">
+                <tbody>
+                @for((index, entry) in topNames.withIndex())
+                    <tr>
+                        <td class="text-secondary w-1">${index + 1}</td>
+                        <td>
+                            <div class="fw-bold">${entry.displayName}</div>
+                            <div class="text-secondary small">${entry.realName} <span class="mx-1">&times;</span> <code>${entry.slang}</code></div>
+                        </td>
+                        <td class="text-end text-nowrap">
+                            @template.fragments.namegen_like_button(name = entry.displayName, likes = entry.likes, likedByMe = entry.likedByMe, inList = true)
+                        </td>
+                    </tr>
+                @endfor
+                </tbody>
+            </table>
+        </div>
+    @endif
+</div>

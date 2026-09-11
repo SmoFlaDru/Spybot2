@@ -141,6 +141,12 @@ object SeedData {
             en("Darth", "Vader", "Fictional character", firstIpa = "dɑɹθ"),
             en("Luke", "Skywalker", "Fictional character"),
             en("Frodo", "Baggins", "Fictional character", lastIpa = "bæɡɪnz"),
+            en("Kit", "Harington", "Actor", lastIpa = "hæɹɪŋtən"),
+            en("Robert", "Plant", "Musician"),
+            en("Molly", "Ringwald", "Actor"),
+            en("Ian", "Rush", "Footballer"),
+            en("Ace", "Ventura", "Fictional character"),
+            en("Flash", "Gordon", "Fictional character"),
         )
 
     private fun t(

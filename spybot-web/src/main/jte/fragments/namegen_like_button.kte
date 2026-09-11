@@ -1,0 +1,21 @@
+@param name: String
+@param likes: Int
+@param likedByMe: Boolean
+@param inList: Boolean
+!{val action = if (likedByMe) "unlike" else "like"}
+!{val title = if (likedByMe) "Take your like back" else "Like this name"}
+<form hx-post="/namegen/${action}" hx-target="this" hx-swap="${if (inList) "none" else "outerHTML"}" class="m-0 d-inline">
+    <input type="hidden" name="name" value="${name}">
+    <button type="submit" class="btn ${if (inList) "btn-sm " else ""}${if (likedByMe) "btn-danger" else "btn-outline-danger"}" title="${title}" aria-pressed="${likedByMe}">
+        <svg width="${if (inList) 20 else 24}" height="${if (inList) 20 else 24}" class="icon"><use xlink:href="/tabler-sprite.svg#tabler-heart"/></svg>
+        @if(inList)
+            ${likes}
+        @elseif(likedByMe)
+            Liked &middot; ${likes}
+        @elseif(likes > 0)
+            Like &middot; ${likes}
+        @else
+            Like this one
+        @endif
+    </button>
+</form>

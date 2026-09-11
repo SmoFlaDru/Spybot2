@@ -1,4 +1,5 @@
 @param generatedName: com.spybot.web.service.namegen.GeneratedName
+@param likeStatus: com.spybot.core.model.NameLikeStatus
 <div class="card text-center" id="namegen_fragment">
     <div class="card-body py-5">
         <div class="text-secondary text-uppercase small mb-2">Your next Steam name</div>
@@ -7,9 +8,12 @@
             ${generatedName.realName} <span class="mx-1">&times;</span> <code>${generatedName.slang}</code>
             <span class="d-block d-sm-inline ms-sm-2">&middot; ${generatedName.category}</span>
         </div>
-        <button class="btn btn-primary" hx-get="/namegen_fragment" hx-target="#namegen_fragment" hx-swap="outerHTML">
-            <svg width="24" height="24" class="icon"><use xlink:href="/tabler-sprite.svg#tabler-arrows-shuffle"/></svg>
-            Generate another
-        </button>
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+            @template.fragments.namegen_like_button(name = generatedName.displayName, likes = likeStatus.likes, likedByMe = likeStatus.likedByMe, inList = false)
+            <button class="btn btn-primary" hx-get="/namegen_fragment" hx-target="#namegen_fragment" hx-swap="outerHTML">
+                <svg width="24" height="24" class="icon"><use xlink:href="/tabler-sprite.svg#tabler-arrows-shuffle"/></svg>
+                Generate another
+            </button>
+        </div>
     </div>
 </div>

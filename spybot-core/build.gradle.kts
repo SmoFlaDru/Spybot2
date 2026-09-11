@@ -76,7 +76,7 @@ jooq {
                                     .Property()
                                     .withKey(
                                         "scripts",
-                                    ).withValue("src/main/resources/db/migration/V1__baseline.sql"),
+                                    ).withValue("src/main/resources/db/migration/*.sql"),
                                 org.jooq.meta.jaxb
                                     .Property()
                                     .withKey("sort")

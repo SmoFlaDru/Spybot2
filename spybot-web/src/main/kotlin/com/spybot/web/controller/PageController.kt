@@ -1,9 +1,11 @@
 package com.spybot.web.controller
 
 import com.spybot.core.security.MergedUserPrincipal
+import com.spybot.core.service.LikedNameService
 import com.spybot.core.service.SpybotQueryService
 import com.spybot.web.service.ChangelogService
 import com.spybot.web.service.SpybotPageService
+import com.spybot.web.service.namegen.Likers
 import com.spybot.web.service.namegen.NameGenService
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
@@ -21,6 +23,7 @@ class PageController(
     private val queryService: SpybotQueryService,
     private val changelogService: ChangelogService,
     private val nameGenService: NameGenService,
+    private val likedNameService: LikedNameService,
 ) {
     @GetMapping("/")
     fun home(
@@ -144,7 +147,11 @@ class PageController(
         request: HttpServletRequest,
     ): String {
         model.addAttribute("loggedInUser", pageService.loggedInUser(principal))
-        model.addAttribute("generatedName", nameGenService.generate())
+        val liker = Likers.of(principal, request)
+        val generatedName = nameGenService.generate()
+        model.addAttribute("generatedName", generatedName)
+        model.addAttribute("likeStatus", likedNameService.status(generatedName.displayName, liker))
+        model.addAttribute("topNames", likedNameService.top(NameGenController.TOP_LIMIT, liker))
         model.addAttribute("csrf", request.getAttribute("_csrf"))
         return "pages/namegen"
     }
