@@ -4,12 +4,12 @@ import com.spybot.core.model.ActiveUsersStat
 import com.spybot.core.model.ActivityChartView
 import com.spybot.core.model.ChannelPopularityEntry
 import com.spybot.core.model.HomePageView
+import com.spybot.core.model.LikedNameView
 import com.spybot.core.model.RecentEventView
 import com.spybot.core.model.RecentEventsPayload
 import com.spybot.core.model.SelectorOption
 import com.spybot.core.model.TopUserWeek
 import com.spybot.core.model.WeekTrendView
-import com.spybot.core.model.LikedNameView
 import com.spybot.core.service.LikedNameService
 import com.spybot.core.service.SpybotQueryService
 import com.spybot.web.service.ChangelogService
@@ -73,7 +73,14 @@ class PageControllerTest {
         Mockito.`when`(pageService.home(7)).thenReturn(homePage)
         Mockito.`when`(request.getAttribute("_csrf")).thenReturn(csrfToken)
 
-        val controller = PageController(pageService, queryService, ChangelogService(), Mockito.mock(NameGenService::class.java), Mockito.mock(LikedNameService::class.java))
+        val controller =
+            PageController(
+                pageService,
+                queryService,
+                ChangelogService(),
+                Mockito.mock(NameGenService::class.java),
+                Mockito.mock(LikedNameService::class.java),
+            )
         val viewName = controller.home(7, null, model, request)
 
         assertEquals("pages/home", viewName)
