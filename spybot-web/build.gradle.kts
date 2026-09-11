@@ -85,7 +85,10 @@ val generatedChangelogDir = layout.buildDirectory.dir("generated-resources/chang
 val generateChangelog =
     tasks.register("generateChangelog") {
         val changelogFile = rootProject.file("CHANGELOG.md")
-        val gitDir = rootProject.layout.projectDirectory.dir(".git").asFile
+        val gitDir =
+            rootProject.layout.projectDirectory
+                .dir(".git")
+                .asFile
         val outputFile = generatedChangelogDir.map { it.file("changelog.json") }
         inputs.file(changelogFile)
         outputs.file(outputFile)
@@ -233,7 +236,8 @@ fun changelogSections(
     }
     val path = changelogFile.relativeTo(gitDir.parentFile).invariantSeparatorsPath
 
-    org.eclipse.jgit.storage.file.FileRepositoryBuilder()
+    org.eclipse.jgit.storage.file
+        .FileRepositoryBuilder()
         .setWorkTree(gitDir.parentFile)
         .findGitDir(gitDir.parentFile)
         .build()
@@ -247,7 +251,9 @@ fun changelogSections(
             }
 
             fun bulletsAt(commit: org.eclipse.jgit.revwalk.RevCommit): List<String>? {
-                val tree = org.eclipse.jgit.treewalk.TreeWalk.forPath(repo, path, commit.tree) ?: return null
+                val tree =
+                    org.eclipse.jgit.treewalk.TreeWalk
+                        .forPath(repo, path, commit.tree) ?: return null
                 return changelogBullets(String(repo.open(tree.getObjectId(0)).bytes, Charsets.UTF_8))
             }
 
@@ -271,10 +277,22 @@ fun changelogSections(
                     val added = addedBullets(childBullets, parentBullets)
                     if (added.isNotEmpty()) {
                         val date = Instant.ofEpochSecond(commit.commitTime.toLong()).atZone(ZoneOffset.UTC).toLocalDate()
-                        sections += ChangelogSection(commit.name.take(7), date.toString(), tagsByCommit[commit.id].orEmpty().sorted(), added)
+                        sections +=
+                            ChangelogSection(commit.name.take(7), date.toString(), tagsByCommit[commit.id].orEmpty().sorted(), added)
                     }
                     commit = parent
-                    childBullets = if (parent == null) null else parentBullets.takeIf { org.eclipse.jgit.treewalk.TreeWalk.forPath(repo, path, parent.tree) != null }
+                    childBullets =
+                        if (parent ==
+                            null
+                        ) {
+                            null
+                        } else {
+                            parentBullets.takeIf {
+                                org.eclipse.jgit.treewalk.TreeWalk
+                                    .forPath(repo, path, parent.tree) !=
+                                    null
+                            }
+                        }
                 }
             }
             return sections
