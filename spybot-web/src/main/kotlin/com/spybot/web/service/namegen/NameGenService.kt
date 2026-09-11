@@ -28,6 +28,9 @@ class NameGenService {
 
     fun all(): List<GeneratedName> = pool
 
+    /** The pool entry for a display name, or null - only names the generator can produce may be liked. */
+    fun find(displayName: String): GeneratedName? = pool.firstOrNull { it.displayName == displayName }
+
     internal fun buildPool(): List<GeneratedName> {
         val englishWords =
             SeedData.people

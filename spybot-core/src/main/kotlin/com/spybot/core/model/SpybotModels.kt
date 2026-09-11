@@ -293,6 +293,13 @@ data class TeamSpeakIdentity(
     val mergedUserName: String,
 )
 
+data class LikedNameView(
+    val displayName: String,
+    val realName: String,
+    val slang: String,
+    val likes: Int,
+)
+
 data class QueuedClientMessageView(
     val id: Long,
     val mergedUserId: Long,
