@@ -63,23 +63,26 @@ class NameGenService {
         slang: List<Pair<SlangTerm, List<Phoneme>>>,
         cmuDict: CmuDict,
     ): List<GeneratedName> =
-        Slot.entries.mapNotNull { slot ->
-            val namePart = if (slot == Slot.FIRST) person.firstName else person.lastName
-            val phonemes = pronounce(namePart, if (slot == Slot.FIRST) person.firstIpa else person.lastIpa, person.lang, cmuDict)
-            val symbols = phonemes?.let(Phonemes::symbolsOf)
-            val term =
-                slang.firstOrNull { (term, termPhonemes) ->
-                    term.word.equals(namePart, ignoreCase = true) || (symbols != null && symbols == Phonemes.symbolsOf(termPhonemes))
-                }?.first ?: return@mapNotNull null
-            GeneratedName(
-                displayName = "${person.firstName} ${person.lastName}",
-                realName = "${person.firstName} ${person.lastName}",
-                slang = term.word,
-                category = person.category,
-                region = person.region,
-                score = 1.0,
-            )
-        }.distinctBy { it.slang }
+        Slot.entries
+            .mapNotNull { slot ->
+                val namePart = if (slot == Slot.FIRST) person.firstName else person.lastName
+                val phonemes = pronounce(namePart, if (slot == Slot.FIRST) person.firstIpa else person.lastIpa, person.lang, cmuDict)
+                val symbols = phonemes?.let(Phonemes::symbolsOf)
+                val term =
+                    slang
+                        .firstOrNull { (term, termPhonemes) ->
+                            term.word.equals(namePart, ignoreCase = true) ||
+                                (symbols != null && symbols == Phonemes.symbolsOf(termPhonemes))
+                        }?.first ?: return@mapNotNull null
+                GeneratedName(
+                    displayName = "${person.firstName} ${person.lastName}",
+                    realName = "${person.firstName} ${person.lastName}",
+                    slang = term.word,
+                    category = person.category,
+                    region = person.region,
+                    score = 1.0,
+                )
+            }.distinctBy { it.slang }
 
     /** The best few terms for one name slot; capped so a single person can't dominate the pool. */
     private fun bestFor(
