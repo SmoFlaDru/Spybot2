@@ -10,166 +10,51 @@ class ChangelogServiceTest {
     private val service = ChangelogService()
 
     @Test
-    fun `parses multiple entries newest first, in file order`() {
-        val text =
+    fun `parses sections newest first with commit, date, tags and bullets`() {
+        val json =
             """
-            # Changelog
-
-            ## v1.4.0 - 2026-08-27 (a1b2c3d)
-            - Added a changelog page
-            - Fixed a recorder hang
-
-            ## v1.3.0 - 2026-08-20 (9f8e7d6)
-            - Earlier change
+            [
+              {"commit": "abc1234", "date": "2026-09-11", "tags": ["v3.1.0"], "bullets": ["Newer change (#12)"]},
+              {"commit": "def5678", "date": "2026-08-31", "tags": [], "bullets": ["Older change", "Another older change"]}
+            ]
             """.trimIndent()
 
-        val entries = service.parseText(text)
+        val entries = service.parseJson(json.toByteArray())
 
         assertEquals(2, entries.size)
-        assertEquals(
-            ChangelogEntry(
-                version = "v1.4.0",
-                date = LocalDate.of(2026, 8, 27),
-                commitHash = "a1b2c3d",
-                features = listOf("Added a changelog page", "Fixed a recorder hang"),
-            ),
-            entries[0],
-        )
-        assertEquals("v1.3.0", entries[1].version)
+        assertEquals(ChangelogEntry("abc1234", LocalDate.of(2026, 9, 11), listOf("v3.1.0"), listOf("Newer change (#12)")), entries[0])
+        assertEquals("v3.1.0", entries[0].title)
+        assertEquals("def5678", entries[1].title)
+        assertEquals(listOf("Older change", "Another older change"), entries[1].bullets)
     }
 
     @Test
-    fun `parses the Unreleased section as an entry without a date or commit`() {
-        val text =
-            """
-            # Changelog
+    fun `an uncommitted section has no commit or date`() {
+        val json = """[{"commit": null, "date": null, "tags": [], "bullets": ["Local, not committed"]}]"""
 
-            ## Unreleased
-            - Merged but not yet released (#42)
+        val entries = service.parseJson(json.toByteArray())
 
-            ## v1.0.0 - 2026-01-01 (0000000)
-            - First release
-            """.trimIndent()
-
-        val entries = service.parseText(text)
-
-        assertEquals(2, entries.size)
-        assertEquals(ChangelogEntry("Unreleased", null, null, listOf("Merged but not yet released (#42)")), entries[0])
-        assertEquals(false, entries[0].isReleased)
-        assertEquals(true, entries[1].isReleased)
+        assertEquals(false, entries.single().isCommitted)
+        assertEquals("Not committed yet", entries.single().title)
     }
 
     @Test
-    fun `the real CHANGELOG file parses with every heading recognised`() {
-        // Guards the format the Changelog CI check relies on: a heading nobody can parse would be
-        // silently skipped on the /changelog page, hiding entries.
-        val text = ClassPathResource("CHANGELOG.md").inputStream.bufferedReader().use { it.readText() }
-        val outsideCodeFences = text.replace(Regex("""(?s)```.*?```"""), "")
-        val headings = outsideCodeFences.lines().count { it.startsWith("## ") }
+    fun `tolerates missing optional fields`() {
+        val entries = service.parseJson("""[{"commit": "abc1234", "date": "2026-01-01"}]""".toByteArray())
 
-        val entries = service.parseText(text)
-
-        assertEquals(headings, entries.size)
-        assertEquals("Unreleased", entries.first().version)
-        assertTrue(entries.first().features.isNotEmpty())
-        assertTrue(entries.all { it.features.isNotEmpty() })
+        assertEquals(emptyList<String>(), entries.single().tags)
+        assertEquals(emptyList<String>(), entries.single().bullets)
     }
 
     @Test
-    fun `ignores example headings inside fenced code blocks`() {
-        val text =
-            """
-            # Changelog
+    fun `the generated changelog for this repository is on the classpath and non-empty`() {
+        // changelog.json is produced from CHANGELOG.md by the generateChangelog Gradle task, which
+        // runs before tests. Guards the wiring end to end: file present, bullets attributed.
+        val entries = service.parseJson(ClassPathResource("changelog.json").inputStream.use { it.readBytes() })
 
-            ```
-            ## Unreleased
-            - <notable change>
-            ```
-
-            ## Unreleased
-            - Real entry
-            """.trimIndent()
-
-        val entries = service.parseText(text)
-
-        assertEquals(1, entries.size)
-        assertEquals(listOf("Real entry"), entries[0].features)
-    }
-
-    @Test
-    fun `parses a single entry`() {
-        val text =
-            """
-            # Changelog
-
-            ## v1.0.0 - 2026-01-01 (0000000)
-            - First release
-            """.trimIndent()
-
-        val entries = service.parseText(text)
-
-        assertEquals(1, entries.size)
-        assertEquals(listOf("First release"), entries[0].features)
-    }
-
-    @Test
-    fun `skips a malformed entry header instead of failing the whole file`() {
-        val text =
-            """
-            # Changelog
-
-            ## not a valid header at all
-            - This entry should be skipped
-
-            ## v1.0.0 - 2026-01-01 (0000000)
-            - This entry should still parse
-            """.trimIndent()
-
-        val entries = service.parseText(text)
-
-        assertEquals(1, entries.size)
-        assertEquals("v1.0.0", entries[0].version)
-    }
-
-    @Test
-    fun `skips an entry with an unparseable date`() {
-        val text =
-            """
-            # Changelog
-
-            ## v2.0.0 - not-a-date (0000000)
-            - Skipped
-
-            ## v1.0.0 - 2026-01-01 (0000000)
-            - Kept
-            """.trimIndent()
-
-        val entries = service.parseText(text)
-
-        assertEquals(1, entries.size)
-        assertEquals("v1.0.0", entries[0].version)
-    }
-
-    @Test
-    fun `returns an empty list for a file with no entries`() {
-        val entries = service.parseText("# Changelog\n\nNothing here yet.\n")
-
-        assertTrue(entries.isEmpty())
-    }
-
-    @Test
-    fun `ignores non-bullet lines within an entry block`() {
-        val text =
-            """
-            # Changelog
-
-            ## v1.0.0 - 2026-01-01 (0000000)
-            Some preamble text that is not a bullet.
-            - A real feature bullet
-            """.trimIndent()
-
-        val entries = service.parseText(text)
-
-        assertEquals(listOf("A real feature bullet"), entries[0].features)
+        assertTrue(entries.isNotEmpty())
+        assertTrue(entries.all { it.bullets.isNotEmpty() })
+        assertTrue(entries.any { it.isCommitted })
+        assertTrue(entries.flatMap { it.bullets }.any { it.contains("(#208)") })
     }
 }

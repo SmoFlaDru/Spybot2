@@ -1,22 +1,14 @@
 # Changelog
 
-Notable changes to Spybot, newest first. Every pull request adds a one-line bullet
-under `## Unreleased` (CI enforces this); when a release is cut, that heading is
-renamed to the version, date and commit hash.
+Notable changes to Spybot, newest first. Every pull request adds one bullet at the top
+of this list (CI enforces this). Keep each bullet on a single line.
 
-Format (each bullet must be a single line - no wrapping, the parser doesn't join
-continuation lines):
+Nothing else goes in this file - no headings, versions, dates or commit hashes. At build
+time the changelog page groups these bullets by the master commit that added them, using
+git: each group shows the commit's short hash and date, and its tag if the commit has one.
+So a release is simply a tag on master.
 
-```
-## Unreleased
-- <notable change> (#<pull request>)
-
-## <version> - <YYYY-MM-DD> (<commit hash>)
-- <notable change>
-```
-
-## Unreleased
-- Required a changelog entry on every pull request via a CI check, with an Unreleased section shown on the changelog page (#209)
+- Required a changelog entry on every pull request via a CI check, and grouped the changelog page by the master commit that added each entry (#209)
 - Added a Steam name generator page that puns famous people's names with Counter-Strike terms, matched by pronunciation rather than spelling (#208)
 - Attached the Sentry OpenTelemetry agent for per-operation tracing spans, including individual SQL queries (#207)
 - Enabled Sentry's Logs product so application logs are forwarded to Sentry, not only error events (#206)
@@ -33,13 +25,9 @@ continuation lines):
 - Fixed the recorder using the wrong jOOQ SQL dialect, which broke channel sync on every connection attempt (#196)
 - Fixed the Caddyfile bind mount on deploy and removed orphaned containers left over from the pre-rewrite stack (#195)
 - Published both the spybot-web and spybot-recorder Docker images to GHCR and made deploys pull the exact commit's images instead of building on the server (#193, #194)
-
-## v3.0.0-beta.1 - 2026-08-27 (72c2bf1)
 - Rewrote Spybot on Spring Boot + Kotlin (spybot-core, spybot-web, spybot-recorder), alongside the existing Django app
 - Added the admin interface (dashboard, merged users, TS users, news events, merge users)
 - Fixed TeamSpeak channel/username display so escaped ServerQuery characters render correctly
 - Fixed the recorder hanging on TS3's "\n\r" line terminator, with exponential backoff on reconnect failures
 - Added Steam ID validation and a linked-account modal to the profile page
-
-## v2.4 - 2026-04-12 (1492588)
 - Last release of the original Python/Django Spybot, before the Spring Boot + Kotlin rewrite began

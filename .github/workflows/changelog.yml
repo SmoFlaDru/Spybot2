@@ -43,7 +43,7 @@ jobs:
           if [ -z "$added" ]; then
             echo "::error file=CHANGELOG.md::This pull request does not add an entry to CHANGELOG.md."
             echo
-            echo "Add a one-line bullet under the '## Unreleased' heading describing the change, e.g."
+            echo "Add a one-line bullet at the top of CHANGELOG.md describing the change, e.g."
             echo "  - Fixed the live view dropping users after a recorder restart (#123)"
             echo
             echo "If the change is genuinely not worth a changelog line, a maintainer can add the"

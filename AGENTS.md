@@ -80,4 +80,4 @@ Use Spring MVC + JTE for server-rendered pages. Keep the existing Tabler, HTMX, 
 - Keep changes scoped; the worktree may contain unrelated user changes. Never reset, revert, or delete those changes.
 - Use `apply_patch` for source edits and keep new text ASCII unless the file already needs Unicode.
 - Do not commit generated build output, frontend output, Gradle caches, Docker build caches, secrets, or IDE user files.
-- Every PR adds a one-line bullet under `## Unreleased` in `CHANGELOG.md` (the `Changelog` CI check fails otherwise; maintainers can apply the `skip-changelog` label for genuinely trivial PRs). Follow the format documented at the top of that file; the home page footer and `/changelog` page render it directly.
+- Every PR adds one bullet at the top of `CHANGELOG.md` (the `Changelog` CI check fails otherwise; maintainers can apply the `skip-changelog` label for genuinely trivial PRs). The file holds bullets only - no headings, versions or hashes: the `generateChangelog` Gradle task groups them by the master commit that added each one, and a tag on that commit is what the `/changelog` page shows as a release.
