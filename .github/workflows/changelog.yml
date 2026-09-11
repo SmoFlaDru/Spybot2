@@ -1,0 +1,54 @@
+name: 'Changelog'
+
+# Every pull request has to add an entry to CHANGELOG.md. Make this check required in the
+# master branch protection rules so a PR without one cannot be merged.
+#
+# Escape hatches, both deliberate and narrow:
+#  - Dependabot PRs are exempt; their changes are summarised at release time instead.
+#  - A maintainer can add the `skip-changelog` label to a PR that genuinely has nothing
+#    notable in it (typo fixes, CI-only tweaks). Adding/removing the label re-runs the check.
+
+on:
+  pull_request:
+    branches: [ "master" ]
+    types: [ opened, synchronize, reopened, labeled, unlabeled ]
+
+permissions:
+  contents: read
+
+jobs:
+  changelog:
+    name: CHANGELOG.md has an entry
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip for Dependabot or the skip-changelog label
+        id: skip
+        if: github.actor == 'dependabot[bot]' || contains(github.event.pull_request.labels.*.name, 'skip-changelog')
+        run: echo "Changelog check skipped for this pull request." && echo "skipped=true" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        if: steps.skip.outputs.skipped != 'true'
+        with:
+          fetch-depth: 0
+
+      - name: Require a new CHANGELOG.md bullet
+        if: steps.skip.outputs.skipped != 'true'
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          # Only lines this PR *adds* count - deleting or rewording an old entry is not an entry.
+          added=$(git diff "$BASE" "$HEAD" -- CHANGELOG.md | grep -E '^\+- ' || true)
+          if [ -z "$added" ]; then
+            echo "::error file=CHANGELOG.md::This pull request does not add an entry to CHANGELOG.md."
+            echo
+            echo "Add a one-line bullet at the top of CHANGELOG.md describing the change, e.g."
+            echo "  - Fixed the live view dropping users after a recorder restart (#123)"
+            echo
+            echo "If the change is genuinely not worth a changelog line, a maintainer can add the"
+            echo "'skip-changelog' label to this pull request."
+            exit 1
+          fi
+          echo "New changelog entries:"
+          echo "$added"

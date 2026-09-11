@@ -3,73 +3,66 @@ package com.spybot.web.service
 import org.slf4j.LoggerFactory
 import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Service
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.kotlinModule
+import tools.jackson.module.kotlin.readValue
 import java.time.LocalDate
 
+/**
+ * One group of changelog bullets: everything a single master commit added to CHANGELOG.md.
+ * [commit] and [date] are null only for bullets that exist in the working tree but aren't
+ * committed yet, which can only happen on a developer machine.
+ */
 data class ChangelogEntry(
-    val version: String,
-    val date: LocalDate,
-    val commitHash: String,
-    val features: List<String>,
-)
+    val commit: String?,
+    val date: LocalDate?,
+    val tags: List<String>,
+    val bullets: List<String>,
+) {
+    val isCommitted: Boolean
+        get() = commit != null
+
+    /** What the page leads with: a release tag when the commit has one, otherwise the commit. */
+    val title: String
+        get() = tags.firstOrNull() ?: commit ?: "Not committed yet"
+}
 
 /**
- * Reads CHANGELOG.md (bundled onto the classpath at build time - see the processResources
- * config in spybot-web/build.gradle.kts) and parses it into structured entries for the
- * /changelog page. The file is the source of truth: entries are added by hand in the same PR
- * as the change they describe.
+ * Reads changelog.json, generated at build time by the `generateChangelog` Gradle task in
+ * spybot-web/build.gradle.kts. CHANGELOG.md itself is a flat list of bullets; the task uses git
+ * to group them by the master commit that added each one, so the file never has to know about
+ * versions, dates or hashes - a release is a tag on master.
  */
 @Service
 class ChangelogService {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    private val parsedEntries: List<ChangelogEntry> by lazy { parse() }
+    private val parsedEntries: List<ChangelogEntry> by lazy { load() }
 
     fun entries(): List<ChangelogEntry> = parsedEntries
 
-    private fun parse(): List<ChangelogEntry> {
-        val resource = ClassPathResource("CHANGELOG.md")
+    private fun load(): List<ChangelogEntry> {
+        val resource = ClassPathResource("changelog.json")
         if (!resource.exists()) {
-            log.warn("CHANGELOG.md not found on the classpath; the changelog page will be empty")
+            log.warn("changelog.json not found on the classpath; the changelog page will be empty")
             return emptyList()
         }
-
-        val text = resource.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
-        return parseText(text)
+        return resource.inputStream.use { parseJson(it.readBytes()) }
     }
 
-    internal fun parseText(text: String): List<ChangelogEntry> {
-        val blocks = text.split(Regex("(?m)^## "))
-        return blocks.drop(1).mapNotNull { block -> parseEntry(block) }
+    internal fun parseJson(json: ByteArray): List<ChangelogEntry> {
+        val raw: List<RawSection> = mapper.readValue(json)
+        return raw.map { ChangelogEntry(it.commit, it.date?.let(LocalDate::parse), it.tags, it.bullets) }
     }
 
-    private fun parseEntry(block: String): ChangelogEntry? {
-        val lines = block.lines()
-        val header = lines.firstOrNull() ?: return null
-        val match = HEADER_PATTERN.matchEntire(header.trim())
-        if (match == null) {
-            log.warn("Skipping malformed CHANGELOG.md entry header: {}", header)
-            return null
-        }
-
-        val (version, dateText, commitHash) = match.destructured
-        val date =
-            try {
-                LocalDate.parse(dateText)
-            } catch (error: Exception) {
-                log.warn("Skipping CHANGELOG.md entry with unparseable date: {}", header, error)
-                return null
-            }
-
-        val features =
-            lines
-                .drop(1)
-                .filter { it.trimStart().startsWith("- ") }
-                .map { it.trimStart().removePrefix("- ").trim() }
-
-        return ChangelogEntry(version = version, date = date, commitHash = commitHash, features = features)
-    }
+    private data class RawSection(
+        val commit: String?,
+        val date: String?,
+        val tags: List<String> = emptyList(),
+        val bullets: List<String> = emptyList(),
+    )
 
     companion object {
-        private val HEADER_PATTERN = Regex("""^(\S+) - (\d{4}-\d{2}-\d{2}) \(([0-9a-fA-F]+)\)$""")
+        private val mapper: JsonMapper = JsonMapper.builder().addModule(kotlinModule()).build()
     }
 }
