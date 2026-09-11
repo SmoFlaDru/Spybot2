@@ -20,13 +20,7 @@
                             <div class="text-secondary small">${entry.realName} <span class="mx-1">&times;</span> <code>${entry.slang}</code></div>
                         </td>
                         <td class="text-end text-nowrap">
-                            <form hx-post="/namegen/like" hx-swap="none" class="m-0 d-inline">
-                                <input type="hidden" name="name" value="${entry.displayName}">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                    <svg width="20" height="20" class="icon"><use xlink:href="/tabler-sprite.svg#tabler-heart"/></svg>
-                                    ${entry.likes}
-                                </button>
-                            </form>
+                            @template.fragments.namegen_like_button(name = entry.displayName, likes = entry.likes, likedByMe = entry.likedByMe, inList = true)
                         </td>
                     </tr>
                 @endfor

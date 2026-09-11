@@ -4,6 +4,7 @@ import com.spybot.core.model.AdminMergedUserRow
 import com.spybot.core.model.AdminNewsEventRow
 import com.spybot.core.model.AdminTsUserRow
 import com.spybot.core.model.MergeUsersResult
+import com.spybot.core.service.LikedNameService
 import com.spybot.core.service.SpybotQueryService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class AdminService(
     private val queryService: SpybotQueryService,
+    private val likedNameService: LikedNameService,
 ) {
     fun mergedUsers(search: String?): List<AdminMergedUserRow> = queryService.adminMergedUsers(search)
 
@@ -77,6 +79,7 @@ class AdminService(
         val movedQueuedMessages = queryService.adminReassignQueuedMessages(deduplicatedSources, targetId)
         val movedLoginLinks = queryService.adminReassignLoginLinks(deduplicatedSources, targetId)
         val movedPasskeys = queryService.adminReassignPasskeys(deduplicatedSources, targetId)
+        val movedNameLikes = likedNameService.reassignLikes(deduplicatedSources, targetId)
         val obsoletedMergedUsers = queryService.adminSetMergedUsersObsolete(deduplicatedSources, true)
 
         return MergeUsersResult(
@@ -88,6 +91,7 @@ class AdminService(
             movedQueuedMessages = movedQueuedMessages,
             movedLoginLinks = movedLoginLinks,
             movedPasskeys = movedPasskeys,
+            movedNameLikes = movedNameLikes,
             obsoletedMergedUsers = obsoletedMergedUsers,
         )
     }
