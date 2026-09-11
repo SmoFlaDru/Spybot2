@@ -251,7 +251,8 @@ fun changelogSections(
             }
 
             fun fileAt(commit: org.eclipse.jgit.revwalk.RevCommit): org.eclipse.jgit.treewalk.TreeWalk? =
-                org.eclipse.jgit.treewalk.TreeWalk.forPath(repo, path, commit.tree)
+                org.eclipse.jgit.treewalk.TreeWalk
+                    .forPath(repo, path, commit.tree)
 
             fun fileExistsAt(commit: org.eclipse.jgit.revwalk.RevCommit): Boolean = fileAt(commit) != null
 
@@ -279,7 +280,10 @@ fun changelogSections(
                     if (commit.id in shallowCommits) {
                         // JGit reports a shallow-clone boundary commit as having no parents, so the walk
                         // would stop silently and hand it every remaining bullet. Say so.
-                        logger.warn("Shallow git history: attributing remaining changelog bullets to {}; use a full clone (fetch-depth: 0) for correct grouping", commit.name.take(7))
+                        logger.warn(
+                            "Shallow git history: attributing remaining changelog bullets to {}; use a full clone (fetch-depth: 0) for correct grouping",
+                            commit.name.take(7),
+                        )
                     }
                     val parent =
                         try {
