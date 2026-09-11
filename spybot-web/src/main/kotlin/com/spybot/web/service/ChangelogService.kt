@@ -7,10 +7,14 @@ import java.time.LocalDate
 
 data class ChangelogEntry(
     val version: String,
-    val date: LocalDate,
-    val commitHash: String,
+    /** Null for the `## Unreleased` section, which has no release date or commit yet. */
+    val date: LocalDate?,
+    val commitHash: String?,
     val features: List<String>,
-)
+) {
+    val isReleased: Boolean
+        get() = date != null && commitHash != null
+}
 
 /**
  * Reads CHANGELOG.md (bundled onto the classpath at build time - see the processResources
@@ -38,13 +42,19 @@ class ChangelogService {
     }
 
     internal fun parseText(text: String): List<ChangelogEntry> {
-        val blocks = text.split(Regex("(?m)^## "))
+        // The file documents its own format in a fenced code block whose example headings must
+        // not be mistaken for real entries.
+        val blocks = text.replace(FENCED_CODE, "").split(Regex("(?m)^## "))
         return blocks.drop(1).mapNotNull { block -> parseEntry(block) }
     }
 
     private fun parseEntry(block: String): ChangelogEntry? {
         val lines = block.lines()
         val header = lines.firstOrNull() ?: return null
+        val features = features(lines)
+        if (header.trim().equals(UNRELEASED, ignoreCase = true)) {
+            return ChangelogEntry(version = UNRELEASED, date = null, commitHash = null, features = features)
+        }
         val match = HEADER_PATTERN.matchEntire(header.trim())
         if (match == null) {
             log.warn("Skipping malformed CHANGELOG.md entry header: {}", header)
@@ -60,16 +70,18 @@ class ChangelogService {
                 return null
             }
 
-        val features =
-            lines
-                .drop(1)
-                .filter { it.trimStart().startsWith("- ") }
-                .map { it.trimStart().removePrefix("- ").trim() }
-
         return ChangelogEntry(version = version, date = date, commitHash = commitHash, features = features)
     }
 
+    private fun features(lines: List<String>): List<String> =
+        lines
+            .drop(1)
+            .filter { it.trimStart().startsWith("- ") }
+            .map { it.trimStart().removePrefix("- ").trim() }
+
     companion object {
+        const val UNRELEASED = "Unreleased"
+        private val FENCED_CODE = Regex("""(?s)```.*?```""")
         private val HEADER_PATTERN = Regex("""^(\S+) - (\d{4}-\d{2}-\d{2}) \(([0-9a-fA-F]+)\)$""")
     }
 }

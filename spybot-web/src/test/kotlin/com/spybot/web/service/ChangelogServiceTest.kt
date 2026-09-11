@@ -3,6 +3,7 @@ package com.spybot.web.service
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.springframework.core.io.ClassPathResource
 import java.time.LocalDate
 
 class ChangelogServiceTest {
@@ -35,6 +36,64 @@ class ChangelogServiceTest {
             entries[0],
         )
         assertEquals("v1.3.0", entries[1].version)
+    }
+
+    @Test
+    fun `parses the Unreleased section as an entry without a date or commit`() {
+        val text =
+            """
+            # Changelog
+
+            ## Unreleased
+            - Merged but not yet released (#42)
+
+            ## v1.0.0 - 2026-01-01 (0000000)
+            - First release
+            """.trimIndent()
+
+        val entries = service.parseText(text)
+
+        assertEquals(2, entries.size)
+        assertEquals(ChangelogEntry("Unreleased", null, null, listOf("Merged but not yet released (#42)")), entries[0])
+        assertEquals(false, entries[0].isReleased)
+        assertEquals(true, entries[1].isReleased)
+    }
+
+    @Test
+    fun `the real CHANGELOG file parses with every heading recognised`() {
+        // Guards the format the Changelog CI check relies on: a heading nobody can parse would be
+        // silently skipped on the /changelog page, hiding entries.
+        val text = ClassPathResource("CHANGELOG.md").inputStream.bufferedReader().use { it.readText() }
+        val outsideCodeFences = text.replace(Regex("""(?s)```.*?```"""), "")
+        val headings = outsideCodeFences.lines().count { it.startsWith("## ") }
+
+        val entries = service.parseText(text)
+
+        assertEquals(headings, entries.size)
+        assertEquals("Unreleased", entries.first().version)
+        assertTrue(entries.first().features.isNotEmpty())
+        assertTrue(entries.all { it.features.isNotEmpty() })
+    }
+
+    @Test
+    fun `ignores example headings inside fenced code blocks`() {
+        val text =
+            """
+            # Changelog
+
+            ```
+            ## Unreleased
+            - <notable change>
+            ```
+
+            ## Unreleased
+            - Real entry
+            """.trimIndent()
+
+        val entries = service.parseText(text)
+
+        assertEquals(1, entries.size)
+        assertEquals(listOf("Real entry"), entries[0].features)
     }
 
     @Test

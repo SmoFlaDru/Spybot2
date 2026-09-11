@@ -17,11 +17,15 @@
                                 <div class="col-auto">
                                     <span class="h3 mb-0">${entry.version}</span>
                                 </div>
-                                <div class="col text-secondary">
-                                    ${entry.date.toString()} &middot;
-                                    <a class="link-secondary" href="https://github.com/SmoFlaDru/Spybot2/commit/${entry.commitHash}"
-                                       target="_blank" rel="noopener">${entry.commitHash}</a>
-                                </div>
+                                @if(entry.isReleased)
+                                    <div class="col text-secondary">
+                                        ${entry.date.toString()} &middot;
+                                        <a class="link-secondary" href="https://github.com/SmoFlaDru/Spybot2/commit/${entry.commitHash}"
+                                           target="_blank" rel="noopener">${entry.commitHash}</a>
+                                    </div>
+                                @else
+                                    <div class="col text-secondary">Merged, not yet in a tagged release</div>
+                                @endif
                             </div>
                             <ul class="mb-0">
                                 @for(feature in entry.features)
