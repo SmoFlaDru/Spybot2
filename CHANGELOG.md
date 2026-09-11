@@ -16,6 +16,7 @@ continuation lines):
 ```
 
 ## Unreleased
+- Required a changelog entry on every pull request via a CI check, with an Unreleased section shown on the changelog page (#209)
 - Added a Steam name generator page that puns famous people's names with Counter-Strike terms, matched by pronunciation rather than spelling (#208)
 - Attached the Sentry OpenTelemetry agent for per-operation tracing spans, including individual SQL queries (#207)
 - Enabled Sentry's Logs product so application logs are forwarded to Sentry, not only error events (#206)
