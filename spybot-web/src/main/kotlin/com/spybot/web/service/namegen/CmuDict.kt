@@ -43,7 +43,12 @@ class CmuDict(
                 if (space < 0) continue
                 val word = content.substring(0, space)
                 if (word.endsWith(")") || word !in wantedNormalised || word in result) continue
-                val phones = content.substring(space + 1).trim().split(' ').filter { it.isNotEmpty() }
+                val phones =
+                    content
+                        .substring(space + 1)
+                        .trim()
+                        .split(' ')
+                        .filter { it.isNotEmpty() }
                 result[word] = Phonemes.parse(phones.joinToString("") { arpabetToIpa(it) })
             }
         }
@@ -56,13 +61,44 @@ class CmuDict(
         /** ARPABET symbol (stress digit already stripped) to IPA. AH is the only stress-sensitive one. */
         private val table =
             mapOf(
-                "AA" to "ɑ", "AE" to "æ", "AO" to "ɔ", "AW" to "aʊ", "AY" to "aɪ",
-                "EH" to "ɛ", "ER" to "ɚ", "EY" to "eɪ", "IH" to "ɪ", "IY" to "i",
-                "OW" to "oʊ", "OY" to "ɔɪ", "UH" to "ʊ", "UW" to "u",
-                "B" to "b", "CH" to "tʃ", "D" to "d", "DH" to "ð", "F" to "f", "G" to "ɡ",
-                "HH" to "h", "JH" to "dʒ", "K" to "k", "L" to "l", "M" to "m", "N" to "n",
-                "NG" to "ŋ", "P" to "p", "R" to "ɹ", "S" to "s", "SH" to "ʃ", "T" to "t",
-                "TH" to "θ", "V" to "v", "W" to "w", "Y" to "j", "Z" to "z", "ZH" to "ʒ",
+                "AA" to "ɑ",
+                "AE" to "æ",
+                "AO" to "ɔ",
+                "AW" to "aʊ",
+                "AY" to "aɪ",
+                "EH" to "ɛ",
+                "ER" to "ɚ",
+                "EY" to "eɪ",
+                "IH" to "ɪ",
+                "IY" to "i",
+                "OW" to "oʊ",
+                "OY" to "ɔɪ",
+                "UH" to "ʊ",
+                "UW" to "u",
+                "B" to "b",
+                "CH" to "tʃ",
+                "D" to "d",
+                "DH" to "ð",
+                "F" to "f",
+                "G" to "ɡ",
+                "HH" to "h",
+                "JH" to "dʒ",
+                "K" to "k",
+                "L" to "l",
+                "M" to "m",
+                "N" to "n",
+                "NG" to "ŋ",
+                "P" to "p",
+                "R" to "ɹ",
+                "S" to "s",
+                "SH" to "ʃ",
+                "T" to "t",
+                "TH" to "θ",
+                "V" to "v",
+                "W" to "w",
+                "Y" to "j",
+                "Z" to "z",
+                "ZH" to "ʒ",
             )
 
         internal fun arpabetToIpa(phone: String): String {

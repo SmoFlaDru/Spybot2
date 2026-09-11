@@ -113,10 +113,38 @@ object Phonemes {
 
     private val vowels =
         listOf(
-            I, I_LONG, I_SHORT, Y, Y_LONG, Y_SHORT, E, E_LONG, E_OPEN, E_OPEN_LONG, AE,
-            OE_CLOSE, OE_CLOSE_LONG, OE_OPEN, A, A_LONG, A_BACK, A_BACK_LONG, O_OPEN_ROUND,
-            CARET, SCHWA, SCHWA_OPEN, SCHWA_RHOTIC, E_CENTRAL, E_CENTRAL_LONG,
-            O_OPEN, O_OPEN_LONG, O, O_LONG, U_SHORT, U, U_LONG,
+            I,
+            I_LONG,
+            I_SHORT,
+            Y,
+            Y_LONG,
+            Y_SHORT,
+            E,
+            E_LONG,
+            E_OPEN,
+            E_OPEN_LONG,
+            AE,
+            OE_CLOSE,
+            OE_CLOSE_LONG,
+            OE_OPEN,
+            A,
+            A_LONG,
+            A_BACK,
+            A_BACK_LONG,
+            O_OPEN_ROUND,
+            CARET,
+            SCHWA,
+            SCHWA_OPEN,
+            SCHWA_RHOTIC,
+            E_CENTRAL,
+            E_CENTRAL_LONG,
+            O_OPEN,
+            O_OPEN_LONG,
+            O,
+            O_LONG,
+            U_SHORT,
+            U,
+            U_LONG,
         )
 
     private val diphthongs =
@@ -132,8 +160,23 @@ object Phonemes {
             // German vocalised /r/ after a vowel ("Karl", "Merkel", "Jürgen") forms one nucleus with
             // it, not a second syllable. GermanG2P emits "ɐ" for coda r; pairing it with the vowel
             // here keeps syllable counts honest.
-            listOf(A, A_LONG, E_OPEN, E_OPEN_LONG, E_LONG, I_SHORT, I_LONG, O_OPEN, O_LONG, U_SHORT, U_LONG, Y_SHORT, Y_LONG, OE_OPEN, OE_CLOSE_LONG)
-                .map { Phoneme.Diphthong(it.symbol + "ɐ", it, SCHWA_OPEN) }
+            listOf(
+                A,
+                A_LONG,
+                E_OPEN,
+                E_OPEN_LONG,
+                E_LONG,
+                I_SHORT,
+                I_LONG,
+                O_OPEN,
+                O_LONG,
+                U_SHORT,
+                U_LONG,
+                Y_SHORT,
+                Y_LONG,
+                OE_OPEN,
+                OE_CLOSE_LONG,
+            ).map { Phoneme.Diphthong(it.symbol + "ɐ", it, SCHWA_OPEN) }
 
     private val consonants =
         listOf(
@@ -253,17 +296,31 @@ object Phonemes {
         if (a is Phoneme.Diphthong && a.end.rhotic && b is Phoneme.Consonant && b.rhotic) return 0.45
         if (b is Phoneme.Diphthong && b.end.rhotic && a is Phoneme.Consonant && a.rhotic) return 0.45
         return when {
-            a is Phoneme.Vowel && b is Phoneme.Vowel -> vowelDistance(a, b)
-            a is Phoneme.Diphthong && b is Phoneme.Diphthong ->
+            a is Phoneme.Vowel && b is Phoneme.Vowel -> {
+                vowelDistance(a, b)
+            }
+
+            a is Phoneme.Diphthong && b is Phoneme.Diphthong -> {
                 0.5 * (vowelDistance(a.start, b.start) + vowelDistance(a.end, b.end))
-            a is Phoneme.Diphthong && b is Phoneme.Vowel ->
+            }
+
+            a is Phoneme.Diphthong && b is Phoneme.Vowel -> {
                 0.5 * (vowelDistance(a.start, b) + vowelDistance(a.end, b)) + GLIDE_MISMATCH
-            a is Phoneme.Vowel && b is Phoneme.Diphthong -> featureDistance(b, a)
-            a is Phoneme.Consonant && b is Phoneme.Consonant ->
+            }
+
+            a is Phoneme.Vowel && b is Phoneme.Diphthong -> {
+                featureDistance(b, a)
+            }
+
+            a is Phoneme.Consonant && b is Phoneme.Consonant -> {
                 0.55 * abs(a.place - b.place) +
                     0.4 * mannerDistance(a.manner, b.manner) +
                     0.2 * (if (a.voiced != b.voiced) 1.0 else 0.0)
-            else -> 1.0
+            }
+
+            else -> {
+                1.0
+            }
         }.coerceIn(0.0, 1.0)
     }
 }

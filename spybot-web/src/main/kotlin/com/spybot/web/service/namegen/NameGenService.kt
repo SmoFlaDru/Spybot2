@@ -59,12 +59,15 @@ class NameGenService {
         cmuDict: CmuDict,
     ): List<GeneratedName> {
         val namePart = if (slot == Slot.FIRST) person.firstName else person.lastName
-        val phonemes = pronounce(namePart, if (slot == Slot.FIRST) person.firstIpa else person.lastIpa, person.lang, cmuDict) ?: return emptyList()
+        val phonemes =
+            pronounce(namePart, if (slot == Slot.FIRST) person.firstIpa else person.lastIpa, person.lang, cmuDict) ?: return emptyList()
 
         return slang
             .asSequence()
-            .filter { (term, _) -> !term.word.equals(person.firstName, ignoreCase = true) && !term.word.equals(person.lastName, ignoreCase = true) }
-            .map { (term, termPhonemes) -> term to PhoneticMatcher.score(phonemes, termPhonemes) }
+            .filter { (term, _) ->
+                !term.word.equals(person.firstName, ignoreCase = true) &&
+                    !term.word.equals(person.lastName, ignoreCase = true)
+            }.map { (term, termPhonemes) -> term to PhoneticMatcher.score(phonemes, termPhonemes) }
             .filter { (_, match) -> match.score >= PhoneticMatcher.THRESHOLD }
             .sortedByDescending { (_, match) -> match.score }
             .take(MAX_PER_SLOT)
