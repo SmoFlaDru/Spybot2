@@ -32,7 +32,8 @@ class NameGenControllerTest {
     private fun anonymousRequest() =
         MockHttpServletRequest("POST", "/namegen/like").apply { setAttribute(VisitorIdFilter.ATTRIBUTE, visitor.visitorId) }
 
-    private fun loggedIn(id: Long) = MergedUserPrincipal(MergedUserView(id, "Benno", obsolete = false, isSuperuser = false, lastLogin = null))
+    private fun loggedIn(id: Long) =
+        MergedUserPrincipal(MergedUserView(id, "Benno", obsolete = false, isSuperuser = false, lastLogin = null))
 
     @Test
     fun `anonymous visitors like as their cookie identity`() {
@@ -78,7 +79,16 @@ class NameGenControllerTest {
     fun `names the generator cannot produce are rejected, not stored`() {
         Mockito.`when`(nameGenService.find("Totally Madeup")).thenReturn(null)
 
-        val error = assertThrows<ResponseStatusException> { controller.like("Totally Madeup", null, ConcurrentModel(), anonymousRequest(), response) }
+        val error =
+            assertThrows<ResponseStatusException> {
+                controller.like(
+                    "Totally Madeup",
+                    null,
+                    ConcurrentModel(),
+                    anonymousRequest(),
+                    response,
+                )
+            }
 
         assertEquals(HttpStatus.BAD_REQUEST, error.statusCode)
         Mockito.verifyNoInteractions(likedNameService)

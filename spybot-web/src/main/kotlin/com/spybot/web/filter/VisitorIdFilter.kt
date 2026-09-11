@@ -23,7 +23,11 @@ class VisitorIdFilter : OncePerRequestFilter() {
         response: HttpServletResponse,
         filterChain: FilterChain,
     ) {
-        val existing = request.cookies?.firstOrNull { it.name == COOKIE_NAME }?.value?.takeIf { VALID_ID.matches(it) }
+        val existing =
+            request.cookies
+                ?.firstOrNull { it.name == COOKIE_NAME }
+                ?.value
+                ?.takeIf { VALID_ID.matches(it) }
         val visitorId = existing ?: newVisitorId().also { response.addCookie(cookie(it, request.isSecure)) }
         request.setAttribute(ATTRIBUTE, visitorId)
         filterChain.doFilter(request, response)

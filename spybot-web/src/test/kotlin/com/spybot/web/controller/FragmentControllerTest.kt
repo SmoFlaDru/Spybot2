@@ -23,7 +23,10 @@ class FragmentControllerTest {
         val model = ConcurrentModel()
         val generated = GeneratedName("Nuke Skywalker", "Luke Skywalker", "nuke", "Fictional character", "International", 0.98)
         val status = NameLikeStatus(likes = 4, likedByMe = true)
-        val request = MockHttpServletRequest("GET", "/namegen_fragment").apply { setAttribute(VisitorIdFilter.ATTRIBUTE, "0123456789abcdef0123456789abcdef") }
+        val request =
+            MockHttpServletRequest("GET", "/namegen_fragment").apply {
+                setAttribute(VisitorIdFilter.ATTRIBUTE, "0123456789abcdef0123456789abcdef")
+            }
         Mockito.`when`(nameGenService.generate()).thenReturn(generated)
         Mockito.`when`(likedNameService.status("Nuke Skywalker", Liker.Visitor("0123456789abcdef0123456789abcdef"))).thenReturn(status)
 

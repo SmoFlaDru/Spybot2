@@ -14,8 +14,8 @@ import com.spybot.core.model.TopUserWeek
 import com.spybot.core.model.WeekTrendView
 import com.spybot.core.service.LikedNameService
 import com.spybot.core.service.SpybotQueryService
-import com.spybot.web.service.ChangelogService
 import com.spybot.web.filter.VisitorIdFilter
+import com.spybot.web.service.ChangelogService
 import com.spybot.web.service.SpybotPageService
 import com.spybot.web.service.namegen.GeneratedName
 import com.spybot.web.service.namegen.NameGenService
