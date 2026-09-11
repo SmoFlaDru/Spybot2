@@ -250,10 +250,13 @@ fun changelogSections(
                 }
             }
 
+            fun fileAt(commit: org.eclipse.jgit.revwalk.RevCommit): org.eclipse.jgit.treewalk.TreeWalk? =
+                org.eclipse.jgit.treewalk.TreeWalk.forPath(repo, path, commit.tree)
+
+            fun fileExistsAt(commit: org.eclipse.jgit.revwalk.RevCommit): Boolean = fileAt(commit) != null
+
             fun bulletsAt(commit: org.eclipse.jgit.revwalk.RevCommit): List<String>? {
-                val tree =
-                    org.eclipse.jgit.treewalk.TreeWalk
-                        .forPath(repo, path, commit.tree) ?: return null
+                val tree = fileAt(commit) ?: return null
                 return changelogBullets(String(repo.open(tree.getObjectId(0)).bytes, Charsets.UTF_8))
             }
 
@@ -271,28 +274,32 @@ fun changelogSections(
                 val uncommitted = addedBullets(workingTreeBullets, childBullets ?: emptyList())
                 if (uncommitted.isNotEmpty()) sections += ChangelogSection(null, null, emptyList(), uncommitted)
 
+                val shallowCommits = repo.objectDatabase.shallowCommits
                 while (commit != null && childBullets != null) {
-                    val parent = commit.parents.firstOrNull()?.let { walk.parseCommit(it) }
+                    if (commit.id in shallowCommits) {
+                        // JGit reports a shallow-clone boundary commit as having no parents, so the walk
+                        // would stop silently and hand it every remaining bullet. Say so.
+                        logger.warn("Shallow git history: attributing remaining changelog bullets to {}; use a full clone (fetch-depth: 0) for correct grouping", commit.name.take(7))
+                    }
+                    val parent =
+                        try {
+                            commit.parents.firstOrNull()?.let { walk.parseCommit(it) }
+                        } catch (e: org.eclipse.jgit.errors.MissingObjectException) {
+                            // Shallow clone: history ends here. Everything still unattributed goes to this
+                            // commit rather than failing the build - but the result is only right with a
+                            // full clone (fetch-depth: 0 in CI).
+                            logger.warn("Shallow git history: attributing remaining changelog bullets to {}", commit.name.take(7))
+                            null
+                        }
                     val parentBullets = parent?.let { bulletsAt(it) } ?: emptyList()
                     val added = addedBullets(childBullets, parentBullets)
                     if (added.isNotEmpty()) {
                         val date = Instant.ofEpochSecond(commit.commitTime.toLong()).atZone(ZoneOffset.UTC).toLocalDate()
-                        sections +=
-                            ChangelogSection(commit.name.take(7), date.toString(), tagsByCommit[commit.id].orEmpty().sorted(), added)
+                        val tags = tagsByCommit[commit.id].orEmpty().sorted()
+                        sections += ChangelogSection(commit.name.take(7), date.toString(), tags, added)
                     }
                     commit = parent
-                    childBullets =
-                        if (parent ==
-                            null
-                        ) {
-                            null
-                        } else {
-                            parentBullets.takeIf {
-                                org.eclipse.jgit.treewalk.TreeWalk
-                                    .forPath(repo, path, parent.tree) !=
-                                    null
-                            }
-                        }
+                    childBullets = if (parent != null && fileExistsAt(parent)) parentBullets else null
                 }
             }
             return sections
