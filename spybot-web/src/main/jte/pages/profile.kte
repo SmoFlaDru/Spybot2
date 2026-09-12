@@ -55,22 +55,24 @@
             if (event.target.closest('#passkeyPromptDismiss')) document.querySelector('#passkeyPrompt')?.remove();
         });
 
-        // Keep the browser's passkey manager in sync whenever the list is (re)rendered.
-        window.addEventListener("load", () => passkeys.signalAccepted());
+        // Keep the browser's passkey manager in sync whenever the list is re-rendered.
         document.body.addEventListener("htmx:afterSettle", (event) => {
             if (event.target.id === "passkeys") passkeys.signalAccepted();
         });
 
-        // Right after a TeamSpeak login without a passkey: try the silent route first, and only
-        // ask if the browser won't create one on its own.
+        // WebAuthn calls can't overlap, so on load run them in order: the post-login passkey
+        // offer first (silent attempt, then the visible prompt), signalling afterwards.
         window.addEventListener("load", async () => {
             const prompt = document.querySelector('#passkeyPrompt');
-            if (!prompt) return;
-            if (await passkeys.createSilently()) {
-                htmx.trigger(document.body, 'passkeys_changed');
-                return;
+            if (prompt) {
+                if (await passkeys.createSilently()) {
+                    prompt.remove();
+                    htmx.trigger(document.body, 'passkeys_changed');
+                } else if (await passkeys.canOfferPasskey()) {
+                    prompt.hidden = false;
+                }
             }
-            if (await passkeys.canOfferPasskey()) prompt.hidden = false;
+            await passkeys.signalAccepted();
         });
     </script>
 `)

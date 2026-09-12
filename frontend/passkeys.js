@@ -8,7 +8,7 @@
 // All of them are CSRF-protected like the rest of the site. Spring masks the CSRF token per
 // request, so the raw XSRF-TOKEN cookie is not accepted in a header; the page renders the masked
 // token into a meta tag (layout/base.kte) and that is what gets sent.
-import {startAuthentication, startRegistration} from '@simplewebauthn/browser'
+import {startAuthentication, startRegistration, WebAuthnAbortService} from '@simplewebauthn/browser'
 
 const csrfToken = () => document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
@@ -175,13 +175,22 @@ export const create = async () => {
  * password-manager-assisted sign-in). Resolves true if a passkey was created, false if the
  * browser declined or can't - the caller then decides whether to ask the user explicitly.
  */
-export const createSilently = async () => {
+export const createSilently = async ({timeoutMs = 4000} = {}) => {
     try {
         if (typeof PublicKeyCredential === 'undefined' || typeof PublicKeyCredential.getClientCapabilities !== 'function') return false;
         const capabilities = await PublicKeyCredential.getClientCapabilities();
         if (!capabilities.conditionalCreate) return false;
         const optionsJSON = await postJson('/webauthn/register/options');
-        const credential = await startRegistration({optionsJSON, useAutoRegister: true});
+        // Browsers don't always reject promptly when their conditions aren't met - the request
+        // can just sit there, and while it does, no other WebAuthn call (including the Signal
+        // API) can run. So give it a moment, then cancel the ceremony and move on.
+        const timeout = new Promise(resolve => setTimeout(() => resolve(null), timeoutMs));
+        const credential = await Promise.race([startRegistration({optionsJSON, useAutoRegister: true}), timeout]);
+        if (credential === null) {
+            WebAuthnAbortService.cancelCeremony();
+            console.log('Automatic passkey creation timed out; asking instead');
+            return false;
+        }
         await postJson('/webauthn/register', {publicKey: {credential, label: describeThisDevice()}});
         return true;
     } catch (e) {
