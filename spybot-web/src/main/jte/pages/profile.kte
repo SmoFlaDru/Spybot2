@@ -2,8 +2,26 @@
 @param user: com.spybot.core.model.MergedUserView
 @param passkeys: List<com.spybot.core.model.PasskeyView>
 @param steamIds: List<com.spybot.core.model.SteamIdView>
+@param passkeyPrompt: Boolean = false
 @template.layout.base(title = "Profile", chrome = chrome, activePage = "profile", content = @`
     <div class="row row-cards justify-content-md-center">
+        @if(passkeyPrompt)
+            <div class="col-md-8" id="passkeyPrompt" hidden>
+                <div class="card border-primary">
+                    <div class="card-body d-flex flex-wrap align-items-center gap-3">
+                        <svg width="32" height="32" class="icon text-primary"><use xlink:href="/tabler-sprite.svg#tabler-fingerprint"/></svg>
+                        <div class="flex-fill">
+                            <div class="fw-bold">Skip TeamSpeak next time?</div>
+                            <div class="text-secondary">Add a passkey to this account and log in with Face ID, Touch ID, Windows Hello or your password manager.</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button id="passkeyPromptAdd" class="btn btn-primary">Add a passkey</button>
+                            <button id="passkeyPromptDismiss" class="btn">Not now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header row g-0">
@@ -22,13 +40,31 @@
     <script>
         // The button lives inside the fragment that HTMX re-renders, so delegate from the page.
         document.addEventListener("click", async (event) => {
-            if (!event.target.closest('#addPasskeyButton')) return;
+            if (!event.target.closest('#addPasskeyButton, #passkeyPromptAdd')) return;
             try {
                 await passkeys.create();
+                document.querySelector('#passkeyPrompt')?.remove();
                 htmx.trigger(document.body, 'passkeys_changed');
             } catch (error) {
                 alert("Could not add the passkey: " + error.message);
             }
+        });
+        document.addEventListener("click", (event) => {
+            if (event.target.closest('#passkeyPromptDismiss')) document.querySelector('#passkeyPrompt')?.remove();
+        });
+
+        // Keep the browser's passkey manager in sync whenever the list is re-rendered.
+        document.body.addEventListener("htmx:afterSettle", (event) => {
+            if (event.target.id === "passkeys") passkeys.signalAccepted();
+        });
+
+        // Only show the post-login passkey offer where a passkey can actually be created.
+        window.addEventListener("load", async () => {
+            const prompt = document.querySelector('#passkeyPrompt');
+            if (prompt && await passkeys.canOfferPasskey()) {
+                prompt.hidden = false;
+            }
+            passkeys.signalAccepted();
         });
     </script>
 `)

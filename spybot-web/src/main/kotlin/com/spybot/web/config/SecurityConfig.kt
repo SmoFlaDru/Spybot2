@@ -115,6 +115,7 @@ class SecurityConfig(
                         "/u/*",
                         "/profile",
                         "/profile/**",
+                        "/passkeys/accepted",
                         // Registering a passkey attaches it to the logged-in account.
                         "/webauthn/register/options",
                         "/webauthn/register",
@@ -156,6 +157,7 @@ class SecurityConfig(
                     OrRequestMatcher(
                         pathPattern("/webauthn/**"),
                         pathPattern("/login/webauthn"),
+                        pathPattern("/passkeys/**"),
                     )
                 it
                     .defaultAuthenticationEntryPointFor(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED), jsonEndpoints)

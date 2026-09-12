@@ -12,6 +12,13 @@ import {startAuthentication, startRegistration} from '@simplewebauthn/browser'
 
 const csrfToken = () => document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
+class HttpError extends Error {
+    constructor(url, status) {
+        super(`${url} failed with HTTP ${status}`);
+        this.status = status;
+    }
+}
+
 const postJson = async (url, body) => {
     const response = await fetch(url, {
         method: 'POST',
@@ -22,10 +29,68 @@ const postJson = async (url, body) => {
         body: JSON.stringify(body ?? {}),
     });
     if (!response.ok) {
-        throw new Error(`${url} failed with HTTP ${response.status}`);
+        throw new HttpError(url, response.status);
     }
     return response.json();
 }
+
+const getJson = async (url) => {
+    const response = await fetch(url, {headers: {'Accept': 'application/json'}});
+    if (!response.ok) {
+        throw new HttpError(url, response.status);
+    }
+    return response.json();
+}
+
+// ---- WebAuthn Signal API: keep the browser's passkey manager in sync with the server ----
+// Every call is best-effort: unsupported browsers and failures are silently ignored, since the
+// signals only ever remove or relabel stale entries the manager would otherwise keep showing.
+
+const signalSupported = (name) => typeof PublicKeyCredential !== 'undefined' && typeof PublicKeyCredential[name] === 'function';
+
+/**
+ * Tells the passkey manager exactly which passkeys the logged-in user still has, per user
+ * handle, and the current account name - so passkeys deleted on the profile page disappear from
+ * the manager too, and a renamed or merged account shows its current name. Called whenever the
+ * profile's passkey list renders.
+ */
+export const signalAccepted = async () => {
+    if (!signalSupported('signalAllAcceptedCredentials')) return;
+    try {
+        const accepted = await getJson('/passkeys/accepted');
+        for (const handle of accepted.handles) {
+            await PublicKeyCredential.signalAllAcceptedCredentials({
+                rpId: accepted.rpId,
+                userId: handle.userId,
+                allAcceptedCredentialIds: handle.credentialIds,
+            });
+            if (signalSupported('signalCurrentUserDetails')) {
+                await PublicKeyCredential.signalCurrentUserDetails({
+                    rpId: accepted.rpId,
+                    userId: handle.userId,
+                    name: accepted.name,
+                    displayName: accepted.displayName,
+                });
+            }
+        }
+    } catch (e) {
+        console.log('Passkey signalling skipped:', e);
+    }
+};
+
+/** After a rejected login: if the server has never heard of the credential, let the manager drop it. */
+const signalUnknownIfGone = async (rpId, credentialId) => {
+    if (!signalSupported('signalUnknownCredential')) return;
+    try {
+        const {known} = await getJson(`/passkeys/known?credentialId=${encodeURIComponent(credentialId)}`);
+        if (!known) {
+            await PublicKeyCredential.signalUnknownCredential({rpId, credentialId});
+            console.log('Told the browser to forget a passkey the server no longer knows');
+        }
+    } catch (e) {
+        console.log('Passkey signalling skipped:', e);
+    }
+};
 
 const isAllowedRedirectUrl = url => /^[A-Za-z0-9/]+$/.test(url);
 
@@ -58,19 +123,31 @@ const describeThisDevice = () => {
  * username field and completes the login when one is picked.
  */
 export const autocomplete = async () => {
+    let optionsJSON;
+    let assertion;
     try {
-        const optionsJSON = await postJson('/webauthn/authenticate/options');
-        const assertion = await startAuthentication({optionsJSON, useBrowserAutofill: true});
-        const result = await postJson('/login/webauthn', assertion);
-        if (result && result.authenticated) {
-            redirectAfterLogin();
-        } else {
-            console.log('Passkey login was not accepted', result);
-        }
+        optionsJSON = await postJson('/webauthn/authenticate/options');
+        assertion = await startAuthentication({optionsJSON, useBrowserAutofill: true});
     } catch (e) {
         // Aborted autofill (the user navigated on, or a second call superseded this one) is
         // routine and not worth surfacing.
         console.log('Passkey autofill ended:', e);
+        return;
+    }
+    try {
+        const result = await postJson('/login/webauthn', assertion);
+        if (result && result.authenticated) {
+            redirectAfterLogin();
+            return;
+        }
+        console.log('Passkey login was not accepted', result);
+    } catch (e) {
+        console.log('Passkey login failed:', e);
+        if (e instanceof HttpError && e.status === 401) {
+            // The most common reason: the passkey was deleted on the profile page (or the
+            // account was removed) but the browser's manager still offers it.
+            await signalUnknownIfGone(optionsJSON.rpId, assertion.id);
+        }
     }
 };
 
@@ -90,4 +167,13 @@ export const create = async () => {
 
     await postJson('/webauthn/register', {publicKey: {credential, label: describeThisDevice()}});
     return 'Success!';
+}
+
+/** Whether this browser can create a passkey on this device at all (drives the post-login prompt). */
+export const canOfferPasskey = async () => {
+    try {
+        return typeof PublicKeyCredential !== 'undefined' && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    } catch (e) {
+        return false;
+    }
 }

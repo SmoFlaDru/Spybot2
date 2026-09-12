@@ -101,13 +101,15 @@ class PageController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
+        val passkeys = passkeyQueries.passkeysForUser(principal.id)
         JteprofileGenerated.render(
             out,
             null,
             chrome = chrome.of(principal, request),
             user = principal.user,
-            passkeys = passkeyQueries.passkeysForUser(principal.id),
+            passkeys = passkeys,
             steamIds = steamIdQueries.steamIdsForUser(principal.id),
+            passkeyPrompt = request.getParameter("passkey-prompt") != null && passkeys.isEmpty(),
         )
     }
 
