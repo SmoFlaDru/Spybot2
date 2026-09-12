@@ -30,8 +30,21 @@ class HallOfFameIntegrationTest {
         name: String,
         onlineHours: Double,
     ): Long {
-        val mergedUserId = dsl.fetchOne("insert into spybot_mergeduser (password, name) values ('', ?) returning id", name)!!.get(0, Long::class.java)
-        val tsUserId = dsl.fetchOne("insert into tsuser (name, clientid, merged_user_id) values (?, 0, ?) returning id", name, mergedUserId)!!.get(0, Int::class.java)
+        val mergedUserId =
+            dsl
+                .fetchOne(
+                    "insert into spybot_mergeduser (password, name) values ('', ?) returning id",
+                    name,
+                )!!
+                .get(0, Long::class.java)
+        val tsUserId =
+            dsl
+                .fetchOne(
+                    "insert into tsuser (name, clientid, merged_user_id) values (?, 0, ?) returning id",
+                    name,
+                    mergedUserId,
+                )!!
+                .get(0, Int::class.java)
         dsl.execute("insert into tschannel (id, name, \"order\", pid) values (1, 'Lobby', 0, 0) on conflict (id) do nothing")
         dsl.execute(
             "insert into tsuseractivity (tsuserid, starttime, endtime, cid) values (?, now() - make_interval(secs => ?), now(), 1)",
@@ -64,7 +77,13 @@ class HallOfFameIntegrationTest {
         val byId = entries.associateBy { it.userId }
         assertEquals(Triple(2, 0, 1), byId.getValue(alice).let { Triple(it.numGoldAwards, it.numSilverAwards, it.numBronzeAwards) })
         assertEquals(Triple(0, 1, 0), byId.getValue(bob).let { Triple(it.numGoldAwards, it.numSilverAwards, it.numBronzeAwards) })
-        assertEquals(Triple(0, 0, 0), byId.getValue(carol).let { Triple(it.numGoldAwards, it.numSilverAwards, it.numBronzeAwards) }, "no awards must count as zero, not drop the user")
+        assertEquals(
+            Triple(0, 0, 0),
+            byId.getValue(carol).let {
+                Triple(it.numGoldAwards, it.numSilverAwards, it.numBronzeAwards)
+            },
+            "no awards must count as zero, not drop the user",
+        )
         assertEquals(20.0 * 3600, byId.getValue(bob).time, 5.0)
     }
 
