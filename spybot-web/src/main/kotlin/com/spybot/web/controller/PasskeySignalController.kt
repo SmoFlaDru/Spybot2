@@ -3,11 +3,13 @@ package com.spybot.web.controller
 import com.spybot.core.config.SpybotProperties
 import com.spybot.core.security.MergedUserPrincipal
 import com.spybot.core.service.SpybotQueryService
+import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 import java.net.URI
 
 /**
@@ -44,8 +46,12 @@ class PasskeySignalController(
      */
     @GetMapping("/accepted")
     fun accepted(
-        @AuthenticationPrincipal principal: MergedUserPrincipal,
+        @AuthenticationPrincipal principal: MergedUserPrincipal?,
     ): AcceptedCredentials {
+        // Authorization already requires a login, but the session can be invalidated between that
+        // check and this call (the page fires this right before a logout, for instance) - answer
+        // like any other unauthenticated request rather than blowing up.
+        if (principal == null) throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
         val byHandle = queryService.webauthnCredentialsForUser(principal.id).groupBy { it.userHandle }
         return AcceptedCredentials(
             rpId = URI(properties.publicBaseUrl).host,

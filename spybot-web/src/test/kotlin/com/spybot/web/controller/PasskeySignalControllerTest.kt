@@ -9,7 +9,10 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
+import org.springframework.http.HttpStatus
+import org.springframework.web.server.ResponseStatusException
 import java.time.OffsetDateTime
 
 class PasskeySignalControllerTest {
@@ -48,5 +51,11 @@ class PasskeySignalControllerTest {
 
         assertFalse(controller.known("gone").known)
         assertTrue(controller.known("here").known)
+    }
+
+    @Test
+    fun `accepted answers 401 when the session went away mid-request`() {
+        val error = assertThrows<ResponseStatusException> { controller.accepted(null) }
+        assertEquals(HttpStatus.UNAUTHORIZED, error.statusCode)
     }
 }
