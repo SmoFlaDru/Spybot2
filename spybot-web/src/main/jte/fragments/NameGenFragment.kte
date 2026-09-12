@@ -9,7 +9,7 @@
             <span class="d-block d-sm-inline ms-sm-2">&middot; ${generatedName.category}</span>
         </div>
         <div class="d-flex justify-content-center gap-2 flex-wrap">
-            @template.fragments.namegen_like_button(name = generatedName.displayName, likes = likeStatus.likes, likedByMe = likeStatus.likedByMe, inList = false)
+            @template.fragments.NameGenLikeButton(name = generatedName.displayName, likes = likeStatus.likes, likedByMe = likeStatus.likedByMe, inList = false)
             <button class="btn btn-primary" hx-get="/namegen_fragment" hx-target="#namegen_fragment" hx-swap="outerHTML">
                 <svg width="24" height="24" class="icon"><use xlink:href="/tabler-sprite.svg#tabler-arrows-shuffle"/></svg>
                 Generate another

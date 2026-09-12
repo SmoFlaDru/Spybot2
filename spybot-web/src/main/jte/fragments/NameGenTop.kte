@@ -20,7 +20,7 @@
                             <div class="text-secondary small">${entry.realName} <span class="mx-1">&times;</span> <code>${entry.slang}</code></div>
                         </td>
                         <td class="text-end text-nowrap">
-                            @template.fragments.namegen_like_button(name = entry.displayName, likes = entry.likes, likedByMe = entry.likedByMe, inList = true)
+                            @template.fragments.NameGenLikeButton(name = entry.displayName, likes = entry.likes, likedByMe = entry.likedByMe, inList = true)
                         </td>
                     </tr>
                 @endfor

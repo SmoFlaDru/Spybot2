@@ -1,7 +1,7 @@
 @param chrome: com.spybot.web.jte.PageChrome
 @param timeRange: com.spybot.core.model.TimeRangeView
 @param activityByUser: List<com.spybot.core.model.TimelineUserSeries>
-@template.layout.base(title = "Timeline", chrome = chrome, activePage = "timeline", content = @`
+@template.layout.Base(title = "Timeline", chrome = chrome, activePage = "timeline", content = @`
     <div class="row row-cards justify-content-md-center">
         <div class="col-md-12">
             <div class="card">

@@ -43,7 +43,7 @@ Use Spring MVC + JTE for server-rendered pages. Keep the existing Tabler, HTMX, 
 ## Frontend and templates
 
 - JTE templates live in `spybot-web/src/main/jte` and are generated to Kotlin at build time (`jte { generate() }`). Controllers do not use Spring's `Model`/view names: they call the generated class directly with named arguments inside `response.renderJte { out -> Jte<name>Generated.render(out, null, param = ...) }`, so a wrong or missing template parameter is a compile error.
-- Every page takes a `chrome: com.spybot.web.jte.PageChrome` (logged-in user, CSRF token, build info) built by `PageChromeFactory.of(principal, request)` and forwards it to `@template.layout.base(...)`; fragments take only their own data. Declare list parameters as Kotlin `List<T>`, not `java.util.List`.
+- Every page takes a `chrome: com.spybot.web.jte.PageChrome` (logged-in user, CSRF token, build info) built by `PageChromeFactory.of(principal, request)` and forwards it to `@template.layout.Base(...)`; fragments take only their own data. Declare list parameters as Kotlin `List<T>`, not `java.util.List`.
 - Run `npm ci && npm run package` inside `frontend/` to create `frontend/output/main.js` and `frontend/output/main.css` for local non-Docker builds.
 - Import frontend packages through their public package entry points and use/initialize imported symbols so Rollup retains them. For custom elements, explicitly register the element when appropriate.
 - Spring packages `frontend/output/` alongside `src/main/resources/static/` into `BOOT-INF/classes/static/`; static files are served from the JAR, not a shared volume.

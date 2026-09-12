@@ -3,7 +3,7 @@
 @param passkeys: List<com.spybot.core.model.PasskeyView>
 @param steamIds: List<com.spybot.core.model.SteamIdView>
 @param passkeyPrompt: Boolean = false
-@template.layout.base(title = "Profile", chrome = chrome, activePage = "profile", content = @`
+@template.layout.Base(title = "Profile", chrome = chrome, activePage = "profile", content = @`
     <div class="row row-cards justify-content-md-center">
         @if(passkeyPrompt)
             <div class="col-md-8" id="passkeyPrompt" hidden>
@@ -30,10 +30,10 @@
             </div>
         </div>
         <div id="passkeys" class="col-md-8" hx-trigger="passkeys_changed from:body" hx-get="/profile/passkey/all" hx-target="this">
-            @template.fragments.profile_passkeys(passkeys = passkeys)
+            @template.fragments.ProfilePasskeys(passkeys = passkeys)
         </div>
         <div class="col-md-8" hx-trigger="steamids_changed from:body" hx-get="/profile/steamid/all" hx-target="this">
-            @template.fragments.profile_steamids(steamIds = steamIds)
+            @template.fragments.ProfileSteamIds(steamIds = steamIds)
         </div>
     </div>
 

@@ -1,6 +1,6 @@
 @param chrome: com.spybot.web.jte.PageChrome
 @param page: com.spybot.core.model.UserPageView
-@template.layout.base(title = page.headline.mergedUsername, chrome = chrome, activePage = "user", content = @`
+@template.layout.Base(title = page.headline.mergedUsername, chrome = chrome, activePage = "user", content = @`
     <div class="mt-2 d-flex align-items-center justify-content-center">
         <span class="avatar">${if (page.headline.mergedUsername.isNotBlank()) page.headline.mergedUsername.substring(0, 1) else "?"}</span>
         <span class="display-6 ms-3"><b>${page.headline.mergedUsername}</b></span>

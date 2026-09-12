@@ -1,7 +1,7 @@
 @param chrome: com.spybot.web.jte.PageChrome
 @param channels: List<com.spybot.core.model.ChannelView>
 @param clients: List<com.spybot.core.model.LiveClientView>
-@template.layout.base(title = "Live", chrome = chrome, activePage = "home", content = @`
+@template.layout.Base(title = "Live", chrome = chrome, activePage = "home", content = @`
     <style>
         table {
             margin-left: auto;

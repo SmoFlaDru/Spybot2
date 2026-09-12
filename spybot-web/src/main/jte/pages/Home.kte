@@ -1,11 +1,11 @@
 @param chrome: com.spybot.web.jte.PageChrome
 @param home: com.spybot.core.model.HomePageView
-@template.layout.base(title = "Home", chrome = chrome, activePage = "home", content = @`
+@template.layout.Base(title = "Home", chrome = chrome, activePage = "home", content = @`
     <div class="row row-cards justify-content-md-center">
         <div class="col-md-6 height-xs-150vw">
             <div class="row row-cards row-height-100">
                 <div class="col-md-12 col-height-50">
-                    @template.fragments.activity_fragment(activityChart = home.activityChart)
+                    @template.fragments.ActivityFragment(activityChart = home.activityChart)
                 </div>
                 <div class="col-md-12 col-height-50">
                     <div class="card h-100">
@@ -409,7 +409,7 @@
             <div class="card" style="height: 26em;">
                 <div class="card-body card-body-scrollable card-body-scrollable-shadow">
                     <div class="divide-y">
-                        @template.fragments.recent_events_fragment(recentEvents = home.recentEvents)
+                        @template.fragments.RecentEventsFragment(recentEvents = home.recentEvents)
                     </div>
                 </div>
             </div>
