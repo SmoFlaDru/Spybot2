@@ -72,6 +72,7 @@ class ProfileControllerTest {
 
     private fun principal(id: Long) =
         com.spybot.core.security.MergedUserPrincipal(
-            com.spybot.core.model.MergedUserView(id = id, name = "user$id", obsolete = false, isSuperuser = false, lastLogin = null),
+            com.spybot.core.model
+                .MergedUserView(id = id, name = "user$id", obsolete = false, isSuperuser = false, lastLogin = null),
         )
 }
