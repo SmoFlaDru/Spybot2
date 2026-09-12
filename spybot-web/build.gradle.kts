@@ -58,15 +58,7 @@ dependencies {
 }
 
 val frontendOutputDir = layout.projectDirectory.dir("../frontend/output")
-val legacyStaticDir = layout.projectDirectory.dir("../spybot/static")
-val generatedLegacyStaticDir = layout.buildDirectory.dir("generated-resources/legacy-static")
 val generatedFrontendStaticDir = layout.buildDirectory.dir("generated-resources/frontend-static")
-
-val prepareLegacyStaticAssets =
-    tasks.register<Sync>("prepareLegacyStaticAssets") {
-        from(legacyStaticDir)
-        into(generatedLegacyStaticDir)
-    }
 
 val prepareFrontendAssets =
     tasks.register<Sync>("prepareFrontendAssets") {
@@ -113,9 +105,6 @@ val generateChangelog =
 
 tasks.named<ProcessResources>("processResources") {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    from(prepareLegacyStaticAssets) {
-        into("static")
-    }
     from(prepareFrontendAssets) {
         into("static")
     }

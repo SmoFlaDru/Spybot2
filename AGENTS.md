@@ -2,12 +2,7 @@
 
 ## Project status and boundaries
 
-This repository contains two generations of Spybot:
-
-- `spybot/`, `Spybot2/`, `manage.py`, and the Python files are the legacy Django application. They remain the behavior and UI reference while the rewrite is in progress.
-- `spybot-core/`, `spybot-web/`, and `spybot-recorder/` are the active Spring Boot + Kotlin rewrite. Prefer changing these modules unless a task explicitly concerns legacy behavior.
-
-The rewrite prioritizes feature and route compatibility before redesign. Preserve existing PostgreSQL data and public HTTP paths unless a task explicitly changes them.
+Spybot is a Spring Boot + Kotlin application in `spybot-core/`, `spybot-web/`, and `spybot-recorder/`. It replaced an earlier Django app whose code has been removed from the repository; the PostgreSQL schema and public HTTP paths still date from that app, so preserve existing data and URLs unless a task explicitly changes them. If a legacy behavior needs checking, look it up in version history (the Python code lived in `spybot/` and `Spybot2/`).
 
 ## Architecture
 
@@ -15,7 +10,7 @@ The rewrite prioritizes feature and route compatibility before redesign. Preserv
 - `spybot-web`: Spring MVC application, JTE templates, security configuration, APIs, profile/passkey flows, and scheduled jobs.
 - `spybot-recorder`: dedicated TeamSpeak event-recorder process.
 - `frontend/`: Rollup bundle entry points. `main.js` and `main.css` are the canonical browser bundle URLs.
-- `spybot/static/`: legacy static assets packaged into the Spring web JAR.
+- `spybot-web/src/main/resources/static/`: static assets (icons, `styles.css`, `theme.js`, Tabler sprite) served by Spring.
 - `infrastructure/`: Caddy and Compose infrastructure configuration.
 
 Use Spring MVC + JTE for server-rendered pages. Keep the existing Tabler, HTMX, ApexCharts, and browser-side behavior unless the task requires a change. Avoid adding JPA/Hibernate; persistence belongs in jOOQ services.
@@ -51,7 +46,7 @@ Use Spring MVC + JTE for server-rendered pages. Keep the existing Tabler, HTMX, 
 - Every page takes a `chrome: com.spybot.web.jte.PageChrome` (logged-in user, CSRF token, build info) built by `PageChromeFactory.of(principal, request)` and forwards it to `@template.layout.base(...)`; fragments take only their own data. Declare list parameters as Kotlin `List<T>`, not `java.util.List`.
 - Run `npm ci && npm run package` inside `frontend/` to create `frontend/output/main.js` and `frontend/output/main.css` for local non-Docker builds.
 - Import frontend packages through their public package entry points and use/initialize imported symbols so Rollup retains them. For custom elements, explicitly register the element when appropriate.
-- Spring packages both `frontend/output/` and `spybot/static/` into `BOOT-INF/classes/static/`. Do not restore the old Django `collectstatic` shared-volume model.
+- Spring packages `frontend/output/` alongside `src/main/resources/static/` into `BOOT-INF/classes/static/`; static files are served from the JAR, not a shared volume.
 
 ## Docker and local development
 
@@ -73,11 +68,10 @@ Use Spring MVC + JTE for server-rendered pages. Keep the existing Tabler, HTMX, 
 - Add service tests for domain and query behavior, especially transactions that reassign user-linked data.
 - Add MockMvc/security tests for routes, authorization, redirects, CSRF behavior, and stable JSON payloads.
 - Use Testcontainers PostgreSQL for jOOQ/Flyway integration behavior when database semantics matter.
-- For public pages and fragments, preserve URL and response compatibility with the Django app unless a change is explicitly approved.
+- For public pages and fragments, preserve existing URLs and response shapes unless a change is explicitly approved.
 
 ## Working conventions
 
-- Inspect nearby legacy Django code/templates when reproducing an existing behavior.
 - Keep changes scoped; the worktree may contain unrelated user changes. Never reset, revert, or delete those changes.
 - Use `apply_patch` for source edits and keep new text ASCII unless the file already needs Unicode.
 - Do not commit generated build output, frontend output, Gradle caches, Docker build caches, secrets, or IDE user files.

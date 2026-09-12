@@ -1,28 +1,43 @@
 # Spybot 2
 
-This repository now contains two application generations:
+A Spring Boot + Kotlin application that records TeamSpeak activity and presents it on a website.
+It uses Spring MVC, Spring Security, jOOQ, Flyway, and JTE templates on top of PostgreSQL.
 
-- The original Django/Python implementation in the existing `spybot` and `Spybot2` packages.
-- An in-progress Spring Boot + Kotlin rewrite in `spybot-core`, `spybot-web`, and `spybot-recorder`.
+## Modules
 
-The Spring rewrite uses Spring MVC, Spring Security, jOOQ, Flyway, and JTE templates, while preserving the current PostgreSQL schema for the first release.
+- `spybot-core`: shared query layer, domain models, security principal, Flyway migrations, and jOOQ generation config.
+- `spybot-web`: MVC app, JTE views, REST endpoints, security config, static assets, and scheduled jobs.
+- `spybot-recorder`: dedicated recorder process for the TeamSpeak listener.
+- `frontend`: Rollup bundle (`main.js` / `main.css`) packaged into `spybot-web`.
+- `infrastructure`: Caddy and Compose configuration for the server.
 
-## Spring rewrite modules
+## Building and running
 
-- `spybot-core`: shared query layer, domain models, security principal, Flyway baseline, and jOOQ generation config.
-- `spybot-web`: MVC app, JTE views, REST endpoints, security config, and scheduled jobs.
-- `spybot-recorder`: dedicated recorder process scaffold for the TeamSpeak listener.
+Build the frontend bundle once (Docker does this for you in its Node stage):
 
-## Dependencies
-This project uses `uv` as a Python package manager. 
+```sh
+cd frontend && npm ci && npm run package
+```
 
-### Install project dependencies
-To install all dependencies, first make sure that you are using Python 3.11. Then install uv using `pip install uv`.
-Then install all project dependencies using `uv sync`.
+Then use Gradle for everything else:
 
-### Add a new dependency
-Execute `uv add mydependency`, then commit the files `pyproject.toml` and `uv.lock`.
+```sh
+./gradlew :spybot-web:test
+./gradlew :spybot-web:bootJar
+```
 
-### Code style
-We use `ruff` for code formatting. The code style is enforced in pull requests.
-To install the pre-commit hook, use `pre-commit install`.
+Or run the whole stack locally with Docker:
+
+```sh
+docker compose build
+docker compose up -d
+```
+
+## Code style
+
+Kotlin is formatted with ktlint through pre-commit; the check runs on every pull request.
+To install the hook locally, use `pre-commit install`.
+
+## Changelog
+
+Every pull request adds one bullet at the top of `CHANGELOG.md`; see the notes at the top of that file.
