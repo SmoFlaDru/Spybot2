@@ -48,9 +48,27 @@ class DjangoEraSchemaInsertsTest {
         queryService.createNewsEvent("Alice is user of the week", null)
         queryService.replaceQueuedMessage(identity.mergedUserId, "AWARD_USER_OF_WEEK", "You got an award")
 
-        assertNotNull(dsl.select(SPYBOT_AWARD.DATE).from(SPYBOT_AWARD).fetchSingle().value1())
-        assertNotNull(dsl.select(SPYBOT_NEWSEVENT.DATE).from(SPYBOT_NEWSEVENT).fetchSingle().value1())
-        assertNotNull(dsl.select(SPYBOT_QUEUEDCLIENTMESSAGE.DATE).from(SPYBOT_QUEUEDCLIENTMESSAGE).fetchSingle().value1())
+        assertNotNull(
+            dsl
+                .select(SPYBOT_AWARD.DATE)
+                .from(SPYBOT_AWARD)
+                .fetchSingle()
+                .value1(),
+        )
+        assertNotNull(
+            dsl
+                .select(SPYBOT_NEWSEVENT.DATE)
+                .from(SPYBOT_NEWSEVENT)
+                .fetchSingle()
+                .value1(),
+        )
+        assertNotNull(
+            dsl
+                .select(SPYBOT_QUEUEDCLIENTMESSAGE.DATE)
+                .from(SPYBOT_QUEUEDCLIENTMESSAGE)
+                .fetchSingle()
+                .value1(),
+        )
     }
 
     companion object {
