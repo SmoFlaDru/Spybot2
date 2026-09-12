@@ -1,6 +1,9 @@
 package com.spybot.web
 
-import com.spybot.core.service.SpybotQueryService
+import com.spybot.core.service.AwardQueries
+import com.spybot.core.service.NewsEventQueries
+import com.spybot.core.service.QueuedMessageQueries
+import com.spybot.core.service.RecorderQueries
 import com.spybot.jooq.tables.references.SPYBOT_AWARD
 import com.spybot.jooq.tables.references.SPYBOT_NEWSEVENT
 import com.spybot.jooq.tables.references.SPYBOT_QUEUEDCLIENTMESSAGE
@@ -31,7 +34,16 @@ class DjangoEraSchemaInsertsTest {
     private lateinit var dsl: DSLContext
 
     @Autowired
-    private lateinit var queryService: SpybotQueryService
+    private lateinit var recorderQueries: RecorderQueries
+
+    @Autowired
+    private lateinit var awardQueries: AwardQueries
+
+    @Autowired
+    private lateinit var newsEventQueries: NewsEventQueries
+
+    @Autowired
+    private lateinit var queuedMessageQueries: QueuedMessageQueries
 
     @BeforeEach
     fun dropDefaultsLikeProduction() {
@@ -42,11 +54,11 @@ class DjangoEraSchemaInsertsTest {
 
     @Test
     fun `weekly award inserts set their dates without relying on column defaults`() {
-        val identity = queryService.createTeamSpeakIdentity("Alice", 42, "uid-alice")
+        val identity = recorderQueries.createTeamSpeakIdentity("Alice", 42, "uid-alice")
 
-        queryService.createAward(identity.mergedUserId, 3)
-        queryService.createNewsEvent("Alice is user of the week", null)
-        queryService.replaceQueuedMessage(identity.mergedUserId, "AWARD_USER_OF_WEEK", "You got an award")
+        awardQueries.createAward(identity.mergedUserId, 3)
+        newsEventQueries.createNewsEvent("Alice is user of the week", null)
+        queuedMessageQueries.replaceQueuedMessage(identity.mergedUserId, "AWARD_USER_OF_WEEK", "You got an award")
 
         assertNotNull(
             dsl

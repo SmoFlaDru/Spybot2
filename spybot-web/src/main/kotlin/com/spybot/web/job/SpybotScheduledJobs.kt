@@ -1,14 +1,14 @@
 package com.spybot.web.job
 
 import com.spybot.core.service.AwardService
-import com.spybot.core.service.SpybotQueryService
+import com.spybot.core.service.StatisticsQueries
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 
 @Component
 class SpybotScheduledJobs(
-    private val queryService: SpybotQueryService,
+    private val statisticsQueries: StatisticsQueries,
     private val awardService: AwardService,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
@@ -16,7 +16,7 @@ class SpybotScheduledJobs(
     @Scheduled(cron = "0 59 * * * *")
     fun recordHourlyActivity() {
         log.info("Recording hourly activity snapshot")
-        queryService.recordHourlyActivity()
+        statisticsQueries.recordHourlyActivity()
     }
 
     @Scheduled(cron = "0 59 23 * * SUN")

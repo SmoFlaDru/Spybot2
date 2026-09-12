@@ -13,7 +13,9 @@ import com.spybot.core.model.SelectorOption
 import com.spybot.core.model.TopUserWeek
 import com.spybot.core.model.WeekTrendView
 import com.spybot.core.service.LikedNameService
-import com.spybot.core.service.SpybotQueryService
+import com.spybot.core.service.PasskeyQueries
+import com.spybot.core.service.StatisticsQueries
+import com.spybot.core.service.SteamIdQueries
 import com.spybot.web.filter.VisitorIdFilter
 import com.spybot.web.jte.PageChromeFactory
 import com.spybot.web.service.ChangelogService
@@ -32,11 +34,13 @@ import java.time.OffsetDateTime
 
 class PageControllerTest {
     private val pageService = Mockito.mock(SpybotPageService::class.java)
-    private val queryService = Mockito.mock(SpybotQueryService::class.java)
+    private val passkeyQueries = Mockito.mock(PasskeyQueries::class.java)
+    private val statisticsQueries = Mockito.mock(StatisticsQueries::class.java)
+    private val steamIdQueries = Mockito.mock(SteamIdQueries::class.java)
     private val nameGenService = Mockito.mock(NameGenService::class.java)
     private val likedNameService = Mockito.mock(LikedNameService::class.java)
     private val chrome = PageChromeFactory(pageService, gitProperties = null, buildProperties = null)
-    private val controller = PageController(pageService, queryService, ChangelogService(), nameGenService, likedNameService, chrome)
+    private val controller = PageController(pageService, passkeyQueries, statisticsQueries, steamIdQueries, ChangelogService(), nameGenService, likedNameService, chrome)
 
     private val visitor = Liker.Visitor("0123456789abcdef0123456789abcdef")
 

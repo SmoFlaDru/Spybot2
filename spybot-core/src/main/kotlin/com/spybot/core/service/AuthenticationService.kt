@@ -5,14 +5,14 @@ import org.springframework.stereotype.Service
 
 @Service
 class AuthenticationService(
-    private val queryService: SpybotQueryService,
+    private val mergedUserQueries: MergedUserQueries,
 ) {
-    fun loadPrincipal(userId: Long): MergedUserPrincipal? = queryService.findMergedUserById(userId)?.let(::MergedUserPrincipal)
+    fun loadPrincipal(userId: Long): MergedUserPrincipal? = mergedUserQueries.findMergedUserById(userId)?.let(::MergedUserPrincipal)
 
     fun authenticateByLoginCode(code: String?): MergedUserPrincipal? {
         if (code.isNullOrBlank()) {
             return null
         }
-        return queryService.findMergedUserByLoginCode(code)?.let(::MergedUserPrincipal)
+        return mergedUserQueries.findMergedUserByLoginCode(code)?.let(::MergedUserPrincipal)
     }
 }
