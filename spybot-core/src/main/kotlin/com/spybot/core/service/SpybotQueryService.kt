@@ -855,6 +855,7 @@ class SpybotQueryService(
             .set(SPYBOT_QUEUEDCLIENTMESSAGE.MERGED_USER_ID, mergedUserId)
             .set(SPYBOT_QUEUEDCLIENTMESSAGE.TEXT, text)
             .set(SPYBOT_QUEUEDCLIENTMESSAGE.TYPE, type)
+            .set(SPYBOT_QUEUEDCLIENTMESSAGE.DATE, DSL.currentLocalDate())
             .execute()
     }
 
@@ -897,6 +898,7 @@ class SpybotQueryService(
             .set(SPYBOT_AWARD.POINTS, points)
             .set(SPYBOT_AWARD.TSUSER_ID, null as Int?)
             .set(SPYBOT_AWARD.MERGED_USER_ID, mergedUserId)
+            .set(SPYBOT_AWARD.DATE, DSL.currentOffsetDateTime())
             .execute()
     }
 
@@ -908,6 +910,7 @@ class SpybotQueryService(
             .insertInto(SPYBOT_NEWSEVENT)
             .set(SPYBOT_NEWSEVENT.TEXT, text)
             .set(SPYBOT_NEWSEVENT.WEBSITE_LINK, websiteLink)
+            .set(SPYBOT_NEWSEVENT.DATE, DSL.currentOffsetDateTime())
             .execute()
     }
 
