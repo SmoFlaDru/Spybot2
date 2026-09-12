@@ -62,8 +62,7 @@ class RecorderDomainService(
                     queryService.updateChannelName(event.channelToId, escapeTeamSpeak(it))
                 }
                 queryService.findIdentityByClientId(event.clientId)?.let {
-                    queryService.closeOpenSessionsForUser(it.tsUserId, event.reasonId)
-                    queryService.markClientSessionStarted(it.tsUserId, event.channelToId, event.clientId, joined = false)
+                    queryService.moveClientSession(it.tsUserId, event.channelToId, event.clientId, event.reasonId)
                 }
             }
         }
