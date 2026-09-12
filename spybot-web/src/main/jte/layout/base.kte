@@ -1,10 +1,11 @@
 @param title: String
-@param loggedInUser: com.spybot.core.model.MergedUserView?
-@param csrf: org.springframework.security.web.csrf.CsrfToken?
+@param chrome: com.spybot.web.jte.PageChrome
 @param activePage: String
 @param content: gg.jte.Content
-@param commitHash: String? = null
-@param buildTime: java.time.Instant? = null
+!{val loggedInUser = chrome.loggedInUser}
+!{val csrf = chrome.csrf}
+!{val commitHash = chrome.commitHash}
+!{val buildTime = chrome.buildTime}
 <!DOCTYPE html>
 <html lang="en" data-bs-theme-base="slate">
 <head>

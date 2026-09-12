@@ -38,9 +38,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("com.webauthn4j:webauthn4j-core:0.31.0.RELEASE")
-    implementation("gg.jte:jte:${providers.gradleProperty("jteVersion").get()}")
-    implementation("gg.jte:jte-spring-boot-starter-4:${providers.gradleProperty("jteVersion").get()}")
-    compileOnly("gg.jte:jte-kotlin:${providers.gradleProperty("jteVersion").get()}")
+    // Templates are generated to Kotlin at build time (see the jte block); only the runtime is
+    // needed to execute them, and controllers call the generated classes directly.
+    implementation("gg.jte:jte-runtime:${providers.gradleProperty("jteVersion").get()}")
+    jteGenerate("gg.jte:jte-kotlin:${providers.gradleProperty("jteVersion").get()}")
     implementation(kotlin("reflect"))
     implementation("tools.jackson.module:jackson-module-kotlin")
     implementation("org.springframework.boot:spring-boot-flyway")
@@ -130,7 +131,16 @@ springBoot {
 }
 
 jte {
-    precompile()
+    // generate() turns every .kte into a Kotlin source file compiled with the rest of the module,
+    // so a controller calls Jte<Page>Generated.render(output, null, param = ...) directly and the
+    // compiler checks the template's parameters at the call site. (precompile() compiles the
+    // templates as a separate unit, which is what forced the old Model/view-name indirection.)
+    generate()
+    packageName.set("gg.jte.generated")
+}
+
+tasks.named("compileKotlin") {
+    dependsOn(tasks.named("generateJte"))
 }
 
 tasks.register("verifyFrontendAssets") {
@@ -159,16 +169,6 @@ tasks.named<Jar>("jar") {
     enabled = false
 }
 
-tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
-    dependsOn(tasks.named("precompileJte"))
-    classpath += files(layout.projectDirectory.dir("jte-classes"))
-}
-
-tasks.named<Test>("test") {
-    dependsOn(tasks.named("precompileJte"))
-    classpath += files(layout.projectDirectory.dir("jte-classes"))
-}
-
 val copySentryAgent =
     tasks.register<Copy>("copySentryAgent") {
         from(sentryAgent)
@@ -177,15 +177,7 @@ val copySentryAgent =
     }
 
 tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
-    dependsOn(tasks.named("precompileJte"), tasks.named("verifyFrontendAssets"), copySentryAgent)
-    from(
-        fileTree(layout.projectDirectory.dir("jte-classes")) {
-            include("**/*.class")
-            include("**/*.bin")
-        },
-    ) {
-        into("BOOT-INF/classes")
-    }
+    dependsOn(tasks.named("verifyFrontendAssets"), copySentryAgent)
     archiveFileName.set("app.jar")
 }
 

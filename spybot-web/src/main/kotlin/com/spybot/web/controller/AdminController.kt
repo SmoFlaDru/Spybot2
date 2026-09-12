@@ -1,13 +1,22 @@
 package com.spybot.web.controller
 
 import com.spybot.core.security.MergedUserPrincipal
+import com.spybot.web.jte.PageChromeFactory
+import com.spybot.web.jte.flashMessage
+import com.spybot.web.jte.renderJte
 import com.spybot.web.service.AdminService
+import gg.jte.generated.pages.Jteadmin_dashboardGenerated
+import gg.jte.generated.pages.Jteadmin_merge_usersGenerated
+import gg.jte.generated.pages.Jteadmin_merged_usersGenerated
+import gg.jte.generated.pages.Jteadmin_news_event_formGenerated
+import gg.jte.generated.pages.Jteadmin_news_eventsGenerated
+import gg.jte.generated.pages.Jteadmin_ts_usersGenerated
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.constraints.NotBlank
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
-import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
@@ -21,6 +30,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @RequestMapping("/admin")
 class AdminController(
     private val adminService: AdminService,
+    private val chrome: PageChromeFactory,
 ) {
     data class MergeUsersForm(
         var targetId: Long? = null,
@@ -36,76 +46,65 @@ class AdminController(
     @GetMapping
     fun dashboard(
         @AuthenticationPrincipal principal: MergedUserPrincipal,
-        model: Model,
         request: HttpServletRequest,
-    ): String {
-        model.addAttribute("loggedInUser", principal.user)
-        model.addAttribute("csrf", request.getAttribute("_csrf"))
-        model.addAttribute("activePage", "admin")
-        model.addAttribute("overview", adminService.overview())
-        return "pages/admin_dashboard"
+        response: HttpServletResponse,
+    ) = response.renderJte { out ->
+        Jteadmin_dashboardGenerated.render(out, null, chrome = chrome.of(principal, request), overview = adminService.overview())
     }
 
     @GetMapping("/merged-users")
     fun mergedUsers(
         @RequestParam(required = false) q: String?,
         @AuthenticationPrincipal principal: MergedUserPrincipal,
-        model: Model,
         request: HttpServletRequest,
-    ): String {
-        model.addAttribute("loggedInUser", principal.user)
-        model.addAttribute("csrf", request.getAttribute("_csrf"))
-        model.addAttribute("activePage", "admin")
-        model.addAttribute("query", q.orEmpty())
-        model.addAttribute("users", adminService.mergedUsers(q))
-        return "pages/admin_merged_users"
+        response: HttpServletResponse,
+    ) = response.renderJte { out ->
+        Jteadmin_merged_usersGenerated.render(out, null, chrome = chrome.of(principal, request), query = q.orEmpty(), users = adminService.mergedUsers(q))
     }
 
     @GetMapping("/ts-users")
     fun tsUsers(
         @RequestParam(required = false) q: String?,
         @AuthenticationPrincipal principal: MergedUserPrincipal,
-        model: Model,
         request: HttpServletRequest,
-    ): String {
-        model.addAttribute("loggedInUser", principal.user)
-        model.addAttribute("csrf", request.getAttribute("_csrf"))
-        model.addAttribute("activePage", "admin")
-        model.addAttribute("query", q.orEmpty())
-        model.addAttribute("users", adminService.tsUsers(q))
-        return "pages/admin_ts_users"
+        response: HttpServletResponse,
+    ) = response.renderJte { out ->
+        Jteadmin_ts_usersGenerated.render(out, null, chrome = chrome.of(principal, request), query = q.orEmpty(), users = adminService.tsUsers(q))
     }
 
     @GetMapping("/news-events")
     fun newsEvents(
         @RequestParam(required = false) q: String?,
         @AuthenticationPrincipal principal: MergedUserPrincipal,
-        model: Model,
         request: HttpServletRequest,
-    ): String {
-        model.addAttribute("loggedInUser", principal.user)
-        model.addAttribute("csrf", request.getAttribute("_csrf"))
-        model.addAttribute("activePage", "admin")
-        model.addAttribute("query", q.orEmpty())
-        model.addAttribute("events", adminService.newsEvents(q))
-        ensureFlashAttributesPresent(model)
-        return "pages/admin_news_events"
+        response: HttpServletResponse,
+    ) = response.renderJte { out ->
+        Jteadmin_news_eventsGenerated.render(
+            out,
+            null,
+            chrome = chrome.of(principal, request),
+            query = q.orEmpty(),
+            events = adminService.newsEvents(q),
+            successMessage = request.flashMessage("successMessage"),
+            errorMessage = request.flashMessage("errorMessage"),
+        )
     }
 
     @GetMapping("/news-events/new")
     fun newsEventNew(
         @AuthenticationPrincipal principal: MergedUserPrincipal,
-        model: Model,
         request: HttpServletRequest,
-    ): String {
-        model.addAttribute("loggedInUser", principal.user)
-        model.addAttribute("csrf", request.getAttribute("_csrf"))
-        model.addAttribute("activePage", "admin")
-        model.addAttribute("form", NewsEventForm())
-        model.addAttribute("editMode", false)
-        model.addAttribute("eventId", null)
-        ensureFlashAttributesPresent(model, includeSuccess = false)
-        return "pages/admin_news_event_form"
+        response: HttpServletResponse,
+    ) = response.renderJte { out ->
+        Jteadmin_news_event_formGenerated.render(
+            out,
+            null,
+            chrome = chrome.of(principal, request),
+            form = NewsEventForm(),
+            editMode = false,
+            eventId = null,
+            errorMessage = request.flashMessage("errorMessage"),
+        )
     }
 
     @PostMapping("/news-events")
@@ -126,18 +125,21 @@ class AdminController(
     fun newsEventEdit(
         @PathVariable id: Long,
         @AuthenticationPrincipal principal: MergedUserPrincipal,
-        model: Model,
         request: HttpServletRequest,
-    ): String {
+        response: HttpServletResponse,
+    ) {
         val event = adminService.newsEventById(id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
-        model.addAttribute("loggedInUser", principal.user)
-        model.addAttribute("csrf", request.getAttribute("_csrf"))
-        model.addAttribute("activePage", "admin")
-        model.addAttribute("form", NewsEventForm(text = event.text, websiteLink = event.websiteLink))
-        model.addAttribute("editMode", true)
-        model.addAttribute("eventId", event.id)
-        ensureFlashAttributesPresent(model, includeSuccess = false)
-        return "pages/admin_news_event_form"
+        response.renderJte { out ->
+            Jteadmin_news_event_formGenerated.render(
+                out,
+                null,
+                chrome = chrome.of(principal, request),
+                form = NewsEventForm(text = event.text, websiteLink = event.websiteLink),
+                editMode = true,
+                eventId = event.id,
+                errorMessage = request.flashMessage("errorMessage"),
+            )
+        }
     }
 
     @PostMapping("/news-events/{id}")
@@ -173,28 +175,18 @@ class AdminController(
     @GetMapping("/merge-users")
     fun mergeUsersForm(
         @AuthenticationPrincipal principal: MergedUserPrincipal,
-        model: Model,
         request: HttpServletRequest,
-    ): String {
-        model.addAttribute("loggedInUser", principal.user)
-        model.addAttribute("csrf", request.getAttribute("_csrf"))
-        model.addAttribute("activePage", "admin")
-        model.addAttribute("form", MergeUsersForm())
-        model.addAttribute("mergedUsers", adminService.mergedUsers(null))
-        ensureFlashAttributesPresent(model)
-        return "pages/admin_merge_users"
-    }
-
-    private fun ensureFlashAttributesPresent(
-        model: Model,
-        includeSuccess: Boolean = true,
-    ) {
-        if (includeSuccess && !model.containsAttribute("successMessage")) {
-            model.addAttribute("successMessage", null)
-        }
-        if (!model.containsAttribute("errorMessage")) {
-            model.addAttribute("errorMessage", null)
-        }
+        response: HttpServletResponse,
+    ) = response.renderJte { out ->
+        Jteadmin_merge_usersGenerated.render(
+            out,
+            null,
+            chrome = chrome.of(principal, request),
+            form = MergeUsersForm(),
+            mergedUsers = adminService.mergedUsers(null),
+            successMessage = request.flashMessage("successMessage"),
+            errorMessage = request.flashMessage("errorMessage"),
+        )
     }
 
     @PostMapping("/merge-users")

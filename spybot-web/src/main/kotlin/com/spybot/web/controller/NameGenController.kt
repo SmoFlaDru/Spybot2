@@ -1,16 +1,19 @@
 package com.spybot.web.controller
 
 import com.spybot.core.security.MergedUserPrincipal
+import com.spybot.core.model.NameLikeStatus
 import com.spybot.core.service.LikedNameService
+import com.spybot.web.jte.renderJte
 import com.spybot.web.service.namegen.Likers
 import com.spybot.web.service.namegen.NameGenService
+import gg.jte.generated.fragments.Jtenamegen_like_buttonGenerated
+import gg.jte.generated.fragments.Jtenamegen_topGenerated
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.constraints.NotBlank
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
-import org.springframework.ui.Model
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -35,51 +38,45 @@ class NameGenController(
     fun like(
         @RequestParam("name") @NotBlank name: String,
         @AuthenticationPrincipal principal: MergedUserPrincipal?,
-        model: Model,
         request: HttpServletRequest,
         response: HttpServletResponse,
-    ): String {
+    ) {
         // Only names the generator itself produces can be liked - the table is not a free-text store.
         val generated = nameGenService.find(name) ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown name")
         val status = likedNameService.like(generated.displayName, generated.realName, generated.slang, Likers.of(principal, request))
-        return likeButton(generated.displayName, status, model, response)
+        likeButton(generated.displayName, status, response)
     }
 
     @PostMapping("/unlike")
     fun unlike(
         @RequestParam("name") @NotBlank name: String,
         @AuthenticationPrincipal principal: MergedUserPrincipal?,
-        model: Model,
         request: HttpServletRequest,
         response: HttpServletResponse,
-    ): String {
+    ) {
         val generated = nameGenService.find(name) ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown name")
         val status = likedNameService.unlike(generated.displayName, Likers.of(principal, request))
-        return likeButton(generated.displayName, status, model, response)
+        likeButton(generated.displayName, status, response)
     }
 
     @GetMapping("/top")
     fun top(
         @AuthenticationPrincipal principal: MergedUserPrincipal?,
-        model: Model,
         request: HttpServletRequest,
-    ): String {
-        model.addAttribute("topNames", likedNameService.top(TOP_LIMIT, Likers.of(principal, request)))
-        return "fragments/namegen_top"
+        response: HttpServletResponse,
+    ) = response.renderJte { out ->
+        Jtenamegen_topGenerated.render(out, null, topNames = likedNameService.top(TOP_LIMIT, Likers.of(principal, request)))
     }
 
     private fun likeButton(
         name: String,
-        status: com.spybot.core.model.NameLikeStatus,
-        model: Model,
+        status: NameLikeStatus,
         response: HttpServletResponse,
-    ): String {
-        model.addAttribute("name", name)
-        model.addAttribute("likes", status.likes)
-        model.addAttribute("likedByMe", status.likedByMe)
-        model.addAttribute("inList", false)
+    ) {
         response.setHeader("HX-Trigger", LIKES_CHANGED_EVENT)
-        return "fragments/namegen_like_button"
+        response.renderJte { out ->
+            Jtenamegen_like_buttonGenerated.render(out, null, name = name, likes = status.likes, likedByMe = status.likedByMe, inList = false)
+        }
     }
 
     companion object {

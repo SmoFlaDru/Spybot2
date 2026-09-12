@@ -1,10 +1,7 @@
-@param loggedInUser: com.spybot.core.model.MergedUserView?
-@param channels: java.util.List<com.spybot.core.model.ChannelView>
-@param clients: java.util.List<com.spybot.core.model.LiveClientView>
-@param csrf: org.springframework.security.web.csrf.CsrfToken?
-@param commitHash: String? = null
-@param buildTime: java.time.Instant? = null
-@template.layout.base(title = "Live", loggedInUser = loggedInUser, csrf = csrf, commitHash = commitHash, buildTime = buildTime, activePage = "home", content = @`
+@param chrome: com.spybot.web.jte.PageChrome
+@param channels: List<com.spybot.core.model.ChannelView>
+@param clients: List<com.spybot.core.model.LiveClientView>
+@template.layout.base(title = "Live", chrome = chrome, activePage = "home", content = @`
     <style>
         table {
             margin-left: auto;

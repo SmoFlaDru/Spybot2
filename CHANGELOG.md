@@ -11,6 +11,7 @@ So a release is simply a tag on master.
 - Fixed browsers keeping a day-old copy of the site's scripts and styles after a deploy, which broke passkey registration right after the passkey rework
 - Polished the passkey list on the profile page: provider icon and synced/device-bound badge, relative timestamps, inline rename, and updates without a page reload
 - Moved passkeys to Spring Security's WebAuthn support: existing passkeys were removed and need to be re-added, and passkeys now survive merging two accounts (#218)
+- Pages are rendered by calling the generated JTE templates directly with compile-checked parameters instead of Spring MVC models and view names
 - Multi-statement writes (session start/close, channel moves, identity creation, weekly awards) are now atomic, and the hall of fame loads with one query instead of 26
 - Reads of NOT NULL columns now fail loudly instead of silently defaulting to 0, "" or now(); query results map onto DTOs by constructor, checked at compile time
 - Made changelog rows link to their commit on GitHub, with a hover highlight and relative timestamps instead of a repeated hash (#217)
