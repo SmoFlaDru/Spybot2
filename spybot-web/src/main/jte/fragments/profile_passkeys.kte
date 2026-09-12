@@ -17,7 +17,7 @@
                 <tr>
                     <td>${key.name}</td>
                     <td class="text-secondary">
-                        <span class="d-inline-flex align-items-center gap-2">
+                        <span class="d-inline-flex align-items-center gap-2 text-nowrap">
                             <svg width="20" height="20" class="icon"><use xlink:href="/tabler-sprite.svg#tabler-${key.icon}"/></svg>
                             ${if (key.platform.isEmpty()) "Unknown provider" else key.platform}
                             @if(key.synced)
