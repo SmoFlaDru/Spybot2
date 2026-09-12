@@ -1,6 +1,7 @@
 package com.spybot.web.controller
 
 import com.spybot.core.service.AuthenticationService
+import com.spybot.core.service.SpybotQueryService
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -14,6 +15,7 @@ import org.springframework.web.servlet.view.RedirectView
 @Controller
 class AuthController(
     private val authenticationService: AuthenticationService,
+    private val queryService: SpybotQueryService,
 ) {
     @GetMapping("/link_auth")
     fun linkAuth(
@@ -33,6 +35,11 @@ class AuthController(
             context.authentication = authentication
             SecurityContextHolder.setContext(context)
             HttpSessionSecurityContextRepository().saveContext(context, request, response)
+            // Someone who just went through the TeamSpeak login and has no passkey yet is at the
+            // best possible moment to add one; the profile page offers it once.
+            if (queryService.passkeysForUser(principal.id).isEmpty()) {
+                return RedirectView("/profile?passkey-prompt")
+            }
         }
         return RedirectView("/")
     }

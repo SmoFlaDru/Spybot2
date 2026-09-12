@@ -99,9 +99,11 @@ class PageController(
         model: Model,
         request: HttpServletRequest,
     ): String {
+        val passkeys = queryService.passkeysForUser(principal.id)
         model.addAttribute("loggedInUser", principal.user)
-        model.addAttribute("passkeys", queryService.passkeysForUser(principal.id))
+        model.addAttribute("passkeys", passkeys)
         model.addAttribute("steamIds", queryService.steamIdsForUser(principal.id))
+        model.addAttribute("passkeyPrompt", request.getParameter("passkey-prompt") != null && passkeys.isEmpty())
         model.addAttribute("csrf", request.getAttribute("_csrf"))
         return "pages/profile"
     }

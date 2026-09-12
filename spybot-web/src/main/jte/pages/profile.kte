@@ -1,11 +1,29 @@
 @param loggedInUser: com.spybot.core.model.MergedUserView
 @param passkeys: java.util.List<com.spybot.core.model.PasskeyView>
 @param steamIds: java.util.List<com.spybot.core.model.SteamIdView>
+@param passkeyPrompt: Boolean = false
 @param csrf: org.springframework.security.web.csrf.CsrfToken?
 @param commitHash: String? = null
 @param buildTime: java.time.Instant? = null
 @template.layout.base(title = "Profile", loggedInUser = loggedInUser, csrf = csrf, commitHash = commitHash, buildTime = buildTime, activePage = "profile", content = @`
     <div class="row row-cards justify-content-md-center">
+        @if(passkeyPrompt)
+            <div class="col-md-8" id="passkeyPrompt" hidden>
+                <div class="card border-primary">
+                    <div class="card-body d-flex flex-wrap align-items-center gap-3">
+                        <svg width="32" height="32" class="icon text-primary"><use xlink:href="/tabler-sprite.svg#tabler-fingerprint"/></svg>
+                        <div class="flex-fill">
+                            <div class="fw-bold">Skip TeamSpeak next time?</div>
+                            <div class="text-secondary">Add a passkey to this account and log in with Face ID, Touch ID, Windows Hello or your password manager.</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button id="passkeyPromptAdd" class="btn btn-primary">Add a passkey</button>
+                            <button id="passkeyPromptDismiss" class="btn">Not now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header row g-0">
@@ -24,13 +42,35 @@
     <script>
         // The button lives inside the fragment that HTMX re-renders, so delegate from the page.
         document.addEventListener("click", async (event) => {
-            if (!event.target.closest('#addPasskeyButton')) return;
+            if (!event.target.closest('#addPasskeyButton, #passkeyPromptAdd')) return;
             try {
                 await passkeys.create();
+                document.querySelector('#passkeyPrompt')?.remove();
                 htmx.trigger(document.body, 'passkeys_changed');
             } catch (error) {
                 alert("Could not add the passkey: " + error.message);
             }
+        });
+        document.addEventListener("click", (event) => {
+            if (event.target.closest('#passkeyPromptDismiss')) document.querySelector('#passkeyPrompt')?.remove();
+        });
+
+        // Keep the browser's passkey manager in sync whenever the list is (re)rendered.
+        window.addEventListener("load", () => passkeys.signalAccepted());
+        document.body.addEventListener("htmx:afterSettle", (event) => {
+            if (event.target.id === "passkeys") passkeys.signalAccepted();
+        });
+
+        // Right after a TeamSpeak login without a passkey: try the silent route first, and only
+        // ask if the browser won't create one on its own.
+        window.addEventListener("load", async () => {
+            const prompt = document.querySelector('#passkeyPrompt');
+            if (!prompt) return;
+            if (await passkeys.createSilently()) {
+                htmx.trigger(document.body, 'passkeys_changed');
+                return;
+            }
+            if (await passkeys.canOfferPasskey()) prompt.hidden = false;
         });
     </script>
 `)
