@@ -8,7 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
-- Added Silicon Valley personalities (Sam Altman, Mark Zuckerberg, Tim Cook, Adam Neumann, …) to the name generator (#214)
+- Added Silicon Valley personalities (Sam Altman, Mark Zuckerberg, Tim Cook, …) and US politicians (Donald Trump, Bernie Sanders, Joe Biden, …) to the name generator (#214)
 - Added "baits" to the name generator's Counter-Strike terms so "Bill Baits" can be generated, and removed "bomb" (#213)
 - Required a changelog entry on every pull request via a CI check, and grouped the changelog page by the master commit that added each entry (#209)
 - Added a Steam name generator page that puns famous people's names with Counter-Strike terms, matched by pronunciation rather than spelling (#208)
