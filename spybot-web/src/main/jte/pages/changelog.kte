@@ -12,30 +12,16 @@
                 </div>
                 <div class="list-group list-group-flush">
                     @for(entry in entries)
-                        <div class="list-group-item">
-                            <div class="row align-items-center mb-2">
-                                <div class="col-auto">
-                                    <span class="h3 mb-0">${entry.title}</span>
-                                </div>
-                                <div class="col text-secondary">
-                                    @if(entry.isCommitted)
-                                        ${entry.date.toString()} &middot;
-                                        <a class="link-secondary" href="https://github.com/SmoFlaDru/Spybot2/commit/${entry.commit}"
-                                           target="_blank" rel="noopener">${entry.commit}</a>
-                                        @for(tag in entry.tags)
-                                            <span class="badge bg-blue-lt ms-1">${tag}</span>
-                                        @endfor
-                                    @else
-                                        Uncommitted changes in this working tree
-                                    @endif
-                                </div>
+                        @if(entry.isCommitted)
+                            <a class="list-group-item list-group-item-action text-decoration-none"
+                               href="https://github.com/SmoFlaDru/Spybot2/commit/${entry.commit}" target="_blank" rel="noopener">
+                                @template.pages.changelog_entry(entry = entry)
+                            </a>
+                        @else
+                            <div class="list-group-item">
+                                @template.pages.changelog_entry(entry = entry)
                             </div>
-                            <ul class="mb-0">
-                                @for(feature in entry.bullets)
-                                    <li>${feature}</li>
-                                @endfor
-                            </ul>
-                        </div>
+                        @endif
                     @endfor
                     @if(entries.isEmpty())
                         <div class="list-group-item text-secondary">No changelog entries yet.</div>

@@ -1,0 +1,25 @@
+@param entry: com.spybot.web.service.ChangelogEntry
+<div class="row align-items-center mb-2">
+    <div class="col-auto">
+        <span class="h3 mb-0">${entry.title}</span>
+    </div>
+    <div class="col text-secondary">
+        @if(entry.isCommitted)
+            <relative-time datetime="${entry.committedAt.toString()}">${entry.committedAt.toString()}</relative-time>
+            !{val hashShownAsTitle = entry.tags.isEmpty()}
+            @if(!hashShownAsTitle)
+                &middot; <code>${entry.commit}</code>
+            @endif
+            @for(tag in entry.tags.drop(1))
+                <span class="badge bg-blue-lt ms-1">${tag}</span>
+            @endfor
+        @else
+            Uncommitted changes in this working tree
+        @endif
+    </div>
+</div>
+<ul class="mb-0">
+    @for(feature in entry.bullets)
+        <li>${feature}</li>
+    @endfor
+</ul>

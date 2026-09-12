@@ -1,5 +1,4 @@
 import java.time.Instant
-import java.time.ZoneOffset
 
 buildscript {
     dependencies {
@@ -99,7 +98,7 @@ val generateChangelog =
             val json =
                 groovy.json.JsonOutput.toJson(
                     sections.map {
-                        mapOf("commit" to it.commit, "date" to it.date, "tags" to it.tags, "bullets" to it.bullets)
+                        mapOf("commit" to it.commit, "committedAt" to it.committedAt, "tags" to it.tags, "bullets" to it.bullets)
                     },
                 )
             outputFile.get().asFile.apply {
@@ -191,7 +190,7 @@ tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
 
 data class ChangelogSection(
     val commit: String?,
-    val date: String?,
+    val committedAt: String?,
     val tags: List<String>,
     val bullets: List<String>,
 )
@@ -298,9 +297,9 @@ fun changelogSections(
                     val parentBullets = parent?.let { bulletsAt(it) } ?: emptyList()
                     val added = addedBullets(childBullets, parentBullets)
                     if (added.isNotEmpty()) {
-                        val date = Instant.ofEpochSecond(commit.commitTime.toLong()).atZone(ZoneOffset.UTC).toLocalDate()
+                        val committedAt = Instant.ofEpochSecond(commit.commitTime.toLong())
                         val tags = tagsByCommit[commit.id].orEmpty().sorted()
-                        sections += ChangelogSection(commit.name.take(7), date.toString(), tags, added)
+                        sections += ChangelogSection(commit.name.take(7), committedAt.toString(), tags, added)
                     }
                     commit = parent
                     childBullets = if (parent != null && fileExistsAt(parent)) parentBullets else null
