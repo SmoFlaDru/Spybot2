@@ -54,8 +54,12 @@
     <script>
         window.addEventListener("load", () => {
             document.querySelector('#addPasskeyButton').addEventListener("click", async () => {
-                await passkeys.create();
-                window.location.reload();
+                try {
+                    await passkeys.create();
+                    window.location.reload();
+                } catch (error) {
+                    alert("Could not add the passkey: " + error.message);
+                }
             });
         });
     </script>

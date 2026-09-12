@@ -25,16 +25,29 @@ data class PasskeyView(
     val lastUsed: OffsetDateTime?,
 )
 
-data class StoredPasskey(
-    val id: Long,
+/**
+ * A stored passkey with everything Spring Security's WebAuthn support needs to verify an
+ * assertion. Binary fields are base64url strings. [userHandle] is the WebAuthn user handle the
+ * credential was registered under; it resolves to [userId] via spybot_webauthn_user_handle, which
+ * may differ from the registering user after an account merge.
+ */
+data class WebauthnCredential(
     val userId: Long,
+    val userHandle: String,
+    val credentialId: String,
+    val publicKeyCose: String,
+    val signatureCount: Long,
+    val uvInitialized: Boolean,
+    val transports: List<String>,
+    val backupEligible: Boolean,
+    val backupState: Boolean,
+    val aaguid: String,
+    val attestationObject: String,
+    val attestationClientDataJson: String,
     val name: String,
     val platform: String,
-    val addedOn: OffsetDateTime?,
+    val addedOn: OffsetDateTime,
     val lastUsed: OffsetDateTime?,
-    val credentialId: String,
-    val token: String,
-    val enabled: Boolean,
 )
 
 data class SteamIdView(
