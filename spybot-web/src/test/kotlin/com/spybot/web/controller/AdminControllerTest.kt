@@ -39,7 +39,10 @@ class AdminControllerTest {
 
     @Test
     fun `dashboard renders the overview inside the admin layout`() {
-        Mockito.`when`(adminService.overview()).thenReturn(AdminService.AdminOverview(mergedUsersCount = 12, tsUsersCount = 34, newsEventsCount = 5))
+        Mockito
+            .`when`(
+                adminService.overview(),
+            ).thenReturn(AdminService.AdminOverview(mergedUsersCount = 12, tsUsersCount = 34, newsEventsCount = 5))
 
         val html = render { request, response -> controller.dashboard(admin, request, response) }
 
@@ -58,9 +61,15 @@ class AdminControllerTest {
 
     @Test
     fun `news events page shows the flash message from a redirect`() {
-        Mockito.`when`(adminService.newsEvents(null)).thenReturn(listOf(AdminNewsEventRow(3, "Some news", null, OffsetDateTime.parse("2026-09-12T10:00:00Z"))))
+        Mockito
+            .`when`(
+                adminService.newsEvents(null),
+            ).thenReturn(listOf(AdminNewsEventRow(3, "Some news", null, OffsetDateTime.parse("2026-09-12T10:00:00Z"))))
 
-        val html = render(flash = mapOf("successMessage" to "News event created")) { request, response -> controller.newsEvents(null, admin, request, response) }
+        val html =
+            render(
+                flash = mapOf("successMessage" to "News event created"),
+            ) { request, response -> controller.newsEvents(null, admin, request, response) }
 
         assertTrue("News event created" in html, "flash message must be rendered")
         assertTrue("Some news" in html)
@@ -68,7 +77,10 @@ class AdminControllerTest {
 
     @Test
     fun `news event form renders in create and edit mode`() {
-        Mockito.`when`(adminService.newsEventById(3)).thenReturn(AdminNewsEventRow(3, "Edit me", "https://x", OffsetDateTime.parse("2026-09-12T10:00:00Z")))
+        Mockito
+            .`when`(
+                adminService.newsEventById(3),
+            ).thenReturn(AdminNewsEventRow(3, "Edit me", "https://x", OffsetDateTime.parse("2026-09-12T10:00:00Z")))
 
         val create = render { request, response -> controller.newsEventNew(admin, request, response) }
         val edit = render { request, response -> controller.newsEventEdit(3, admin, request, response) }
@@ -81,7 +93,10 @@ class AdminControllerTest {
     fun `merge users form renders users and an error flash`() {
         Mockito.`when`(adminService.mergedUsers(null)).thenReturn(listOf(AdminMergedUserRow(7, "Benno", false, true, 2, null)))
 
-        val html = render(flash = mapOf("errorMessage" to "Target user is required")) { request, response -> controller.mergeUsersForm(admin, request, response) }
+        val html =
+            render(
+                flash = mapOf("errorMessage" to "Target user is required"),
+            ) { request, response -> controller.mergeUsersForm(admin, request, response) }
 
         assertTrue("Target user is required" in html)
         assertTrue("Benno" in html)

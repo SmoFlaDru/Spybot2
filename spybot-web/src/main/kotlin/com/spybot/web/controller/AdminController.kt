@@ -59,7 +59,13 @@ class AdminController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
-        Jteadmin_merged_usersGenerated.render(out, null, chrome = chrome.of(principal, request), query = q.orEmpty(), users = adminService.mergedUsers(q))
+        Jteadmin_merged_usersGenerated.render(
+            out,
+            null,
+            chrome = chrome.of(principal, request),
+            query = q.orEmpty(),
+            users = adminService.mergedUsers(q),
+        )
     }
 
     @GetMapping("/ts-users")
@@ -69,7 +75,13 @@ class AdminController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
-        Jteadmin_ts_usersGenerated.render(out, null, chrome = chrome.of(principal, request), query = q.orEmpty(), users = adminService.tsUsers(q))
+        Jteadmin_ts_usersGenerated.render(
+            out,
+            null,
+            chrome = chrome.of(principal, request),
+            query = q.orEmpty(),
+            users = adminService.tsUsers(q),
+        )
     }
 
     @GetMapping("/news-events")

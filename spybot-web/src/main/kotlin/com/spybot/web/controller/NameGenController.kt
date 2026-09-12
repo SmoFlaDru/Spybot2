@@ -1,7 +1,7 @@
 package com.spybot.web.controller
 
-import com.spybot.core.security.MergedUserPrincipal
 import com.spybot.core.model.NameLikeStatus
+import com.spybot.core.security.MergedUserPrincipal
 import com.spybot.core.service.LikedNameService
 import com.spybot.web.jte.renderJte
 import com.spybot.web.service.namegen.Likers
@@ -75,7 +75,14 @@ class NameGenController(
     ) {
         response.setHeader("HX-Trigger", LIKES_CHANGED_EVENT)
         response.renderJte { out ->
-            Jtenamegen_like_buttonGenerated.render(out, null, name = name, likes = status.likes, likedByMe = status.likedByMe, inList = false)
+            Jtenamegen_like_buttonGenerated.render(
+                out,
+                null,
+                name = name,
+                likes = status.likes,
+                likedByMe = status.likedByMe,
+                inList = false,
+            )
         }
     }
 
