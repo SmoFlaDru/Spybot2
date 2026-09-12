@@ -37,7 +37,7 @@ dependencies {
     jooqGenerator("org.jooq:jooq-meta-extensions:$jooqVersion")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
