@@ -5,6 +5,7 @@ import com.spybot.core.service.SpybotQueryService
 import com.spybot.core.service.SteamService
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Pattern
+import jakarta.validation.constraints.Size
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -30,7 +31,19 @@ class ProfileController(
         @PathVariable id: Long,
     ): ResponseEntity<Void> =
         if (queryService.deletePasskey(principal.id, id)) {
-            ResponseEntity.noContent().build()
+            ResponseEntity.noContent().header("HX-Trigger", "passkeys_changed").build()
+        } else {
+            ResponseEntity.status(HttpStatus.FORBIDDEN).build()
+        }
+
+    @PostMapping("/passkey/{id}/name")
+    fun renamePasskey(
+        @AuthenticationPrincipal principal: MergedUserPrincipal,
+        @PathVariable id: Long,
+        @RequestParam("name") @NotBlank @Size(max = 255) name: String,
+    ): ResponseEntity<Void> =
+        if (queryService.renamePasskey(principal.id, id, name.trim())) {
+            ResponseEntity.noContent().header("HX-Trigger", "passkeys_changed").build()
         } else {
             ResponseEntity.status(HttpStatus.FORBIDDEN).build()
         }

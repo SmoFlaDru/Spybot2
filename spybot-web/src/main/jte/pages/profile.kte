@@ -13,38 +13,8 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">Passkeys</div>
-                <div class="table-responsive">
-                    <table class="table table-vcenter card-table">
-                        <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Platform</th>
-                            <th>Last used</th>
-                            <th>Created</th>
-                            <th class="w-1"></th>
-                        </tr>
-                        </thead>
-                        <tbody hx-confirm="Are you sure you want to delete the passkey?" hx-target="closest tr"
-                               hx-swap="outerHTML swap:1s">
-                        @for(key in passkeys)
-                            <tr>
-                                <td>${key.name}</td>
-                                <td class="text-secondary">${key.platform}</td>
-                                <td class="text-secondary">${key.lastUsed?.toString() ?: ""}</td>
-                                <td class="text-secondary">${key.addedOn?.toString() ?: ""}</td>
-                                <td><a href="#" hx-delete="/profile/passkey/${key.id}">Delete</a></td>
-                            </tr>
-                        @endfor
-                        </tbody>
-                    </table>
-                </div>
-                <div class="card-body">
-                    <button id="addPasskeyButton" class="btn btn-primary">Add a new passkey</button>
-                </div>
-            </div>
+        <div id="passkeys" class="col-md-8" hx-trigger="passkeys_changed from:body" hx-get="/profile/passkey/all" hx-target="this">
+            @template.fragments.profile_passkeys(passkeys = passkeys)
         </div>
         <div class="col-md-8" hx-trigger="steamids_changed from:body" hx-get="/profile/steamid/all" hx-target="this">
             @template.fragments.profile_steamids(steamIds = steamIds)
@@ -52,15 +22,15 @@
     </div>
 
     <script>
-        window.addEventListener("load", () => {
-            document.querySelector('#addPasskeyButton').addEventListener("click", async () => {
-                try {
-                    await passkeys.create();
-                    window.location.reload();
-                } catch (error) {
-                    alert("Could not add the passkey: " + error.message);
-                }
-            });
+        // The button lives inside the fragment that HTMX re-renders, so delegate from the page.
+        document.addEventListener("click", async (event) => {
+            if (!event.target.closest('#addPasskeyButton')) return;
+            try {
+                await passkeys.create();
+                htmx.trigger(document.body, 'passkeys_changed');
+            } catch (error) {
+                alert("Could not add the passkey: " + error.message);
+            }
         });
     </script>
 `)

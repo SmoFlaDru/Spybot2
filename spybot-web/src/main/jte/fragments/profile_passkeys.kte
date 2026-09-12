@@ -1,0 +1,58 @@
+@param passkeys: java.util.List<com.spybot.core.model.PasskeyView>
+<div class="card">
+    <div class="card-header">Passkeys</div>
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Provider</th>
+                <th>Last used</th>
+                <th>Created</th>
+                <th class="w-1"></th>
+            </tr>
+            </thead>
+            <tbody>
+            @for(key in passkeys)
+                <tr>
+                    <td>${key.name}</td>
+                    <td class="text-secondary">
+                        <span class="d-inline-flex align-items-center gap-2 text-nowrap">
+                            <svg width="20" height="20" class="icon"><use xlink:href="/tabler-sprite.svg#tabler-${key.icon}"/></svg>
+                            ${if (key.platform.isEmpty()) "Unknown provider" else key.platform}
+                            @if(key.synced)
+                                <span class="badge bg-green-lt" title="Backed up by the provider: usable from every device signed in to it">Synced</span>
+                            @else
+                                <span class="badge bg-secondary-lt" title="Stored only on the device it was created on">Device-bound</span>
+                            @endif
+                        </span>
+                    </td>
+                    <td class="text-secondary">
+                        @if(key.lastUsed != null)
+                            <relative-time datetime="${key.lastUsed.toString()}">${key.lastUsed.toString()}</relative-time>
+                        @else
+                            never
+                        @endif
+                    </td>
+                    <td class="text-secondary">
+                        @if(key.addedOn != null)
+                            <relative-time datetime="${key.addedOn.toString()}">${key.addedOn.toString()}</relative-time>
+                        @endif
+                    </td>
+                    <td class="text-nowrap">
+                        <a href="#" hx-get="/profile/passkey/${key.id}/rename" hx-target="closest tr" hx-swap="outerHTML">Rename</a>
+                        &middot;
+                        <a href="#" class="text-danger" hx-delete="/profile/passkey/${key.id}" hx-confirm="Are you sure you want to delete the passkey?" hx-swap="none">Delete</a>
+                    </td>
+                </tr>
+            @endfor
+            @if(passkeys.isEmpty())
+                <tr><td colspan="5" class="text-secondary">No passkeys yet. Add one to log in without TeamSpeak.</td></tr>
+            @endif
+            </tbody>
+        </table>
+    </div>
+    <div class="card-body">
+        <button id="addPasskeyButton" class="btn btn-primary">Add a new passkey</button>
+    </div>
+</div>

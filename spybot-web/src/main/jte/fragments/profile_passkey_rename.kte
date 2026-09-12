@@ -1,0 +1,10 @@
+@param passkey: com.spybot.core.model.PasskeyView
+<tr>
+    <td colspan="5">
+        <form class="d-flex gap-2 align-items-center" hx-post="/profile/passkey/${passkey.id}/name" hx-swap="none">
+            <input type="text" name="name" class="form-control form-control-sm" value="${passkey.name}" maxlength="255" required autofocus>
+            <button type="submit" class="btn btn-sm btn-primary">Save</button>
+            <a href="#" class="btn btn-sm" hx-get="/profile/passkey/all" hx-target="#passkeys" hx-swap="innerHTML">Cancel</a>
+        </form>
+    </td>
+</tr>

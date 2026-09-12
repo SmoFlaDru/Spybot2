@@ -417,6 +417,7 @@ class SpybotQueryService(
                 SPYBOT_USERPASSKEY.PLATFORM,
                 SPYBOT_USERPASSKEY.ADDED_ON,
                 SPYBOT_USERPASSKEY.LAST_USED,
+                SPYBOT_USERPASSKEY.BACKUP_STATE,
             ).from(SPYBOT_USERPASSKEY)
             .where(SPYBOT_USERPASSKEY.USER_ID.eq(userId))
             .orderBy(SPYBOT_USERPASSKEY.ADDED_ON.desc())
@@ -427,8 +428,21 @@ class SpybotQueryService(
                     platform = it.get(SPYBOT_USERPASSKEY.PLATFORM) ?: "",
                     addedOn = it.get(SPYBOT_USERPASSKEY.ADDED_ON),
                     lastUsed = it.get(SPYBOT_USERPASSKEY.LAST_USED),
+                    synced = it.get(SPYBOT_USERPASSKEY.BACKUP_STATE) ?: false,
                 )
             }
+
+    fun renamePasskey(
+        userId: Long,
+        passkeyId: Long,
+        name: String,
+    ): Boolean =
+        dsl
+            .update(SPYBOT_USERPASSKEY)
+            .set(SPYBOT_USERPASSKEY.NAME, name)
+            .where(SPYBOT_USERPASSKEY.ID.eq(passkeyId))
+            .and(SPYBOT_USERPASSKEY.USER_ID.eq(userId))
+            .execute() > 0
 
     fun deletePasskey(
         userId: Long,

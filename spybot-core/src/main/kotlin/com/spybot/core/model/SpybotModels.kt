@@ -20,10 +20,23 @@ data class MergedUserView(
 data class PasskeyView(
     val id: Long,
     val name: String,
+    /** Passkey provider derived from the authenticator's AAGUID ("iCloud Keychain"); empty if unknown. */
     val platform: String,
     val addedOn: OffsetDateTime?,
     val lastUsed: OffsetDateTime?,
-)
+    /** WebAuthn backup state: the passkey is synced by a provider rather than bound to one device. */
+    val synced: Boolean,
+) {
+    /** Tabler sprite icon for the provider, for the profile page. */
+    val icon: String
+        get() =
+            when {
+                platform.contains("iCloud", ignoreCase = true) -> "brand-apple"
+                platform.contains("Google", ignoreCase = true) || platform.contains("Chrom", ignoreCase = true) -> "brand-google"
+                platform.contains("Windows", ignoreCase = true) -> "brand-windows"
+                else -> "key"
+            }
+}
 
 /**
  * A stored passkey with everything Spring Security's WebAuthn support needs to verify an
