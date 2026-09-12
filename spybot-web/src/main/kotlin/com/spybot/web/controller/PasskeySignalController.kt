@@ -2,7 +2,7 @@ package com.spybot.web.controller
 
 import com.spybot.core.config.SpybotProperties
 import com.spybot.core.security.MergedUserPrincipal
-import com.spybot.core.service.SpybotQueryService
+import com.spybot.core.service.PasskeyQueries
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
@@ -20,7 +20,7 @@ import java.net.URI
 @RestController
 @RequestMapping("/passkeys")
 class PasskeySignalController(
-    private val queryService: SpybotQueryService,
+    private val passkeyQueries: PasskeyQueries,
     private val properties: SpybotProperties,
 ) {
     data class HandleCredentials(
@@ -52,13 +52,13 @@ class PasskeySignalController(
         // check and this call (the page fires this right before a logout, for instance) - answer
         // like any other unauthenticated request rather than blowing up.
         if (principal == null) throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
-        val byHandle = queryService.webauthnCredentialsForUser(principal.id).groupBy { it.userHandle }
+        val byHandle = passkeyQueries.webauthnCredentialsForUser(principal.id).groupBy { it.userHandle }
         return AcceptedCredentials(
             rpId = URI(properties.publicBaseUrl).host,
             name = principal.username,
             displayName = principal.displayName,
             handles =
-                queryService.webauthnUserHandlesForUser(principal.id).map { handle ->
+                passkeyQueries.webauthnUserHandlesForUser(principal.id).map { handle ->
                     HandleCredentials(handle, byHandle[handle].orEmpty().map { it.credentialId })
                 },
         )
@@ -72,5 +72,5 @@ class PasskeySignalController(
     @GetMapping("/known")
     fun known(
         @RequestParam credentialId: String,
-    ): KnownCredential = KnownCredential(queryService.findWebauthnCredential(credentialId) != null)
+    ): KnownCredential = KnownCredential(passkeyQueries.findWebauthnCredential(credentialId) != null)
 }

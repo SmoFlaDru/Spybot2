@@ -4,7 +4,7 @@ import com.spybot.core.config.SpybotProperties
 import com.spybot.core.model.MergedUserView
 import com.spybot.core.model.WebauthnCredential
 import com.spybot.core.security.MergedUserPrincipal
-import com.spybot.core.service.SpybotQueryService
+import com.spybot.core.service.PasskeyQueries
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -16,8 +16,8 @@ import org.springframework.web.server.ResponseStatusException
 import java.time.OffsetDateTime
 
 class PasskeySignalControllerTest {
-    private val queryService = Mockito.mock(SpybotQueryService::class.java)
-    private val controller = PasskeySignalController(queryService, SpybotProperties(publicBaseUrl = "https://spybot.bensge.com"))
+    private val passkeyQueries = Mockito.mock(PasskeyQueries::class.java)
+    private val controller = PasskeySignalController(passkeyQueries, SpybotProperties(publicBaseUrl = "https://spybot.bensge.com"))
     private val principal =
         MergedUserPrincipal(MergedUserView(id = 708, name = "bensge", obsolete = false, isSuperuser = false, lastLogin = null))
 
@@ -28,10 +28,10 @@ class PasskeySignalControllerTest {
 
     @Test
     fun `accepted lists credential ids per handle, including handles that have none left`() {
-        Mockito.`when`(queryService.webauthnUserHandlesForUser(708)).thenReturn(listOf("handle-old", "handle-new"))
+        Mockito.`when`(passkeyQueries.webauthnUserHandlesForUser(708)).thenReturn(listOf("handle-old", "handle-new"))
         Mockito
             .`when`(
-                queryService.webauthnCredentialsForUser(708),
+                passkeyQueries.webauthnCredentialsForUser(708),
             ).thenReturn(listOf(credential("handle-new", "cred-1"), credential("handle-new", "cred-2")))
 
         val accepted = controller.accepted(principal)
@@ -50,8 +50,8 @@ class PasskeySignalControllerTest {
 
     @Test
     fun `known reports whether the server still has the credential`() {
-        Mockito.`when`(queryService.findWebauthnCredential("gone")).thenReturn(null)
-        Mockito.`when`(queryService.findWebauthnCredential("here")).thenReturn(credential("h", "here"))
+        Mockito.`when`(passkeyQueries.findWebauthnCredential("gone")).thenReturn(null)
+        Mockito.`when`(passkeyQueries.findWebauthnCredential("here")).thenReturn(credential("h", "here"))
 
         assertFalse(controller.known("gone").known)
         assertTrue(controller.known("here").known)

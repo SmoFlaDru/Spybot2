@@ -1,7 +1,7 @@
 package com.spybot.web.security
 
 import com.spybot.core.model.WebauthnCredential
-import com.spybot.core.service.SpybotQueryService
+import com.spybot.core.service.PasskeyQueries
 import com.webauthn4j.converter.AttestationObjectConverter
 import com.webauthn4j.converter.util.ObjectConverter
 import org.slf4j.LoggerFactory
@@ -25,25 +25,25 @@ import java.util.Base64
  */
 @Component
 class WebauthnCredentialRepository(
-    private val queryService: SpybotQueryService,
+    private val passkeyQueries: PasskeyQueries,
 ) : UserCredentialRepository {
     private val log = LoggerFactory.getLogger(javaClass)
     private val attestationObjectConverter = AttestationObjectConverter(ObjectConverter())
 
     override fun findByCredentialId(credentialId: Bytes): CredentialRecord? =
-        queryService.findWebauthnCredential(credentialId.toBase64UrlString())?.toRecord()
+        passkeyQueries.findWebauthnCredential(credentialId.toBase64UrlString())?.toRecord()
 
     override fun findByUserId(userId: Bytes): List<CredentialRecord> =
-        queryService.webauthnCredentialsForHandle(userId.toBase64UrlString()).map { it.toRecord() }
+        passkeyQueries.webauthnCredentialsForHandle(userId.toBase64UrlString()).map { it.toRecord() }
 
     override fun save(credentialRecord: CredentialRecord) {
         val handle = credentialRecord.userEntityUserId.toBase64UrlString()
         val userId =
-            queryService.findWebauthnUserIdByHandle(handle)
+            passkeyQueries.findWebauthnUserIdByHandle(handle)
                 ?: throw IllegalStateException("WebAuthn user handle $handle is not mapped to a user")
-        val existing = queryService.findWebauthnCredential(credentialRecord.credentialId.toBase64UrlString())
+        val existing = passkeyQueries.findWebauthnCredential(credentialRecord.credentialId.toBase64UrlString())
         val aaguid = existing?.aaguid ?: aaguidOf(credentialRecord)
-        queryService.saveWebauthnCredential(
+        passkeyQueries.saveWebauthnCredential(
             WebauthnCredential(
                 userId = userId,
                 userHandle = handle,
@@ -71,7 +71,7 @@ class WebauthnCredentialRepository(
     }
 
     override fun delete(credentialId: Bytes) {
-        queryService.deleteWebauthnCredential(credentialId.toBase64UrlString())
+        passkeyQueries.deleteWebauthnCredential(credentialId.toBase64UrlString())
     }
 
     private fun aaguidOf(record: CredentialRecord): String =

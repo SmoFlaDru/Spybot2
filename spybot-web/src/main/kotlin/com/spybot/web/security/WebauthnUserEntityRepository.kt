@@ -1,6 +1,7 @@
 package com.spybot.web.security
 
-import com.spybot.core.service.SpybotQueryService
+import com.spybot.core.service.MergedUserQueries
+import com.spybot.core.service.PasskeyQueries
 import org.springframework.security.web.webauthn.api.Bytes
 import org.springframework.security.web.webauthn.api.ImmutablePublicKeyCredentialUserEntity
 import org.springframework.security.web.webauthn.api.PublicKeyCredentialUserEntity
@@ -24,18 +25,19 @@ import java.util.Base64
  */
 @Component
 class WebauthnUserEntityRepository(
-    private val queryService: SpybotQueryService,
+    private val mergedUserQueries: MergedUserQueries,
+    private val passkeyQueries: PasskeyQueries,
 ) : PublicKeyCredentialUserEntityRepository {
     override fun findById(id: Bytes): PublicKeyCredentialUserEntity? {
-        val userId = queryService.findWebauthnUserIdByHandle(id.toBase64UrlString()) ?: return null
-        val user = queryService.findMergedUserById(userId) ?: return null
+        val userId = passkeyQueries.findWebauthnUserIdByHandle(id.toBase64UrlString()) ?: return null
+        val user = mergedUserQueries.findMergedUserById(userId) ?: return null
         return entity(id, userId, user.name)
     }
 
     override fun findByUsername(username: String): PublicKeyCredentialUserEntity? {
         val userId = username.toLongOrNull() ?: return null
-        val user = queryService.findMergedUserById(userId) ?: return null
-        val handle = queryService.findOrCreateWebauthnUserHandle(userId) { Bytes.random().toBase64UrlString() }
+        val user = mergedUserQueries.findMergedUserById(userId) ?: return null
+        val handle = passkeyQueries.findOrCreateWebauthnUserHandle(userId) { Bytes.random().toBase64UrlString() }
         return entity(handleBytes(handle), userId, user.name)
     }
 
@@ -43,11 +45,11 @@ class WebauthnUserEntityRepository(
         val userId =
             userEntity.name.toLongOrNull()
                 ?: throw IllegalArgumentException("WebAuthn user entity name must be a merged user id: ${userEntity.name}")
-        queryService.saveWebauthnUserHandle(userEntity.id.toBase64UrlString(), userId)
+        passkeyQueries.saveWebauthnUserHandle(userEntity.id.toBase64UrlString(), userId)
     }
 
     override fun delete(id: Bytes) {
-        queryService.deleteWebauthnUserHandle(id.toBase64UrlString())
+        passkeyQueries.deleteWebauthnUserHandle(id.toBase64UrlString())
     }
 
     private fun entity(

@@ -4,7 +4,7 @@ import com.spybot.core.model.MergedUserView
 import com.spybot.core.model.PasskeyView
 import com.spybot.core.security.MergedUserPrincipal
 import com.spybot.core.service.AuthenticationService
-import com.spybot.core.service.SpybotQueryService
+import com.spybot.core.service.PasskeyQueries
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -14,15 +14,15 @@ import java.time.OffsetDateTime
 
 class AuthControllerTest {
     private val authenticationService = Mockito.mock(AuthenticationService::class.java)
-    private val queryService = Mockito.mock(SpybotQueryService::class.java)
-    private val controller = AuthController(authenticationService, queryService)
+    private val passkeyQueries = Mockito.mock(PasskeyQueries::class.java)
+    private val controller = AuthController(authenticationService, passkeyQueries)
     private val principal =
         MergedUserPrincipal(MergedUserView(id = 708, name = "bensge", obsolete = false, isSuperuser = false, lastLogin = null))
 
     @Test
     fun `a magic-link login without any passkey lands on the profile with the passkey prompt`() {
         Mockito.`when`(authenticationService.authenticateByLoginCode("code")).thenReturn(principal)
-        Mockito.`when`(queryService.passkeysForUser(708)).thenReturn(emptyList())
+        Mockito.`when`(passkeyQueries.passkeysForUser(708)).thenReturn(emptyList())
 
         val view = controller.linkAuth("code", MockHttpServletRequest(), MockHttpServletResponse())
 
@@ -34,7 +34,7 @@ class AuthControllerTest {
         Mockito.`when`(authenticationService.authenticateByLoginCode("code")).thenReturn(principal)
         Mockito
             .`when`(
-                queryService.passkeysForUser(708),
+                passkeyQueries.passkeysForUser(708),
             ).thenReturn(listOf(PasskeyView(1, "Mac", "iCloud Keychain", OffsetDateTime.now(), null, true)))
 
         val view = controller.linkAuth("code", MockHttpServletRequest(), MockHttpServletResponse())

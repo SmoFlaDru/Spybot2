@@ -34,6 +34,7 @@ Use Spring MVC + JTE for server-rendered pages. Keep the existing Tabler, HTMX, 
 
 - Keep jOOQ generator artifacts aligned to the `jooqVersion` Gradle property. A mixed generator classpath causes runtime `NoSuchMethodError` failures.
 - Prefer typed jOOQ DSL for simple CRUD and compact queries. Leave complex analytical SQL readable and well-tested rather than forcing an opaque DSL translation.
+- Persistence lives in per-domain `*Queries` services in `spybot-core` (`RecorderQueries`, `StatisticsQueries`, `PasskeyQueries`, ...), each a thin `@Service` over `DSLContext`. Add a query to the service that owns the table it reads; inject only the services a class actually uses. Shared projections go in `service/Projections.kt`, string-keyed accessors for hand-written SQL in `jooq/Records.kt`.
 - For `TIMESTAMPTZ` generated fields, use `OffsetDateTime` and typed functions such as `DSL.currentOffsetDateTime()`, not `currentTimestamp()`.
 
 ## Authentication and security
