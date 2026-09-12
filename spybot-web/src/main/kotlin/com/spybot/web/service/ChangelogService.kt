@@ -6,16 +6,16 @@ import org.springframework.stereotype.Service
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.module.kotlin.kotlinModule
 import tools.jackson.module.kotlin.readValue
-import java.time.LocalDate
+import java.time.Instant
 
 /**
  * One group of changelog bullets: everything a single master commit added to CHANGELOG.md.
- * [commit] and [date] are null only for bullets that exist in the working tree but aren't
+ * [commit] and [committedAt] are null only for bullets that exist in the working tree but aren't
  * committed yet, which can only happen on a developer machine.
  */
 data class ChangelogEntry(
     val commit: String?,
-    val date: LocalDate?,
+    val committedAt: Instant?,
     val tags: List<String>,
     val bullets: List<String>,
 ) {
@@ -52,12 +52,12 @@ class ChangelogService {
 
     internal fun parseJson(json: ByteArray): List<ChangelogEntry> {
         val raw: List<RawSection> = mapper.readValue(json)
-        return raw.map { ChangelogEntry(it.commit, it.date?.let(LocalDate::parse), it.tags, it.bullets) }
+        return raw.map { ChangelogEntry(it.commit, it.committedAt?.let(Instant::parse), it.tags, it.bullets) }
     }
 
     private data class RawSection(
         val commit: String?,
-        val date: String?,
+        val committedAt: String?,
         val tags: List<String> = emptyList(),
         val bullets: List<String> = emptyList(),
     )
