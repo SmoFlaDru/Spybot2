@@ -22,7 +22,6 @@ import com.spybot.core.model.RecentEventView
 import com.spybot.core.model.RecentEventsPayload
 import com.spybot.core.model.SelectorOption
 import com.spybot.core.model.SteamIdView
-import com.spybot.core.model.WebauthnCredential
 import com.spybot.core.model.StreakView
 import com.spybot.core.model.TeamSpeakChannelSnapshot
 import com.spybot.core.model.TeamSpeakIdentity
@@ -32,9 +31,11 @@ import com.spybot.core.model.TimelineUserSeries
 import com.spybot.core.model.TopUserWeek
 import com.spybot.core.model.UserHeadline
 import com.spybot.core.model.UserPageView
+import com.spybot.core.model.WebauthnCredential
 import com.spybot.core.model.WeekComparisonPoint
 import com.spybot.core.model.WeekTrendView
 import com.spybot.core.model.WidgetLegacyResponse
+import com.spybot.jooq.tables.records.SpybotUserpasskeyRecord
 import com.spybot.jooq.tables.references.HOURLYACTIVITY
 import com.spybot.jooq.tables.references.SPYBOT_AWARD
 import com.spybot.jooq.tables.references.SPYBOT_LOGINLINK
@@ -42,7 +43,6 @@ import com.spybot.jooq.tables.references.SPYBOT_MERGEDUSER
 import com.spybot.jooq.tables.references.SPYBOT_NEWSEVENT
 import com.spybot.jooq.tables.references.SPYBOT_QUEUEDCLIENTMESSAGE
 import com.spybot.jooq.tables.references.SPYBOT_STEAMID
-import com.spybot.jooq.tables.records.SpybotUserpasskeyRecord
 import com.spybot.jooq.tables.references.SPYBOT_USERPASSKEY
 import com.spybot.jooq.tables.references.SPYBOT_WEBAUTHN_USER_HANDLE
 import com.spybot.jooq.tables.references.TSCHANNEL

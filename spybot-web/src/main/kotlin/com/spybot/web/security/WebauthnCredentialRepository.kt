@@ -58,7 +58,10 @@ class WebauthnCredentialRepository(
                 // Spring's CredentialRecord declares these nullable, but registration always sets
                 // them and authentication can't work without the attestation object.
                 attestationObject = requireNotNull(credentialRecord.attestationObject) { "attestation object missing" }.toBase64UrlString(),
-                attestationClientDataJson = requireNotNull(credentialRecord.attestationClientDataJSON) { "client data missing" }.toBase64UrlString(),
+                attestationClientDataJson =
+                    requireNotNull(
+                        credentialRecord.attestationClientDataJSON,
+                    ) { "client data missing" }.toBase64UrlString(),
                 name = existing?.name ?: credentialRecord.label.orEmpty().ifBlank { "Passkey" },
                 platform = existing?.platform ?: PasskeyProviders.nameFor(aaguid),
                 addedOn = existing?.addedOn ?: (credentialRecord.created ?: Instant.now()).atOffset(ZoneOffset.UTC),

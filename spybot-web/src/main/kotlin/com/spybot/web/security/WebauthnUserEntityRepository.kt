@@ -40,7 +40,9 @@ class WebauthnUserEntityRepository(
     }
 
     override fun save(userEntity: PublicKeyCredentialUserEntity) {
-        val userId = userEntity.name.toLongOrNull() ?: throw IllegalArgumentException("WebAuthn user entity name must be a merged user id: ${userEntity.name}")
+        val userId =
+            userEntity.name.toLongOrNull()
+                ?: throw IllegalArgumentException("WebAuthn user entity name must be a merged user id: ${userEntity.name}")
         queryService.saveWebauthnUserHandle(userEntity.id.toBase64UrlString(), userId)
     }
 

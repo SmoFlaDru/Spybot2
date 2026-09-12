@@ -26,7 +26,12 @@ class MergedUserWebAuthnAuthenticationProviderTest {
 
     private fun springResult(name: String) =
         WebAuthnAuthentication(
-            ImmutablePublicKeyCredentialUserEntity.builder().id(Bytes.random()).name(name).displayName("Alice").build(),
+            ImmutablePublicKeyCredentialUserEntity
+                .builder()
+                .id(Bytes.random())
+                .name(name)
+                .displayName("Alice")
+                .build(),
             listOf(SimpleGrantedAuthority("ROLE_USER")),
         )
 

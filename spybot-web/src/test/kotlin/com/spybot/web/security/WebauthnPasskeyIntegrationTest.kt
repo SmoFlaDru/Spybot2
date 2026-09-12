@@ -8,10 +8,10 @@ import com.webauthn4j.data.attestation.AttestationObject
 import com.webauthn4j.data.attestation.authenticator.AAGUID
 import com.webauthn4j.data.attestation.authenticator.AttestedCredentialData
 import com.webauthn4j.data.attestation.authenticator.AuthenticatorData
-import com.webauthn4j.data.attestation.statement.NoneAttestationStatement
-import com.webauthn4j.data.extension.authenticator.RegistrationExtensionAuthenticatorOutput
 import com.webauthn4j.data.attestation.authenticator.EC2COSEKey
 import com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier
+import com.webauthn4j.data.attestation.statement.NoneAttestationStatement
+import com.webauthn4j.data.extension.authenticator.RegistrationExtensionAuthenticatorOutput
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -20,10 +20,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.security.web.webauthn.api.AttestationConveyancePreference
 import org.springframework.security.web.webauthn.api.AuthenticatorAssertionResponse
 import org.springframework.security.web.webauthn.api.AuthenticatorAttestationResponse
 import org.springframework.security.web.webauthn.api.AuthenticatorSelectionCriteria
-import org.springframework.security.web.webauthn.api.AttestationConveyancePreference
 import org.springframework.security.web.webauthn.api.Bytes
 import org.springframework.security.web.webauthn.api.ImmutableAuthenticationExtensionsClientOutputs
 import org.springframework.security.web.webauthn.api.ImmutableCredentialRecord
@@ -85,9 +85,16 @@ class WebauthnPasskeyIntegrationTest {
 
     private val rpId = "spybot.bensge.com"
     private val origin = "https://spybot.bensge.com"
-    private val jackson = JsonMapper.builder().addModule(org.springframework.security.web.webauthn.jackson.WebauthnJacksonModule()).build()
+    private val jackson =
+        JsonMapper
+            .builder()
+            .addModule(
+                org.springframework.security.web.webauthn.jackson
+                    .WebauthnJacksonModule(),
+            ).build()
 
-    private fun newUser(name: String): Long = queryService.createTeamSpeakIdentity(name, name.hashCode() and 0xffff, "uid-$name").mergedUserId
+    private fun newUser(name: String): Long =
+        queryService.createTeamSpeakIdentity(name, name.hashCode() and 0xffff, "uid-$name").mergedUserId
 
     @Test
     fun `a user gets one random handle, reused for every registration`() {
@@ -111,19 +118,35 @@ class WebauthnPasskeyIntegrationTest {
         val options =
             PublicKeyCredentialCreationOptions
                 .builder()
-                .rp(PublicKeyCredentialRpEntity.builder().id(rpId).name("Spybot").build())
-                .user(user)
+                .rp(
+                    PublicKeyCredentialRpEntity
+                        .builder()
+                        .id(rpId)
+                        .name("Spybot")
+                        .build(),
+                ).user(user)
                 .challenge(harChallenge)
                 .pubKeyCredParams(PublicKeyCredentialParameters.ES256, PublicKeyCredentialParameters.RS256)
                 .authenticatorSelection(
-                    AuthenticatorSelectionCriteria.builder().residentKey(ResidentKeyRequirement.REQUIRED).userVerification(UserVerificationRequirement.PREFERRED).build(),
-                )
-                .attestation(AttestationConveyancePreference.NONE)
+                    AuthenticatorSelectionCriteria
+                        .builder()
+                        .residentKey(
+                            ResidentKeyRequirement.REQUIRED,
+                        ).userVerification(UserVerificationRequirement.PREFERRED)
+                        .build(),
+                ).attestation(AttestationConveyancePreference.NONE)
                 .build()
         val credentialJson = javaClass.getResource("/passkey/verify-registration-safari.json")!!.readText()
-        val credential: PublicKeyCredential<AuthenticatorAttestationResponse> = jackson.readValue(credentialJson, jackson.typeFactory.constructParametricType(PublicKeyCredential::class.java, AuthenticatorAttestationResponse::class.java))
+        val credential: PublicKeyCredential<AuthenticatorAttestationResponse> =
+            jackson.readValue(
+                credentialJson,
+                jackson.typeFactory.constructParametricType(PublicKeyCredential::class.java, AuthenticatorAttestationResponse::class.java),
+            )
 
-        val record = relyingParty.registerCredential(ImmutableRelyingPartyRegistrationRequest(options, RelyingPartyPublicKey(credential, "Mac (Safari)")))
+        val record =
+            relyingParty.registerCredential(
+                ImmutableRelyingPartyRegistrationRequest(options, RelyingPartyPublicKey(credential, "Mac (Safari)")),
+            )
 
         val stored = credentials.findByCredentialId(record.credentialId)!!
         assertEquals(user.id, stored.userEntityUserId)
@@ -203,13 +226,21 @@ class WebauthnPasskeyIntegrationTest {
             val authenticatorData =
                 AuthenticatorData<RegistrationExtensionAuthenticatorOutput>(
                     MessageDigest.getInstance("SHA-256").digest(rpId.toByteArray()),
-                    (AuthenticatorData.BIT_UP.toInt() or AuthenticatorData.BIT_UV.toInt() or AuthenticatorData.BIT_BE.toInt() or AuthenticatorData.BIT_BS.toInt() or AuthenticatorData.BIT_AT.toInt()).toByte(),
+                    (
+                        AuthenticatorData.BIT_UP.toInt() or AuthenticatorData.BIT_UV.toInt() or AuthenticatorData.BIT_BE.toInt() or
+                            AuthenticatorData.BIT_BS.toInt() or
+                            AuthenticatorData.BIT_AT.toInt()
+                    ).toByte(),
                     0,
                     attestedData,
                 )
-            val attestationObject = AttestationObjectConverter(objectConverter).convertToBytes(AttestationObject(authenticatorData, NoneAttestationStatement()))
+            val attestationObject =
+                AttestationObjectConverter(
+                    objectConverter,
+                ).convertToBytes(AttestationObject(authenticatorData, NoneAttestationStatement()))
             val registrationClientData =
-                """{"type":"webauthn.create","challenge":"${Bytes.random().toBase64UrlString()}","origin":"$origin","crossOrigin":false}""".toByteArray()
+                """{"type":"webauthn.create","challenge":"${Bytes.random().toBase64UrlString()}","origin":"$origin","crossOrigin":false}"""
+                    .toByteArray()
             return ImmutableCredentialRecord
                 .builder()
                 .credentialType(PublicKeyCredentialType.PUBLIC_KEY)
@@ -233,7 +264,12 @@ class WebauthnPasskeyIntegrationTest {
             signCount: Long = 1,
         ): RelyingPartyAuthenticationRequest {
             val challenge = Bytes.random()
-            val requestOptions = PublicKeyCredentialRequestOptions.builder().challenge(challenge).rpId(rpId).build()
+            val requestOptions =
+                PublicKeyCredentialRequestOptions
+                    .builder()
+                    .challenge(challenge)
+                    .rpId(rpId)
+                    .build()
             val clientDataJson =
                 """{"type":"webauthn.get","challenge":"${challenge.toBase64UrlString()}","origin":"$origin","crossOrigin":false}"""
                     .toByteArray()
@@ -243,10 +279,12 @@ class WebauthnPasskeyIntegrationTest {
                     byteArrayOf(0x1d) + // UP | UV | BE | BS
                     byteArrayOf((signCount shr 24).toByte(), (signCount shr 16).toByte(), (signCount shr 8).toByte(), signCount.toByte())
             val signature =
-                Signature.getInstance("SHA256withECDSA").apply {
-                    initSign(keyPair.private as ECPrivateKey)
-                    update(authenticatorData + sha256.digest(clientDataJson))
-                }.sign()
+                Signature
+                    .getInstance("SHA256withECDSA")
+                    .apply {
+                        initSign(keyPair.private as ECPrivateKey)
+                        update(authenticatorData + sha256.digest(clientDataJson))
+                    }.sign()
             val response =
                 AuthenticatorAssertionResponse
                     .builder()
@@ -255,6 +293,7 @@ class WebauthnPasskeyIntegrationTest {
                     .signature(Bytes(signature))
                     .userHandle(userHandle)
                     .build()
+
             @Suppress("UNCHECKED_CAST")
             val credential =
                 PublicKeyCredential
