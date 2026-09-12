@@ -3,11 +3,11 @@ package com.spybot.core.service
 import com.spybot.core.jooq.notNull
 import com.spybot.core.model.QueuedClientMessageView
 import com.spybot.jooq.tables.references.SPYBOT_QUEUEDCLIENTMESSAGE
+import org.jooq.DSLContext
 import org.jooq.Records.mapping
 import org.jooq.impl.DSL
-import org.springframework.transaction.annotation.Transactional
-import org.jooq.DSLContext
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 /** Messages queued for a user until the recorder next sees them on TeamSpeak. */
 @Service

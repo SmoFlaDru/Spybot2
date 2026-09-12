@@ -1,6 +1,7 @@
 package com.spybot.core.service
 
 import com.spybot.core.jooq.int
+import com.spybot.core.jooq.long
 import com.spybot.core.jooq.string
 import com.spybot.core.model.OpenSessionView
 import com.spybot.core.model.TeamSpeakChannelSnapshot
@@ -10,12 +11,11 @@ import com.spybot.jooq.tables.references.TSCHANNEL
 import com.spybot.jooq.tables.references.TSID
 import com.spybot.jooq.tables.references.TSUSER
 import com.spybot.jooq.tables.references.TSUSERACTIVITY
+import org.jooq.DSLContext
 import org.jooq.Record
 import org.jooq.impl.DSL
-import org.springframework.transaction.annotation.Transactional
-import com.spybot.core.jooq.long
-import org.jooq.DSLContext
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 /** What the TeamSpeak recorder writes: channels, TeamSpeak identities, and the activity sessions the live view and statistics are built from. */
 @Service

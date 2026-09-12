@@ -3,8 +3,8 @@ package com.spybot.core.service
 import com.spybot.core.jooq.notNull
 import com.spybot.core.model.SteamIdView
 import com.spybot.jooq.tables.references.SPYBOT_STEAMID
-import org.jooq.Records.mapping
 import org.jooq.DSLContext
+import org.jooq.Records.mapping
 import org.springframework.stereotype.Service
 
 /** Steam accounts linked to a merged user. */

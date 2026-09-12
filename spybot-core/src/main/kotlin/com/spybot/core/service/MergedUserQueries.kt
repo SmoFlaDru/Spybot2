@@ -3,8 +3,8 @@ package com.spybot.core.service
 import com.spybot.core.model.MergedUserView
 import com.spybot.jooq.tables.references.SPYBOT_LOGINLINK
 import com.spybot.jooq.tables.references.SPYBOT_MERGEDUSER
-import org.jooq.impl.DSL
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 import org.springframework.stereotype.Service
 
 /** Merged users (the site account a TeamSpeak identity belongs to): lookup, last-seen, login links. */
@@ -13,13 +13,15 @@ class MergedUserQueries(
     private val dsl: DSLContext,
 ) {
     fun findMergedUserById(id: Long): MergedUserView? =
-        dsl.selectMergedUser()
+        dsl
+            .selectMergedUser()
             .from(SPYBOT_MERGEDUSER)
             .where(SPYBOT_MERGEDUSER.ID.eq(id))
             .fetchOne(toMergedUser)
 
     fun findMergedUserByLoginCode(code: String): MergedUserView? =
-        dsl.selectMergedUser()
+        dsl
+            .selectMergedUser()
             .from(SPYBOT_LOGINLINK)
             .join(SPYBOT_MERGEDUSER)
             .on(SPYBOT_MERGEDUSER.ID.eq(SPYBOT_LOGINLINK.USER_ID))

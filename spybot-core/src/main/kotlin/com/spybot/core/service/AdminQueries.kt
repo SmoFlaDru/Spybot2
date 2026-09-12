@@ -92,7 +92,8 @@ class AdminQueries(
         if (ids.isEmpty()) {
             return emptyList()
         }
-        return dsl.selectMergedUser()
+        return dsl
+            .selectMergedUser()
             .from(SPYBOT_MERGEDUSER)
             .where(SPYBOT_MERGEDUSER.ID.`in`(ids))
             .fetch(toMergedUser)

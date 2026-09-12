@@ -8,8 +8,8 @@ import org.jooq.Records.mapping
 
 // Projections shared by more than one query service. Column order is the DTO's constructor
 // order: Records.mapping(::Dto) checks that at compile time, so a mismatch cannot reach runtime.
-    // Projections that several queries share. Column order is the DTO's constructor order:
-    // Records.mapping(::Dto) checks that at compile time, so a mismatch cannot reach runtime.
+// Projections that several queries share. Column order is the DTO's constructor order:
+// Records.mapping(::Dto) checks that at compile time, so a mismatch cannot reach runtime.
 internal fun DSLContext.selectMergedUser() =
     select(
         SPYBOT_MERGEDUSER.ID.notNull(),
@@ -17,6 +17,6 @@ internal fun DSLContext.selectMergedUser() =
         SPYBOT_MERGEDUSER.OBSOLETE.notNull(),
         SPYBOT_MERGEDUSER.IS_SUPERUSER.notNull(),
         SPYBOT_MERGEDUSER.LAST_LOGIN,
-        )
+    )
 
 internal val toMergedUser = mapping(::MergedUserView)

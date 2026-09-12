@@ -40,15 +40,15 @@ import com.spybot.jooq.tables.references.SPYBOT_NEWSEVENT
 import com.spybot.jooq.tables.references.TSCHANNEL
 import com.spybot.jooq.tables.references.TSUSER
 import com.spybot.jooq.tables.references.TSUSERACTIVITY
+import org.jooq.DSLContext
+import org.jooq.Records.mapping
+import org.jooq.impl.DSL
+import org.springframework.stereotype.Service
 import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlin.math.roundToInt
-import org.jooq.Records.mapping
-import org.jooq.impl.DSL
-import org.jooq.DSLContext
-import org.springframework.stereotype.Service
 
 /** Read-only analytics behind the home, timeline, hall of fame and user pages, plus the hourly activity snapshot the scheduled job records. */
 @Service

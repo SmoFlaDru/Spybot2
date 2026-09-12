@@ -4,9 +4,9 @@ import com.spybot.core.jooq.notNull
 import com.spybot.core.model.AdminNewsEventRow
 import com.spybot.jooq.tables.references.SPYBOT_NEWSEVENT
 import org.jooq.Condition
+import org.jooq.DSLContext
 import org.jooq.Records.mapping
 import org.jooq.impl.DSL
-import org.jooq.DSLContext
 import org.springframework.stereotype.Service
 
 /** News events shown on the home page: admin CRUD plus the create used by the weekly awards job. */

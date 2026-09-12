@@ -6,12 +6,12 @@ import com.spybot.core.model.WebauthnCredential
 import com.spybot.jooq.tables.records.SpybotUserpasskeyRecord
 import com.spybot.jooq.tables.references.SPYBOT_USERPASSKEY
 import com.spybot.jooq.tables.references.SPYBOT_WEBAUTHN_USER_HANDLE
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import org.jooq.DSLContext
 import org.jooq.Records.mapping
 import org.jooq.impl.DSL
 import org.springframework.stereotype.Service
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 /** WebAuthn passkeys stored per merged user. */
 @Service

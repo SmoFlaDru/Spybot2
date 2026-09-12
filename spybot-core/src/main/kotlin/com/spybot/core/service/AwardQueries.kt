@@ -1,8 +1,8 @@
 package com.spybot.core.service
 
 import com.spybot.jooq.tables.references.SPYBOT_AWARD
-import org.jooq.impl.DSL
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 import org.springframework.stereotype.Service
 
 /** Weekly award medals. */

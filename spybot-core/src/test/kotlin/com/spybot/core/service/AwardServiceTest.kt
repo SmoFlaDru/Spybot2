@@ -36,7 +36,15 @@ class AwardServiceTest {
         whenever(awardQueries.countAwardsForUserByPoints(2, 2)).thenReturn(1)
         whenever(awardQueries.countAwardsForUserByPoints(3, 1)).thenReturn(1)
 
-        val service = AwardService(awardQueries, mergedUserQueries, newsEventQueries, queuedMessageQueries, statisticsQueries, SpybotProperties(publicBaseUrl = "https://spybot.local"))
+        val service =
+            AwardService(
+                awardQueries,
+                mergedUserQueries,
+                newsEventQueries,
+                queuedMessageQueries,
+                statisticsQueries,
+                SpybotProperties(publicBaseUrl = "https://spybot.local"),
+            )
 
         val awarded = service.runEndOfWeekAwards()
 

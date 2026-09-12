@@ -4,8 +4,8 @@ import com.spybot.core.model.AdminMergedUserRow
 import com.spybot.core.model.AdminNewsEventRow
 import com.spybot.core.model.AdminTsUserRow
 import com.spybot.core.model.MergeUsersResult
-import com.spybot.core.service.LikedNameService
 import com.spybot.core.service.AdminQueries
+import com.spybot.core.service.LikedNameService
 import com.spybot.core.service.NewsEventQueries
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

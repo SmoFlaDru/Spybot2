@@ -28,7 +28,13 @@ class RecorderDomainServiceTest {
         val root = TeamSpeakChannelSnapshot(id = 2, name = "Root", order = 1, parentId = 0)
         val child = TeamSpeakChannelSnapshot(id = 20, name = "Child", order = 0, parentId = 0)
 
-        val service = RecorderDomainService(mergedUserQueries, queuedMessageQueries, recorderQueries, SpybotProperties(publicBaseUrl = "https://spybot.local"))
+        val service =
+            RecorderDomainService(
+                mergedUserQueries,
+                queuedMessageQueries,
+                recorderQueries,
+                SpybotProperties(publicBaseUrl = "https://spybot.local"),
+            )
         service.syncChannels(listOf(root, child))
 
         verify(recorderQueries).upsertChannels(
@@ -50,7 +56,13 @@ class RecorderDomainServiceTest {
             listOf(QueuedClientMessageView(11, 7, "Queued text", "AWARD_USER_OF_WEEK")),
         )
 
-        val service = RecorderDomainService(mergedUserQueries, queuedMessageQueries, recorderQueries, SpybotProperties(publicBaseUrl = "https://spybot.local"))
+        val service =
+            RecorderDomainService(
+                mergedUserQueries,
+                queuedMessageQueries,
+                recorderQueries,
+                SpybotProperties(publicBaseUrl = "https://spybot.local"),
+            )
 
         service.handleInitialClients(
             listOf(TeamSpeakClientSnapshot(42, 3, 1, "Alice", "0", "uid-1")),
@@ -71,7 +83,13 @@ class RecorderDomainServiceTest {
         val gateway: RecorderMessageGateway = mock()
         whenever(recorderQueries.openSessions()).thenReturn(emptyList())
 
-        val service = RecorderDomainService(mergedUserQueries, queuedMessageQueries, recorderQueries, SpybotProperties(publicBaseUrl = "https://spybot.local"))
+        val service =
+            RecorderDomainService(
+                mergedUserQueries,
+                queuedMessageQueries,
+                recorderQueries,
+                SpybotProperties(publicBaseUrl = "https://spybot.local"),
+            )
         service.handleInitialClients(
             listOf(TeamSpeakClientSnapshot(42, 3, 1, "TS Bot", "1", "uid-bot")),
             gateway,
@@ -95,7 +113,13 @@ class RecorderDomainServiceTest {
         val liveSession = OpenSessionView(id = 101, tsUserId = 5, clientId = 43, channelId = 3, tsUserName = "Alice")
         whenever(recorderQueries.openSessions()).thenReturn(listOf(staleSession, liveSession))
 
-        val service = RecorderDomainService(mergedUserQueries, queuedMessageQueries, recorderQueries, SpybotProperties(publicBaseUrl = "https://spybot.local"))
+        val service =
+            RecorderDomainService(
+                mergedUserQueries,
+                queuedMessageQueries,
+                recorderQueries,
+                SpybotProperties(publicBaseUrl = "https://spybot.local"),
+            )
 
         service.handleInitialClients(
             listOf(TeamSpeakClientSnapshot(43, 3, 1, "Alice", "0", "uid-1")),

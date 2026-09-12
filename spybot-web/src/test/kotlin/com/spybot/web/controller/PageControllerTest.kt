@@ -40,7 +40,17 @@ class PageControllerTest {
     private val nameGenService = Mockito.mock(NameGenService::class.java)
     private val likedNameService = Mockito.mock(LikedNameService::class.java)
     private val chrome = PageChromeFactory(pageService, gitProperties = null, buildProperties = null)
-    private val controller = PageController(pageService, passkeyQueries, statisticsQueries, steamIdQueries, ChangelogService(), nameGenService, likedNameService, chrome)
+    private val controller =
+        PageController(
+            pageService,
+            passkeyQueries,
+            statisticsQueries,
+            steamIdQueries,
+            ChangelogService(),
+            nameGenService,
+            likedNameService,
+            chrome,
+        )
 
     private val visitor = Liker.Visitor("0123456789abcdef0123456789abcdef")
 
