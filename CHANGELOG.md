@@ -8,6 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
+- Passkeys now carry the account name as their username in password managers instead of the numeric user id; already registered passkeys are relabelled on the next profile visit in browsers that support the Signal API
 - Renamed the JTE templates to PascalCase so the generated template classes and their call sites no longer mix snake_case and camelCase (#228)
 - Offered to add a passkey right after a TeamSpeak login, and kept the browser's passkey manager in sync when passkeys are deleted or an account is renamed (WebAuthn Signal API)
 - Fixed browsers keeping a day-old copy of the site's scripts and styles after a deploy, which broke passkey registration right after the passkey rework

@@ -55,7 +55,9 @@ class PasskeySignalController(
         val byHandle = passkeyQueries.webauthnCredentialsForUser(principal.id).groupBy { it.userHandle }
         return AcceptedCredentials(
             rpId = URI(properties.publicBaseUrl).host,
-            name = principal.username,
+            // Same as the user entity a registration hands the authenticator: the account name for
+            // both, never the numeric id that Authentication.getName() carries.
+            name = principal.displayName,
             displayName = principal.displayName,
             handles =
                 passkeyQueries.webauthnUserHandlesForUser(principal.id).map { handle ->
