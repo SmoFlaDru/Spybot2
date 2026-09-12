@@ -1,12 +1,9 @@
-@param loggedInUser: com.spybot.core.model.MergedUserView
-@param csrf: org.springframework.security.web.csrf.CsrfToken?
-@param commitHash: String? = null
-@param buildTime: java.time.Instant? = null
+@param chrome: com.spybot.web.jte.PageChrome
 @param query: String
-@param events: java.util.List<com.spybot.core.model.AdminNewsEventRow>
+@param events: List<com.spybot.core.model.AdminNewsEventRow>
 @param successMessage: String? = null
 @param errorMessage: String? = null
-@template.layout.base(title = "News events", loggedInUser = loggedInUser, csrf = csrf, commitHash = commitHash, buildTime = buildTime, activePage = "admin", content = @`
+@template.layout.base(title = "News events", chrome = chrome, activePage = "admin", content = @`
     <div class="row row-cards justify-content-md-center">
         <div class="col-md-10">
             @if(successMessage != null)
@@ -47,7 +44,7 @@
                                     <a href="/admin/news-events/${event.id}/edit">Edit</a>
                                     <form method="post" action="/admin/news-events/${event.id}/delete" class="d-inline"
                                           onsubmit="return confirm('Delete this news event?')">
-                                        <input type="hidden" name="${if (csrf != null) csrf.parameterName else "_csrf"}" value="${if (csrf != null) csrf.token else ""}">
+                                        @template.layout.csrf_field(csrf = chrome.csrf)
                                         <button type="submit" class="btn btn-link text-danger p-0 ms-2">Delete</button>
                                     </form>
                                 </td>

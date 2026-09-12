@@ -1,5 +1,6 @@
 package com.spybot.core.service
 
+import com.spybot.core.jooq.notNull
 import com.spybot.core.model.LikedNameView
 import com.spybot.core.model.Liker
 import com.spybot.core.model.NameLikeStatus
@@ -7,8 +8,10 @@ import com.spybot.jooq.tables.references.SPYBOT_LIKEDNAME
 import com.spybot.jooq.tables.references.SPYBOT_NAMELIKE
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.Records.mapping
 import org.jooq.impl.DSL
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 /**
  * Per-person likes on names proposed by the Steam name generator. The database holds one row per
@@ -91,31 +94,31 @@ class LikedNameService(
         liker: Liker,
     ): List<LikedNameView> {
         val likes = DSL.count(SPYBOT_NAMELIKE.ID)
-        val likedByMe = DSL.boolOr(isLiker(liker))
+        // isLiker() compares a nullable column, so it is NULL rather than false on rows liked by
+        // the other kind of liker - and bool_or over only NULLs is NULL. Coalesce in SQL, not here.
+        val likedByMe = DSL.coalesce(DSL.boolOr(isLiker(liker)), DSL.inline(false))
         val lastLiked = DSL.max(SPYBOT_NAMELIKE.CREATED_AT)
         return dsl
-            .select(SPYBOT_LIKEDNAME.DISPLAY_NAME, SPYBOT_LIKEDNAME.REAL_NAME, SPYBOT_LIKEDNAME.SLANG, likes, likedByMe)
-            .from(SPYBOT_LIKEDNAME)
+            .select(
+                SPYBOT_LIKEDNAME.DISPLAY_NAME.notNull(),
+                SPYBOT_LIKEDNAME.REAL_NAME.notNull(),
+                SPYBOT_LIKEDNAME.SLANG.notNull(),
+                likes.notNull(),
+                likedByMe.notNull(),
+            ).from(SPYBOT_LIKEDNAME)
             .join(SPYBOT_NAMELIKE)
             .on(SPYBOT_NAMELIKE.NAME_ID.eq(SPYBOT_LIKEDNAME.ID))
             .groupBy(SPYBOT_LIKEDNAME.ID, SPYBOT_LIKEDNAME.DISPLAY_NAME, SPYBOT_LIKEDNAME.REAL_NAME, SPYBOT_LIKEDNAME.SLANG)
             .orderBy(likes.desc(), lastLiked.desc())
             .limit(limit)
-            .fetch {
-                LikedNameView(
-                    displayName = it.get(SPYBOT_LIKEDNAME.DISPLAY_NAME)!!,
-                    realName = it.get(SPYBOT_LIKEDNAME.REAL_NAME)!!,
-                    slang = it.get(SPYBOT_LIKEDNAME.SLANG)!!,
-                    likes = it.get(likes) ?: 0,
-                    likedByMe = it.get(likedByMe) ?: false,
-                )
-            }
+            .fetch(mapping(::LikedNameView))
     }
 
     /**
      * Moves the likes of merged-away users to the user they were merged into, keeping at most one
      * like per name (the target's own, or otherwise the earliest). Returns how many rows moved.
      */
+    @Transactional
     fun reassignLikes(
         sourceIds: Collection<Long>,
         targetId: Long,

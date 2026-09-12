@@ -1,11 +1,9 @@
-@param loggedInUser: com.spybot.core.model.MergedUserView
-@param passkeys: java.util.List<com.spybot.core.model.PasskeyView>
-@param steamIds: java.util.List<com.spybot.core.model.SteamIdView>
+@param chrome: com.spybot.web.jte.PageChrome
+@param user: com.spybot.core.model.MergedUserView
+@param passkeys: List<com.spybot.core.model.PasskeyView>
+@param steamIds: List<com.spybot.core.model.SteamIdView>
 @param passkeyPrompt: Boolean = false
-@param csrf: org.springframework.security.web.csrf.CsrfToken?
-@param commitHash: String? = null
-@param buildTime: java.time.Instant? = null
-@template.layout.base(title = "Profile", loggedInUser = loggedInUser, csrf = csrf, commitHash = commitHash, buildTime = buildTime, activePage = "profile", content = @`
+@template.layout.base(title = "Profile", chrome = chrome, activePage = "profile", content = @`
     <div class="row row-cards justify-content-md-center">
         @if(passkeyPrompt)
             <div class="col-md-8" id="passkeyPrompt" hidden>
@@ -27,7 +25,7 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header row g-0">
-                    <h3 class="card-title">Logged in as ${loggedInUser.name}</h3>
+                    <h3 class="card-title">Logged in as ${user.name}</h3>
                 </div>
             </div>
         </div>

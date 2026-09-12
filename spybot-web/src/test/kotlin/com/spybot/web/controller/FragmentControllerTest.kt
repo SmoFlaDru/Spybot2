@@ -9,26 +9,27 @@ import com.spybot.web.service.SpybotPageService
 import com.spybot.web.service.namegen.GeneratedName
 import com.spybot.web.service.namegen.NameGenService
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertSame
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.mock.web.MockHttpServletRequest
-import org.springframework.ui.ConcurrentModel
+import org.springframework.mock.web.MockHttpServletResponse
 
 class FragmentControllerTest {
     @Test
     fun `namegen fragment renders a fresh name with the viewer's like state`() {
         val nameGenService = Mockito.mock(NameGenService::class.java)
         val likedNameService = Mockito.mock(LikedNameService::class.java)
-        val model = ConcurrentModel()
         val generated = GeneratedName("Nuke Skywalker", "Luke Skywalker", "nuke", "Fictional character", "International", 0.98)
-        val status = NameLikeStatus(likes = 4, likedByMe = true)
         val request =
             MockHttpServletRequest("GET", "/namegen_fragment").apply {
                 setAttribute(VisitorIdFilter.ATTRIBUTE, "0123456789abcdef0123456789abcdef")
             }
+        val response = MockHttpServletResponse()
         Mockito.`when`(nameGenService.generate()).thenReturn(generated)
-        Mockito.`when`(likedNameService.status("Nuke Skywalker", Liker.Visitor("0123456789abcdef0123456789abcdef"))).thenReturn(status)
+        Mockito
+            .`when`(likedNameService.status("Nuke Skywalker", Liker.Visitor("0123456789abcdef0123456789abcdef")))
+            .thenReturn(NameLikeStatus(likes = 4, likedByMe = true))
 
         val controller =
             FragmentController(
@@ -37,10 +38,12 @@ class FragmentControllerTest {
                 nameGenService,
                 likedNameService,
             )
-        val viewName = controller.nameGeneratorFragment(null, model, request)
+        controller.nameGeneratorFragment(null, request, response)
 
-        assertEquals("fragments/namegen_fragment", viewName)
-        assertSame(generated, model.getAttribute("generatedName"))
-        assertSame(status, model.getAttribute("likeStatus"))
+        val html = response.contentAsString
+        assertEquals("text/html;charset=UTF-8", response.contentType)
+        assertTrue("Nuke Skywalker" in html, html)
+        assertTrue("Luke Skywalker" in html, html)
+        assertTrue("hx-get=\"/namegen_fragment\"" in html, "reroll button must target the fragment endpoint")
     }
 }

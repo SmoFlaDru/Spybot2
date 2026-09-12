@@ -15,26 +15,41 @@ import com.spybot.core.model.WeekTrendView
 import com.spybot.core.service.LikedNameService
 import com.spybot.core.service.SpybotQueryService
 import com.spybot.web.filter.VisitorIdFilter
+import com.spybot.web.jte.PageChromeFactory
 import com.spybot.web.service.ChangelogService
 import com.spybot.web.service.SpybotPageService
 import com.spybot.web.service.namegen.GeneratedName
 import com.spybot.web.service.namegen.NameGenService
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertSame
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import org.springframework.ui.ConcurrentModel
+import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.mock.web.MockHttpServletResponse
 import java.time.OffsetDateTime
 
 class PageControllerTest {
+    private val pageService = Mockito.mock(SpybotPageService::class.java)
+    private val queryService = Mockito.mock(SpybotQueryService::class.java)
+    private val nameGenService = Mockito.mock(NameGenService::class.java)
+    private val likedNameService = Mockito.mock(LikedNameService::class.java)
+    private val chrome = PageChromeFactory(pageService, gitProperties = null, buildProperties = null)
+    private val controller = PageController(pageService, queryService, ChangelogService(), nameGenService, likedNameService, chrome)
+
+    private val visitor = Liker.Visitor("0123456789abcdef0123456789abcdef")
+
+    private fun render(block: (HttpServletRequest, HttpServletResponse) -> Unit): String {
+        val response = MockHttpServletResponse()
+        val request = MockHttpServletRequest().apply { setAttribute(VisitorIdFilter.ATTRIBUTE, visitor.visitorId) }
+        block(request, response)
+        assertEquals("text/html;charset=UTF-8", response.contentType)
+        return response.contentAsString
+    }
+
     @Test
-    fun `home maps to pages home view and populates model`() {
-        val pageService = Mockito.mock(SpybotPageService::class.java)
-        val queryService = Mockito.mock(SpybotQueryService::class.java)
-        val request = Mockito.mock(HttpServletRequest::class.java)
-        val csrfToken = Mockito.mock(org.springframework.security.web.csrf.CsrfToken::class.java)
-        val model = ConcurrentModel()
+    fun `home renders the page inside the layout with its stats`() {
         val homePage =
             HomePageView(
                 activityChart =
@@ -71,52 +86,28 @@ class PageControllerTest {
                         start = 0,
                     ),
             )
-
         Mockito.`when`(pageService.loggedInUser(null)).thenReturn(null)
         Mockito.`when`(pageService.home(7)).thenReturn(homePage)
-        Mockito.`when`(request.getAttribute("_csrf")).thenReturn(csrfToken)
 
-        val controller =
-            PageController(
-                pageService,
-                queryService,
-                ChangelogService(),
-                Mockito.mock(NameGenService::class.java),
-                Mockito.mock(LikedNameService::class.java),
-            )
-        val viewName = controller.home(7, null, model, request)
+        val html = render { request, response -> controller.home(7, null, request, response) }
 
-        assertEquals("pages/home", viewName)
-        assertSame(homePage, model.getAttribute("home"))
-        assertSame(csrfToken, model.getAttribute("csrf"))
-        assertEquals(null, model.getAttribute("loggedInUser"))
+        assertTrue("<title>Home" in html || "Home" in html, html.take(300))
+        assertTrue("Benno" in html, "top user of the week must be rendered")
+        assertTrue("Something happened" in html, "recent events fragment must be rendered inside the page")
+        assertTrue("Log in" in html, "an anonymous viewer sees the login link in the layout")
     }
 
     @Test
-    fun `namegen maps to pages namegen view and populates a generated name`() {
-        val pageService = Mockito.mock(SpybotPageService::class.java)
-        val queryService = Mockito.mock(SpybotQueryService::class.java)
-        val nameGenService = Mockito.mock(NameGenService::class.java)
-        val request = Mockito.mock(HttpServletRequest::class.java)
-        val model = ConcurrentModel()
+    fun `namegen renders the generated name, its like state and the top list`() {
         val generated = GeneratedName("Carry Potter", "Harry Potter", "carry", "Fictional character", "International", 0.97)
-
-        val likedNameService = Mockito.mock(LikedNameService::class.java)
-        val visitor = Liker.Visitor("0123456789abcdef0123456789abcdef")
-        val top = listOf(LikedNameView("Nuke Skywalker", "Luke Skywalker", "nuke", 9, likedByMe = false))
-        val status = NameLikeStatus(likes = 2, likedByMe = true)
         Mockito.`when`(pageService.loggedInUser(null)).thenReturn(null)
         Mockito.`when`(nameGenService.generate()).thenReturn(generated)
-        Mockito.`when`(request.getAttribute(VisitorIdFilter.ATTRIBUTE)).thenReturn(visitor.visitorId)
-        Mockito.`when`(likedNameService.status("Carry Potter", visitor)).thenReturn(status)
-        Mockito.`when`(likedNameService.top(30, visitor)).thenReturn(top)
+        Mockito.`when`(likedNameService.status("Carry Potter", visitor)).thenReturn(NameLikeStatus(likes = 2, likedByMe = false))
+        Mockito.`when`(likedNameService.top(NameGenController.TOP_LIMIT, visitor)).thenReturn(emptyList())
 
-        val controller = PageController(pageService, queryService, ChangelogService(), nameGenService, likedNameService)
-        val viewName = controller.nameGenerator(null, model, request)
+        val html = render { request, response -> controller.nameGenerator(null, request, response) }
 
-        assertEquals("pages/namegen", viewName)
-        assertSame(generated, model.getAttribute("generatedName"))
-        assertSame(status, model.getAttribute("likeStatus"))
-        assertSame(top, model.getAttribute("topNames"))
+        assertTrue("Carry Potter" in html, html.take(300))
+        assertTrue("Harry Potter" in html)
     }
 }

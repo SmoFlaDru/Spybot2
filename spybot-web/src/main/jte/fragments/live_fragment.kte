@@ -1,5 +1,5 @@
-@param channels: java.util.List<com.spybot.core.model.ChannelView>
-@param clients: java.util.List<com.spybot.core.model.LiveClientView>
+@param channels: List<com.spybot.core.model.ChannelView>
+@param clients: List<com.spybot.core.model.LiveClientView>
 <div class="list-group list-group-flush list-group-hoverable">
     @for(channel in channels)
         @if(channel.name != null && !channel.name!!.contains("spacer"))

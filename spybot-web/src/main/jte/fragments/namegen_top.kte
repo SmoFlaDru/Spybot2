@@ -1,4 +1,4 @@
-@param topNames: java.util.List<com.spybot.core.model.LikedNameView>
+@param topNames: List<com.spybot.core.model.LikedNameView>
 <div class="card" id="namegen_top" hx-trigger="namegen_likes_changed from:body" hx-get="/namegen/top" hx-swap="outerHTML">
     <div class="card-header">
         <h3 class="card-title">

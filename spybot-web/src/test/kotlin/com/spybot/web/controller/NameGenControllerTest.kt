@@ -9,22 +9,21 @@ import com.spybot.core.service.LikedNameService
 import com.spybot.web.filter.VisitorIdFilter
 import com.spybot.web.service.namegen.GeneratedName
 import com.spybot.web.service.namegen.NameGenService
-import jakarta.servlet.http.HttpServletResponse
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertSame
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import org.mockito.Mockito.verify
 import org.springframework.http.HttpStatus
 import org.springframework.mock.web.MockHttpServletRequest
-import org.springframework.ui.ConcurrentModel
+import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.web.server.ResponseStatusException
 
 class NameGenControllerTest {
     private val nameGenService = Mockito.mock(NameGenService::class.java)
     private val likedNameService = Mockito.mock(LikedNameService::class.java)
-    private val response = Mockito.mock(HttpServletResponse::class.java)
     private val controller = NameGenController(nameGenService, likedNameService)
     private val generated = GeneratedName("Carry Potter", "Harry Potter", "carry", "Fictional character", "International", 0.97)
     private val visitor = Liker.Visitor("0123456789abcdef0123456789abcdef")
@@ -39,16 +38,15 @@ class NameGenControllerTest {
     fun `anonymous visitors like as their cookie identity`() {
         Mockito.`when`(nameGenService.find("Carry Potter")).thenReturn(generated)
         Mockito.`when`(likedNameService.like("Carry Potter", "Harry Potter", "carry", visitor)).thenReturn(NameLikeStatus(3, true))
-        val model = ConcurrentModel()
+        val response = MockHttpServletResponse()
 
-        val viewName = controller.like("Carry Potter", null, model, anonymousRequest(), response)
+        controller.like("Carry Potter", null, anonymousRequest(), response)
 
-        assertEquals("fragments/namegen_like_button", viewName)
-        assertEquals("Carry Potter", model.getAttribute("name"))
-        assertEquals(3, model.getAttribute("likes"))
-        assertEquals(true, model.getAttribute("likedByMe"))
-        assertEquals(false, model.getAttribute("inList"))
-        verify(response).setHeader("HX-Trigger", "namegen_likes_changed")
+        val html = response.contentAsString
+        assertTrue("Carry Potter" in html, html)
+        assertTrue(">3<" in html || " 3" in html, "like count must be rendered: $html")
+        assertTrue("/namegen/unlike" in html, "a liked name offers the unlike action: $html")
+        assertEquals("namegen_likes_changed", response.getHeader("HX-Trigger"))
     }
 
     @Test
@@ -56,7 +54,7 @@ class NameGenControllerTest {
         Mockito.`when`(nameGenService.find("Carry Potter")).thenReturn(generated)
         Mockito.`when`(likedNameService.like("Carry Potter", "Harry Potter", "carry", Liker.User(42))).thenReturn(NameLikeStatus(1, true))
 
-        controller.like("Carry Potter", loggedIn(42), ConcurrentModel(), anonymousRequest(), response)
+        controller.like("Carry Potter", loggedIn(42), anonymousRequest(), MockHttpServletResponse())
 
         verify(likedNameService).like("Carry Potter", "Harry Potter", "carry", Liker.User(42))
     }
@@ -65,14 +63,14 @@ class NameGenControllerTest {
     fun `unlike replies with the button back in its unliked state`() {
         Mockito.`when`(nameGenService.find("Carry Potter")).thenReturn(generated)
         Mockito.`when`(likedNameService.unlike("Carry Potter", visitor)).thenReturn(NameLikeStatus(2, false))
-        val model = ConcurrentModel()
+        val response = MockHttpServletResponse()
 
-        val viewName = controller.unlike("Carry Potter", null, model, anonymousRequest(), response)
+        controller.unlike("Carry Potter", null, anonymousRequest(), response)
 
-        assertEquals("fragments/namegen_like_button", viewName)
-        assertEquals(2, model.getAttribute("likes"))
-        assertEquals(false, model.getAttribute("likedByMe"))
-        verify(response).setHeader("HX-Trigger", "namegen_likes_changed")
+        val html = response.contentAsString
+        assertTrue("/namegen/like" in html, "an unliked name offers the like action: $html")
+        assertFalse("/namegen/unlike" in html, html)
+        assertEquals("namegen_likes_changed", response.getHeader("HX-Trigger"))
     }
 
     @Test
@@ -81,13 +79,7 @@ class NameGenControllerTest {
 
         val error =
             assertThrows<ResponseStatusException> {
-                controller.like(
-                    "Totally Madeup",
-                    null,
-                    ConcurrentModel(),
-                    anonymousRequest(),
-                    response,
-                )
+                controller.like("Totally Madeup", null, anonymousRequest(), MockHttpServletResponse())
             }
 
         assertEquals(HttpStatus.BAD_REQUEST, error.statusCode)
@@ -98,11 +90,12 @@ class NameGenControllerTest {
     fun `top list is rendered for the viewer so their own likes show as such`() {
         val top = listOf(LikedNameView("Nuke Skywalker", "Luke Skywalker", "nuke", 9, likedByMe = true))
         Mockito.`when`(likedNameService.top(30, visitor)).thenReturn(top)
-        val model = ConcurrentModel()
+        val response = MockHttpServletResponse()
 
-        val viewName = controller.top(null, model, anonymousRequest())
+        controller.top(null, anonymousRequest(), response)
 
-        assertEquals("fragments/namegen_top", viewName)
-        assertSame(top, model.getAttribute("topNames"))
+        val html = response.contentAsString
+        assertTrue("Nuke Skywalker" in html, html)
+        assertTrue("/namegen/unlike" in html, "the viewer's own like renders as liked: $html")
     }
 }
