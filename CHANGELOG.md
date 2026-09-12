@@ -8,6 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
+- The live view loads each client's Steam IDs as a typed nested query instead of parsing a JSON string by hand
 - Fixed browsers keeping a day-old copy of the site's scripts and styles after a deploy, which broke passkey registration right after the passkey rework
 - Polished the passkey list on the profile page: provider icon and synced/device-bound badge, relative timestamps, inline rename, and updates without a page reload
 - Moved passkeys to Spring Security's WebAuthn support: existing passkeys were removed and need to be re-added, and passkeys now survive merging two accounts (#218)

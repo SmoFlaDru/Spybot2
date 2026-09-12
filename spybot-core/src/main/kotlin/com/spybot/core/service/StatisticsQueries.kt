@@ -7,7 +7,6 @@ import com.spybot.core.jooq.localDate
 import com.spybot.core.jooq.long
 import com.spybot.core.jooq.notNull
 import com.spybot.core.jooq.offsetDateTime
-import com.spybot.core.jooq.parseJsonArray
 import com.spybot.core.jooq.string
 import com.spybot.core.jooq.toEpochMillis
 import com.spybot.core.model.ActiveUsersStat
@@ -37,6 +36,7 @@ import com.spybot.core.model.WidgetLegacyResponse
 import com.spybot.core.teamspeak.unescapeTeamSpeak
 import com.spybot.jooq.tables.references.HOURLYACTIVITY
 import com.spybot.jooq.tables.references.SPYBOT_NEWSEVENT
+import com.spybot.jooq.tables.references.SPYBOT_STEAMID
 import com.spybot.jooq.tables.references.TSCHANNEL
 import com.spybot.jooq.tables.references.TSUSER
 import com.spybot.jooq.tables.references.TSUSERACTIVITY
@@ -104,34 +104,26 @@ class StatisticsQueries(
                 .orderBy(TSCHANNEL.ORDER.asc())
                 .fetch(mapping { id, name -> ChannelView(id, name?.let(::unescapeTeamSpeak)) })
 
+        // Each client's Steam IDs come along as a nested list: jOOQ's MULTISET runs the sub-select
+        // per row and maps it to a typed List itself, so there is no JSON round-trip to parse here.
+        val steamIds =
+            DSL
+                .multiset(
+                    DSL
+                        .select(SPYBOT_STEAMID.STEAM_ID.cast(String::class.java).notNull())
+                        .from(SPYBOT_STEAMID)
+                        .where(SPYBOT_STEAMID.MERGED_USER_ID.eq(TSUSER.MERGED_USER_ID))
+                        .orderBy(SPYBOT_STEAMID.ID),
+                ).convertFrom { rows -> rows.map { it.value1() } }
+
         val clients =
             dsl
-                .fetch(
-                    """
-                    select
-                        a.cid as channel_id,
-                        u.name,
-                        u.merged_user_id,
-                        coalesce(
-                            (
-                                select json_agg(s.steam_id::text)
-                                from spybot_steamid s
-                                where s.merged_user_id = u.merged_user_id
-                            )::text,
-                            '[]'
-                        ) as steam_ids
-                    from tsuseractivity a
-                    join tsuser u on u.id = a.tsuserid
-                    where a.endtime is null
-                    """.trimIndent(),
-                ).map {
-                    LiveClientView(
-                        channelId = it.int("channel_id"),
-                        name = it.get("name", String::class.java),
-                        mergedUserId = it.get("merged_user_id", Long::class.java),
-                        steamIds = parseJsonArray(it.string("steam_ids")),
-                    )
-                }
+                .select(TSUSERACTIVITY.CID.notNull(), TSUSER.NAME, TSUSER.MERGED_USER_ID, steamIds)
+                .from(TSUSERACTIVITY)
+                .join(TSUSER)
+                .on(TSUSER.ID.eq(TSUSERACTIVITY.TSUSERID))
+                .where(TSUSERACTIVITY.ENDTIME.isNull)
+                .fetch(mapping { channelId, name, mergedUserId, ids -> LiveClientView(channelId, name, mergedUserId, ids) })
 
         return channels to clients
     }
