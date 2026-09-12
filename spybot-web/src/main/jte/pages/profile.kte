@@ -60,19 +60,13 @@
             if (event.target.id === "passkeys") passkeys.signalAccepted();
         });
 
-        // WebAuthn calls can't overlap, so on load run them in order: the post-login passkey
-        // offer first (silent attempt, then the visible prompt), signalling afterwards.
+        // Only show the post-login passkey offer where a passkey can actually be created.
         window.addEventListener("load", async () => {
             const prompt = document.querySelector('#passkeyPrompt');
-            if (prompt) {
-                if (await passkeys.createSilently()) {
-                    prompt.remove();
-                    htmx.trigger(document.body, 'passkeys_changed');
-                } else if (await passkeys.canOfferPasskey()) {
-                    prompt.hidden = false;
-                }
+            if (prompt && await passkeys.canOfferPasskey()) {
+                prompt.hidden = false;
             }
-            await passkeys.signalAccepted();
+            passkeys.signalAccepted();
         });
     </script>
 `)

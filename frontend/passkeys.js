@@ -8,7 +8,7 @@
 // All of them are CSRF-protected like the rest of the site. Spring masks the CSRF token per
 // request, so the raw XSRF-TOKEN cookie is not accepted in a header; the page renders the masked
 // token into a meta tag (layout/base.kte) and that is what gets sent.
-import {startAuthentication, startRegistration, WebAuthnAbortService} from '@simplewebauthn/browser'
+import {startAuthentication, startRegistration} from '@simplewebauthn/browser'
 
 const csrfToken = () => document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
@@ -167,36 +167,6 @@ export const create = async () => {
 
     await postJson('/webauthn/register', {publicKey: {credential, label: describeThisDevice()}});
     return 'Success!';
-}
-
-/**
- * Conditional create ("automatic passkey upgrade"): asks the browser to create a passkey without
- * any prompt, which it only does under its own conditions (typically right after a
- * password-manager-assisted sign-in). Resolves true if a passkey was created, false if the
- * browser declined or can't - the caller then decides whether to ask the user explicitly.
- */
-export const createSilently = async ({timeoutMs = 4000} = {}) => {
-    try {
-        if (typeof PublicKeyCredential === 'undefined' || typeof PublicKeyCredential.getClientCapabilities !== 'function') return false;
-        const capabilities = await PublicKeyCredential.getClientCapabilities();
-        if (!capabilities.conditionalCreate) return false;
-        const optionsJSON = await postJson('/webauthn/register/options');
-        // Browsers don't always reject promptly when their conditions aren't met - the request
-        // can just sit there, and while it does, no other WebAuthn call (including the Signal
-        // API) can run. So give it a moment, then cancel the ceremony and move on.
-        const timeout = new Promise(resolve => setTimeout(() => resolve(null), timeoutMs));
-        const credential = await Promise.race([startRegistration({optionsJSON, useAutoRegister: true}), timeout]);
-        if (credential === null) {
-            WebAuthnAbortService.cancelCeremony();
-            console.log('Automatic passkey creation timed out; asking instead');
-            return false;
-        }
-        await postJson('/webauthn/register', {publicKey: {credential, label: describeThisDevice()}});
-        return true;
-    } catch (e) {
-        console.log('Automatic passkey creation not possible:', e.name ?? e);
-        return false;
-    }
 }
 
 /** Whether this browser can create a passkey on this device at all (drives the post-login prompt). */
