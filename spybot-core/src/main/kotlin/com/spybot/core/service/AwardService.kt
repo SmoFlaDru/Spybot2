@@ -2,6 +2,7 @@ package com.spybot.core.service
 
 import com.spybot.core.config.SpybotProperties
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
 import java.util.Locale
@@ -11,6 +12,7 @@ class AwardService(
     private val queryService: SpybotQueryService,
     private val properties: SpybotProperties,
 ) {
+    @Transactional
     fun runEndOfWeekAwards(): Int {
         val candidates = queryService.weeklyAwardCandidates().take(3)
         candidates.forEachIndexed { index, candidate ->

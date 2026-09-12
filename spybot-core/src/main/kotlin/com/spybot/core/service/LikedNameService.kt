@@ -11,6 +11,7 @@ import org.jooq.DSLContext
 import org.jooq.Records.mapping
 import org.jooq.impl.DSL
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 /**
  * Per-person likes on names proposed by the Steam name generator. The database holds one row per
@@ -117,6 +118,7 @@ class LikedNameService(
      * Moves the likes of merged-away users to the user they were merged into, keeping at most one
      * like per name (the target's own, or otherwise the earliest). Returns how many rows moved.
      */
+    @Transactional
     fun reassignLikes(
         sourceIds: Collection<Long>,
         targetId: Long,

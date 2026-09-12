@@ -56,6 +56,7 @@ import org.jooq.Record
 import org.jooq.Records.mapping
 import org.jooq.impl.DSL
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.sql.Timestamp
 import java.time.Instant
 import java.time.LocalDate
@@ -536,41 +537,39 @@ class SpybotQueryService(
             .and(SPYBOT_STEAMID.MERGED_USER_ID.eq(userId))
             .execute() > 0
 
+    @Transactional
     fun upsertChannels(channels: List<TeamSpeakChannelSnapshot>) {
         if (channels.isEmpty()) {
             return
         }
-        dsl.transaction { config ->
-            val tx = config.dsl()
-            // tschannel."order" has a UNIQUE constraint. If the TeamSpeak server reordered
-            // channels since the last sync, a straight per-row upsert can collide: row A wants
-            // the "order" value that row B currently still holds, and B hasn't been updated yet.
-            // Shift every touched row to a temporary, mutually-unique negative order first (ids
-            // are unique and always positive, so -id can never collide with another temp value
-            // or with any real order value) so the second pass can set the real values freely.
-            channels.forEach { channel ->
-                tx
-                    .update(TSCHANNEL)
-                    .set(TSCHANNEL.ORDER, -channel.id)
-                    .where(TSCHANNEL.ID.eq(channel.id))
-                    .execute()
-            }
-            channels.forEach { channel ->
-                tx.execute(
-                    """
-                    insert into tschannel (id, name, "order", pid)
-                    values (?, ?, ?, ?)
-                    on conflict (id) do update
-                    set name = excluded.name,
-                        "order" = excluded."order",
-                        pid = excluded.pid
-                    """.trimIndent(),
-                    channel.id,
-                    channel.name,
-                    channel.order,
-                    channel.parentId,
-                )
-            }
+        // tschannel."order" has a UNIQUE constraint. If the TeamSpeak server reordered
+        // channels since the last sync, a straight per-row upsert can collide: row A wants
+        // the "order" value that row B currently still holds, and B hasn't been updated yet.
+        // Shift every touched row to a temporary, mutually-unique negative order first (ids
+        // are unique and always positive, so -id can never collide with another temp value
+        // or with any real order value) so the second pass can set the real values freely.
+        channels.forEach { channel ->
+            dsl
+                .update(TSCHANNEL)
+                .set(TSCHANNEL.ORDER, -channel.id)
+                .where(TSCHANNEL.ID.eq(channel.id))
+                .execute()
+        }
+        channels.forEach { channel ->
+            dsl.execute(
+                """
+                insert into tschannel (id, name, "order", pid)
+                values (?, ?, ?, ?)
+                on conflict (id) do update
+                set name = excluded.name,
+                    "order" = excluded."order",
+                    pid = excluded.pid
+                """.trimIndent(),
+                channel.id,
+                channel.name,
+                channel.order,
+                channel.parentId,
+            )
         }
     }
 
@@ -601,6 +600,7 @@ class SpybotQueryService(
                 uniqueIdentifier,
             )?.toTeamSpeakIdentity()
 
+    @Transactional
     fun createTeamSpeakIdentity(
         nickname: String,
         clientId: Int,
@@ -637,6 +637,7 @@ class SpybotQueryService(
         )
     }
 
+    @Transactional
     fun renameIdentity(
         identity: TeamSpeakIdentity,
         nickname: String,
@@ -663,6 +664,7 @@ class SpybotQueryService(
         return identity.copy(tsUserName = nickname, mergedUserName = mergedUserName)
     }
 
+    @Transactional
     fun markClientSessionStarted(
         tsUserId: Int,
         channelId: Int,
@@ -684,6 +686,23 @@ class SpybotQueryService(
             .execute()
     }
 
+    /**
+     * A channel move ends the current session and starts the next one. If the second half
+     * failed, the user would silently drop out of the live view until another event touched
+     * them - so both happen in one transaction.
+     */
+    @Transactional
+    fun moveClientSession(
+        tsUserId: Int,
+        channelId: Int,
+        clientId: Int,
+        reasonId: Int,
+    ) {
+        closeOpenSessionsForUser(tsUserId, reasonId)
+        markClientSessionStarted(tsUserId, channelId, clientId, joined = false)
+    }
+
+    @Transactional
     fun closeOpenSessionsForUser(
         tsUserId: Int,
         reasonId: Int,
@@ -754,6 +773,7 @@ class SpybotQueryService(
      * genuinely live - permanently dropping them from the live view until another TeamSpeak event
      * happens to touch them again.
      */
+    @Transactional
     fun closeOpenSession(
         activityId: Int,
         tsUserId: Int,
@@ -807,6 +827,7 @@ class SpybotQueryService(
             .execute()
     }
 
+    @Transactional
     fun replaceQueuedMessage(
         mergedUserId: Long,
         type: String,
@@ -1235,9 +1256,9 @@ class SpybotQueryService(
         return RecentEventsPayload(events = events, hasMore = hasMore, start = start + events.size)
     }
 
-    fun hallOfFame(): List<HallOfFameEntry> {
-        val base =
-            dsl.fetch(
+    fun hallOfFame(): List<HallOfFameEntry> =
+        dsl
+            .fetch(
                 """
                 WITH total_time AS (
                     SELECT
@@ -1248,38 +1269,39 @@ class SpybotQueryService(
                     WHERE tsuseractivity.tsuserid = tsuser.id
                     AND spybot_mergeduser.id = tsuser.merged_user_id
                     GROUP BY tsuser.merged_user_id, spybot_mergeduser.name, spybot_mergeduser.id
+                    ORDER BY time DESC
+                    LIMIT 25
+                ),
+                awards AS (
+                    SELECT
+                        merged_user_id,
+                        COUNT(*) FILTER (WHERE points = 3) AS gold,
+                        COUNT(*) FILTER (WHERE points = 2) AS silver,
+                        COUNT(*) FILTER (WHERE points = 1) AS bronze
+                    FROM spybot_award
+                    GROUP BY merged_user_id
                 )
-                SELECT user_id, user_name AS "user", time
+                SELECT
+                    total_time.user_id,
+                    total_time.user_name AS "user",
+                    total_time.time,
+                    COALESCE(awards.gold, 0) AS gold,
+                    COALESCE(awards.silver, 0) AS silver,
+                    COALESCE(awards.bronze, 0) AS bronze
                 FROM total_time
-                ORDER BY time DESC
-                LIMIT 25
+                LEFT JOIN awards ON awards.merged_user_id = total_time.user_id
+                ORDER BY total_time.time DESC
                 """.trimIndent(),
-            )
-
-        return base.map { row ->
-            val userId = row.long("user_id")
-            val awardCounts =
-                dsl.fetchOne(
-                    """
-                    select
-                        coalesce(sum(case when points = 3 then 1 else 0 end), 0) as gold,
-                        coalesce(sum(case when points = 2 then 1 else 0 end), 0) as silver,
-                        coalesce(sum(case when points = 1 then 1 else 0 end), 0) as bronze
-                    from spybot_award
-                    where merged_user_id = ?
-                    """.trimIndent(),
-                    userId,
+            ).map { row ->
+                HallOfFameEntry(
+                    userId = row.long("user_id"),
+                    user = unescapeTeamSpeak(row.string("user")),
+                    time = row.double("time"),
+                    numGoldAwards = row.int("gold"),
+                    numSilverAwards = row.int("silver"),
+                    numBronzeAwards = row.int("bronze"),
                 )
-            HallOfFameEntry(
-                userId = userId,
-                user = unescapeTeamSpeak(row.string("user")),
-                time = row.double("time"),
-                numGoldAwards = awardCounts?.int("gold") ?: 0,
-                numSilverAwards = awardCounts?.int("silver") ?: 0,
-                numBronzeAwards = awardCounts?.int("bronze") ?: 0,
-            )
-        }
-    }
+            }
 
     fun timeline(rangeHours: Int): Pair<TimeRangeView, List<TimelineUserSeries>> {
         val allowed = listOf(6, 12, 24)
