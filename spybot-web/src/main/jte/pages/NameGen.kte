@@ -2,10 +2,10 @@
 @param generatedName: com.spybot.web.service.namegen.GeneratedName
 @param likeStatus: com.spybot.core.model.NameLikeStatus
 @param topNames: List<com.spybot.core.model.LikedNameView>
-@template.layout.base(title = "Steam name generator", chrome = chrome, activePage = "namegen", content = @`
+@template.layout.Base(title = "Steam name generator", chrome = chrome, activePage = "namegen", content = @`
     <div class="row row-cards justify-content-md-center">
         <div class="col-md-8 col-lg-6">
-            @template.fragments.namegen_fragment(generatedName = generatedName, likeStatus = likeStatus)
+            @template.fragments.NameGenFragment(generatedName = generatedName, likeStatus = likeStatus)
             <p class="text-secondary text-center small mt-3 mb-0">
                 Every name is a Counter-Strike term that sounds like part of a famous person's name &ndash;
                 matched by pronunciation, not spelling.
@@ -14,7 +14,7 @@
     </div>
     <div class="row row-cards justify-content-md-center mt-3">
         <div class="col-md-8 col-lg-6">
-            @template.fragments.namegen_top(topNames = topNames)
+            @template.fragments.NameGenTop(topNames = topNames)
         </div>
     </div>
 `)

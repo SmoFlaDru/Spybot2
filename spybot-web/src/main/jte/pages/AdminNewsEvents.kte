@@ -3,7 +3,7 @@
 @param events: List<com.spybot.core.model.AdminNewsEventRow>
 @param successMessage: String? = null
 @param errorMessage: String? = null
-@template.layout.base(title = "News events", chrome = chrome, activePage = "admin", content = @`
+@template.layout.Base(title = "News events", chrome = chrome, activePage = "admin", content = @`
     <div class="row row-cards justify-content-md-center">
         <div class="col-md-10">
             @if(successMessage != null)
@@ -44,7 +44,7 @@
                                     <a href="/admin/news-events/${event.id}/edit">Edit</a>
                                     <form method="post" action="/admin/news-events/${event.id}/delete" class="d-inline"
                                           onsubmit="return confirm('Delete this news event?')">
-                                        @template.layout.csrf_field(csrf = chrome.csrf)
+                                        @template.layout.CsrfField(csrf = chrome.csrf)
                                         <button type="submit" class="btn btn-link text-danger p-0 ms-2">Delete</button>
                                     </form>
                                 </td>

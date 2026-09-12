@@ -5,12 +5,12 @@ import com.spybot.web.jte.PageChromeFactory
 import com.spybot.web.jte.flashMessage
 import com.spybot.web.jte.renderJte
 import com.spybot.web.service.AdminService
-import gg.jte.generated.pages.Jteadmin_dashboardGenerated
-import gg.jte.generated.pages.Jteadmin_merge_usersGenerated
-import gg.jte.generated.pages.Jteadmin_merged_usersGenerated
-import gg.jte.generated.pages.Jteadmin_news_event_formGenerated
-import gg.jte.generated.pages.Jteadmin_news_eventsGenerated
-import gg.jte.generated.pages.Jteadmin_ts_usersGenerated
+import gg.jte.generated.pages.JteAdminDashboardGenerated
+import gg.jte.generated.pages.JteAdminMergeUsersGenerated
+import gg.jte.generated.pages.JteAdminMergedUsersGenerated
+import gg.jte.generated.pages.JteAdminNewsEventFormGenerated
+import gg.jte.generated.pages.JteAdminNewsEventsGenerated
+import gg.jte.generated.pages.JteAdminTsUsersGenerated
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.constraints.NotBlank
@@ -49,7 +49,7 @@ class AdminController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
-        Jteadmin_dashboardGenerated.render(out, null, chrome = chrome.of(principal, request), overview = adminService.overview())
+        JteAdminDashboardGenerated.render(out, null, chrome = chrome.of(principal, request), overview = adminService.overview())
     }
 
     @GetMapping("/merged-users")
@@ -59,7 +59,7 @@ class AdminController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
-        Jteadmin_merged_usersGenerated.render(
+        JteAdminMergedUsersGenerated.render(
             out,
             null,
             chrome = chrome.of(principal, request),
@@ -75,7 +75,7 @@ class AdminController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
-        Jteadmin_ts_usersGenerated.render(
+        JteAdminTsUsersGenerated.render(
             out,
             null,
             chrome = chrome.of(principal, request),
@@ -91,7 +91,7 @@ class AdminController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
-        Jteadmin_news_eventsGenerated.render(
+        JteAdminNewsEventsGenerated.render(
             out,
             null,
             chrome = chrome.of(principal, request),
@@ -108,7 +108,7 @@ class AdminController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
-        Jteadmin_news_event_formGenerated.render(
+        JteAdminNewsEventFormGenerated.render(
             out,
             null,
             chrome = chrome.of(principal, request),
@@ -142,7 +142,7 @@ class AdminController(
     ) {
         val event = adminService.newsEventById(id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
         response.renderJte { out ->
-            Jteadmin_news_event_formGenerated.render(
+            JteAdminNewsEventFormGenerated.render(
                 out,
                 null,
                 chrome = chrome.of(principal, request),
@@ -190,7 +190,7 @@ class AdminController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
-        Jteadmin_merge_usersGenerated.render(
+        JteAdminMergeUsersGenerated.render(
             out,
             null,
             chrome = chrome.of(principal, request),

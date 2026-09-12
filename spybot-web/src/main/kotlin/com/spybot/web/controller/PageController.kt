@@ -11,16 +11,16 @@ import com.spybot.web.service.ChangelogService
 import com.spybot.web.service.SpybotPageService
 import com.spybot.web.service.namegen.Likers
 import com.spybot.web.service.namegen.NameGenService
-import gg.jte.generated.pages.JtechangelogGenerated
-import gg.jte.generated.pages.JtehalloffameGenerated
-import gg.jte.generated.pages.JtehomeGenerated
-import gg.jte.generated.pages.JteliveGenerated
-import gg.jte.generated.pages.JteloginGenerated
-import gg.jte.generated.pages.Jtelogin_teamspeakGenerated
-import gg.jte.generated.pages.JtenamegenGenerated
-import gg.jte.generated.pages.JteprofileGenerated
-import gg.jte.generated.pages.JtetimelineGenerated
-import gg.jte.generated.pages.JteuserGenerated
+import gg.jte.generated.pages.JteChangelogGenerated
+import gg.jte.generated.pages.JteHallOfFameGenerated
+import gg.jte.generated.pages.JteHomeGenerated
+import gg.jte.generated.pages.JteLiveGenerated
+import gg.jte.generated.pages.JteLoginGenerated
+import gg.jte.generated.pages.JteLoginTeamSpeakGenerated
+import gg.jte.generated.pages.JteNameGenGenerated
+import gg.jte.generated.pages.JteProfileGenerated
+import gg.jte.generated.pages.JteTimelineGenerated
+import gg.jte.generated.pages.JteUserGenerated
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
@@ -49,7 +49,7 @@ class PageController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
-        JtehomeGenerated.render(out, null, chrome = chrome.of(principal, request), home = pageService.home(timeSpan))
+        JteHomeGenerated.render(out, null, chrome = chrome.of(principal, request), home = pageService.home(timeSpan))
     }
 
     @GetMapping("/live/")
@@ -59,7 +59,7 @@ class PageController(
         response: HttpServletResponse,
     ) = response.renderJte { out ->
         val (channels, clients) = pageService.live()
-        JteliveGenerated.render(out, null, chrome = chrome.of(principal, request), channels = channels, clients = clients)
+        JteLiveGenerated.render(out, null, chrome = chrome.of(principal, request), channels = channels, clients = clients)
     }
 
     @GetMapping("/timeline")
@@ -70,7 +70,7 @@ class PageController(
         response: HttpServletResponse,
     ) = response.renderJte { out ->
         val (timeRange, series) = statisticsQueries.timeline(rangeHours)
-        JtetimelineGenerated.render(out, null, chrome = chrome.of(principal, request), timeRange = timeRange, activityByUser = series)
+        JteTimelineGenerated.render(out, null, chrome = chrome.of(principal, request), timeRange = timeRange, activityByUser = series)
     }
 
     @GetMapping("/halloffame")
@@ -79,7 +79,7 @@ class PageController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
-        JtehalloffameGenerated.render(out, null, chrome = chrome.of(principal, request), topUsers = statisticsQueries.hallOfFame())
+        JteHallOfFameGenerated.render(out, null, chrome = chrome.of(principal, request), topUsers = statisticsQueries.hallOfFame())
     }
 
     @GetMapping("/u/{userId}")
@@ -91,7 +91,7 @@ class PageController(
     ) {
         val page = pageService.userPage(userId) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
         response.renderJte { out ->
-            JteuserGenerated.render(out, null, chrome = chrome.of(principal, request), page = page)
+            JteUserGenerated.render(out, null, chrome = chrome.of(principal, request), page = page)
         }
     }
 
@@ -102,7 +102,7 @@ class PageController(
         response: HttpServletResponse,
     ) = response.renderJte { out ->
         val passkeys = passkeyQueries.passkeysForUser(principal.id)
-        JteprofileGenerated.render(
+        JteProfileGenerated.render(
             out,
             null,
             chrome = chrome.of(principal, request),
@@ -119,7 +119,7 @@ class PageController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
-        JteloginGenerated.render(out, null, chrome = chrome.of(principal, request))
+        JteLoginGenerated.render(out, null, chrome = chrome.of(principal, request))
     }
 
     @GetMapping("/login_teamspeak")
@@ -128,7 +128,7 @@ class PageController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
-        Jtelogin_teamspeakGenerated.render(out, null, chrome = chrome.of(principal, request))
+        JteLoginTeamSpeakGenerated.render(out, null, chrome = chrome.of(principal, request))
     }
 
     @GetMapping("/changelog")
@@ -137,7 +137,7 @@ class PageController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
-        JtechangelogGenerated.render(out, null, chrome = chrome.of(principal, request), entries = changelogService.entries())
+        JteChangelogGenerated.render(out, null, chrome = chrome.of(principal, request), entries = changelogService.entries())
     }
 
     @GetMapping("/namegen")
@@ -148,7 +148,7 @@ class PageController(
     ) = response.renderJte { out ->
         val liker = Likers.of(principal, request)
         val generatedName = nameGenService.generate()
-        JtenamegenGenerated.render(
+        JteNameGenGenerated.render(
             out,
             null,
             chrome = chrome.of(principal, request),

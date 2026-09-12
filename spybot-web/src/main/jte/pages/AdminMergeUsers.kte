@@ -3,7 +3,7 @@
 @param mergedUsers: List<com.spybot.core.model.AdminMergedUserRow>
 @param successMessage: String? = null
 @param errorMessage: String? = null
-@template.layout.base(title = "Merge users", chrome = chrome, activePage = "admin", content = @`
+@template.layout.Base(title = "Merge users", chrome = chrome, activePage = "admin", content = @`
     <div class="row row-cards justify-content-md-center">
         <div class="col-md-8">
             @if(successMessage != null)
@@ -17,7 +17,7 @@
                     <h3 class="card-title">Merge users</h3>
                 </div>
                 <form method="post" action="/admin/merge-users">
-                    @template.layout.csrf_field(csrf = chrome.csrf)
+                    @template.layout.CsrfField(csrf = chrome.csrf)
                     <div class="card-body">
                         <div class="mb-3">
                             <label class="form-label">Target user (kept)</label>
