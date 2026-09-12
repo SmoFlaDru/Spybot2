@@ -93,6 +93,12 @@ jooq {
                         isRecords = true
                         isImmutablePojos = true
                         isFluentSetters = false
+                        // NOT NULL columns become non-null Kotlin types (Field<Long> instead of
+                        // Field<Long?>), so reads need no "?: 0L" fallbacks and Records.mapping(::Dto)
+                        // is checked against the DTO's constructor at compile time.
+                        isKotlinNotNullRecordAttributes = true
+                        isKotlinNotNullPojoAttributes = true
+                        isKotlinNotNullInterfaceAttributes = true
                     }
                     target.apply {
                         packageName = "com.spybot.jooq"

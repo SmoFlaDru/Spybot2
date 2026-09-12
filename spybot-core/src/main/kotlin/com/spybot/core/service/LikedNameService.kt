@@ -1,5 +1,6 @@
 package com.spybot.core.service
 
+import com.spybot.core.jooq.notNull
 import com.spybot.core.model.LikedNameView
 import com.spybot.core.model.Liker
 import com.spybot.core.model.NameLikeStatus
@@ -7,6 +8,7 @@ import com.spybot.jooq.tables.references.SPYBOT_LIKEDNAME
 import com.spybot.jooq.tables.references.SPYBOT_NAMELIKE
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.Records.mapping
 import org.jooq.impl.DSL
 import org.springframework.stereotype.Service
 
@@ -94,22 +96,20 @@ class LikedNameService(
         val likedByMe = DSL.boolOr(isLiker(liker))
         val lastLiked = DSL.max(SPYBOT_NAMELIKE.CREATED_AT)
         return dsl
-            .select(SPYBOT_LIKEDNAME.DISPLAY_NAME, SPYBOT_LIKEDNAME.REAL_NAME, SPYBOT_LIKEDNAME.SLANG, likes, likedByMe)
-            .from(SPYBOT_LIKEDNAME)
+            .select(
+                SPYBOT_LIKEDNAME.DISPLAY_NAME.notNull(),
+                SPYBOT_LIKEDNAME.REAL_NAME.notNull(),
+                SPYBOT_LIKEDNAME.SLANG.notNull(),
+                likes.notNull(),
+                // bool_or over the inner join is never null: every group has at least one like.
+                likedByMe.notNull(),
+            ).from(SPYBOT_LIKEDNAME)
             .join(SPYBOT_NAMELIKE)
             .on(SPYBOT_NAMELIKE.NAME_ID.eq(SPYBOT_LIKEDNAME.ID))
             .groupBy(SPYBOT_LIKEDNAME.ID, SPYBOT_LIKEDNAME.DISPLAY_NAME, SPYBOT_LIKEDNAME.REAL_NAME, SPYBOT_LIKEDNAME.SLANG)
             .orderBy(likes.desc(), lastLiked.desc())
             .limit(limit)
-            .fetch {
-                LikedNameView(
-                    displayName = it.get(SPYBOT_LIKEDNAME.DISPLAY_NAME)!!,
-                    realName = it.get(SPYBOT_LIKEDNAME.REAL_NAME)!!,
-                    slang = it.get(SPYBOT_LIKEDNAME.SLANG)!!,
-                    likes = it.get(likes) ?: 0,
-                    likedByMe = it.get(likedByMe) ?: false,
-                )
-            }
+            .fetch(mapping(::LikedNameView))
     }
 
     /**
