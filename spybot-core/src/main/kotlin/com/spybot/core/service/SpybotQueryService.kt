@@ -1,5 +1,6 @@
 package com.spybot.core.service
 
+import com.spybot.core.jooq.notNull
 import com.spybot.core.model.ActiveUsersStat
 import com.spybot.core.model.ActivityChartView
 import com.spybot.core.model.AdminMergedUserRow
@@ -52,6 +53,7 @@ import com.spybot.jooq.tables.references.TSUSERACTIVITY
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Record
+import org.jooq.Records.mapping
 import org.jooq.impl.DSL
 import org.springframework.stereotype.Service
 import java.sql.Timestamp
@@ -66,46 +68,18 @@ class SpybotQueryService(
     private val dsl: DSLContext,
 ) {
     fun findMergedUserById(id: Long): MergedUserView? =
-        dsl
-            .select(
-                SPYBOT_MERGEDUSER.ID,
-                SPYBOT_MERGEDUSER.NAME,
-                SPYBOT_MERGEDUSER.OBSOLETE,
-                SPYBOT_MERGEDUSER.IS_SUPERUSER,
-                SPYBOT_MERGEDUSER.LAST_LOGIN,
-            ).from(SPYBOT_MERGEDUSER)
+        selectMergedUser()
+            .from(SPYBOT_MERGEDUSER)
             .where(SPYBOT_MERGEDUSER.ID.eq(id))
-            .fetchOne {
-                MergedUserView(
-                    id = it.get(SPYBOT_MERGEDUSER.ID) ?: 0L,
-                    name = it.get(SPYBOT_MERGEDUSER.NAME) ?: "",
-                    obsolete = it.get(SPYBOT_MERGEDUSER.OBSOLETE) ?: false,
-                    isSuperuser = it.get(SPYBOT_MERGEDUSER.IS_SUPERUSER) ?: false,
-                    lastLogin = it.get(SPYBOT_MERGEDUSER.LAST_LOGIN),
-                )
-            }
+            .fetchOne(toMergedUser)
 
     fun findMergedUserByLoginCode(code: String): MergedUserView? =
-        dsl
-            .select(
-                SPYBOT_MERGEDUSER.ID,
-                SPYBOT_MERGEDUSER.NAME,
-                SPYBOT_MERGEDUSER.OBSOLETE,
-                SPYBOT_MERGEDUSER.IS_SUPERUSER,
-                SPYBOT_MERGEDUSER.LAST_LOGIN,
-            ).from(SPYBOT_LOGINLINK)
+        selectMergedUser()
+            .from(SPYBOT_LOGINLINK)
             .join(SPYBOT_MERGEDUSER)
             .on(SPYBOT_MERGEDUSER.ID.eq(SPYBOT_LOGINLINK.USER_ID))
             .where(SPYBOT_LOGINLINK.CODE.eq(code))
-            .fetchOne {
-                MergedUserView(
-                    id = it.get(SPYBOT_MERGEDUSER.ID) ?: 0L,
-                    name = it.get(SPYBOT_MERGEDUSER.NAME) ?: "",
-                    obsolete = it.get(SPYBOT_MERGEDUSER.OBSOLETE) ?: false,
-                    isSuperuser = it.get(SPYBOT_MERGEDUSER.IS_SUPERUSER) ?: false,
-                    lastLogin = it.get(SPYBOT_MERGEDUSER.LAST_LOGIN),
-                )
-            }
+            .fetchOne(toMergedUser)
 
     fun touchLastSeen(userId: Long) {
         dsl
@@ -130,12 +104,12 @@ class SpybotQueryService(
 
         return dsl
             .select(
-                SPYBOT_MERGEDUSER.ID,
-                SPYBOT_MERGEDUSER.NAME,
-                SPYBOT_MERGEDUSER.OBSOLETE,
-                SPYBOT_MERGEDUSER.IS_SUPERUSER,
+                SPYBOT_MERGEDUSER.ID.notNull(),
+                SPYBOT_MERGEDUSER.NAME.notNull(),
+                SPYBOT_MERGEDUSER.OBSOLETE.notNull(),
+                SPYBOT_MERGEDUSER.IS_SUPERUSER.notNull(),
+                tsCountField.notNull(),
                 SPYBOT_MERGEDUSER.LAST_LOGIN,
-                tsCountField,
             ).from(SPYBOT_MERGEDUSER)
             .leftJoin(TSUSER)
             .on(TSUSER.MERGED_USER_ID.eq(SPYBOT_MERGEDUSER.ID))
@@ -147,16 +121,7 @@ class SpybotQueryService(
                 SPYBOT_MERGEDUSER.IS_SUPERUSER,
                 SPYBOT_MERGEDUSER.LAST_LOGIN,
             ).orderBy(tsCountField.desc(), SPYBOT_MERGEDUSER.ID.asc())
-            .fetch {
-                AdminMergedUserRow(
-                    id = it.get(SPYBOT_MERGEDUSER.ID) ?: 0L,
-                    name = it.get(SPYBOT_MERGEDUSER.NAME) ?: "",
-                    obsolete = it.get(SPYBOT_MERGEDUSER.OBSOLETE) ?: false,
-                    isSuperuser = it.get(SPYBOT_MERGEDUSER.IS_SUPERUSER) ?: false,
-                    tsUserCount = (it.get(tsCountField) ?: 0).toInt(),
-                    lastLogin = it.get(SPYBOT_MERGEDUSER.LAST_LOGIN),
-                )
-            }
+            .fetch(mapping(::AdminMergedUserRow))
     }
 
     fun adminTsUsers(search: String?): List<AdminTsUserRow> {
@@ -175,27 +140,18 @@ class SpybotQueryService(
 
         return dsl
             .select(
-                TSUSER.ID,
+                TSUSER.ID.notNull(),
                 TSUSER.NAME,
                 TSUSER.MERGED_USER_ID,
-                TSUSER.ISCURRENTLYONLINE,
-                TSUSER.CLIENTID,
                 SPYBOT_MERGEDUSER.NAME,
+                TSUSER.ISCURRENTLYONLINE.notNull(),
+                TSUSER.CLIENTID.notNull(),
             ).from(TSUSER)
             .leftJoin(SPYBOT_MERGEDUSER)
             .on(SPYBOT_MERGEDUSER.ID.eq(TSUSER.MERGED_USER_ID))
             .where(if (conditions.isEmpty()) DSL.trueCondition() else conditions.reduce(Condition::and))
             .orderBy(TSUSER.ID.desc())
-            .fetch {
-                AdminTsUserRow(
-                    id = it.get(TSUSER.ID) ?: 0,
-                    name = it.get(TSUSER.NAME),
-                    mergedUserId = it.get(TSUSER.MERGED_USER_ID),
-                    mergedUserName = it.get(SPYBOT_MERGEDUSER.NAME),
-                    isCurrentlyOnline = it.get(TSUSER.ISCURRENTLYONLINE) ?: false,
-                    clientId = it.get(TSUSER.CLIENTID) ?: 0,
-                )
-            }
+            .fetch(mapping(::AdminTsUserRow))
     }
 
     fun adminNewsEvents(search: String?): List<AdminNewsEventRow> {
@@ -210,42 +166,18 @@ class SpybotQueryService(
                 }
         }
 
-        return dsl
-            .select(
-                SPYBOT_NEWSEVENT.ID,
-                SPYBOT_NEWSEVENT.TEXT,
-                SPYBOT_NEWSEVENT.WEBSITE_LINK,
-                SPYBOT_NEWSEVENT.DATE,
-            ).from(SPYBOT_NEWSEVENT)
+        return selectNewsEvent()
+            .from(SPYBOT_NEWSEVENT)
             .where(if (conditions.isEmpty()) DSL.trueCondition() else conditions.reduce(Condition::and))
             .orderBy(SPYBOT_NEWSEVENT.DATE.desc(), SPYBOT_NEWSEVENT.ID.desc())
-            .fetch {
-                AdminNewsEventRow(
-                    id = it.get(SPYBOT_NEWSEVENT.ID) ?: 0L,
-                    text = it.get(SPYBOT_NEWSEVENT.TEXT) ?: "",
-                    websiteLink = it.get(SPYBOT_NEWSEVENT.WEBSITE_LINK),
-                    date = it.get(SPYBOT_NEWSEVENT.DATE) ?: OffsetDateTime.now(ZoneOffset.UTC),
-                )
-            }
+            .fetch(toNewsEvent)
     }
 
     fun adminNewsEventById(id: Long): AdminNewsEventRow? =
-        dsl
-            .select(
-                SPYBOT_NEWSEVENT.ID,
-                SPYBOT_NEWSEVENT.TEXT,
-                SPYBOT_NEWSEVENT.WEBSITE_LINK,
-                SPYBOT_NEWSEVENT.DATE,
-            ).from(SPYBOT_NEWSEVENT)
+        selectNewsEvent()
+            .from(SPYBOT_NEWSEVENT)
             .where(SPYBOT_NEWSEVENT.ID.eq(id))
-            .fetchOne {
-                AdminNewsEventRow(
-                    id = it.get(SPYBOT_NEWSEVENT.ID) ?: 0L,
-                    text = it.get(SPYBOT_NEWSEVENT.TEXT) ?: "",
-                    websiteLink = it.get(SPYBOT_NEWSEVENT.WEBSITE_LINK),
-                    date = it.get(SPYBOT_NEWSEVENT.DATE) ?: OffsetDateTime.now(ZoneOffset.UTC),
-                )
-            }
+            .fetchOne(toNewsEvent)
 
     fun adminCreateNewsEvent(
         text: String,
@@ -281,24 +213,10 @@ class SpybotQueryService(
         if (ids.isEmpty()) {
             return emptyList()
         }
-        return dsl
-            .select(
-                SPYBOT_MERGEDUSER.ID,
-                SPYBOT_MERGEDUSER.NAME,
-                SPYBOT_MERGEDUSER.OBSOLETE,
-                SPYBOT_MERGEDUSER.IS_SUPERUSER,
-                SPYBOT_MERGEDUSER.LAST_LOGIN,
-            ).from(SPYBOT_MERGEDUSER)
+        return selectMergedUser()
+            .from(SPYBOT_MERGEDUSER)
             .where(SPYBOT_MERGEDUSER.ID.`in`(ids))
-            .fetch {
-                MergedUserView(
-                    id = it.get(SPYBOT_MERGEDUSER.ID) ?: 0L,
-                    name = it.get(SPYBOT_MERGEDUSER.NAME) ?: "",
-                    obsolete = it.get(SPYBOT_MERGEDUSER.OBSOLETE) ?: false,
-                    isSuperuser = it.get(SPYBOT_MERGEDUSER.IS_SUPERUSER) ?: false,
-                    lastLogin = it.get(SPYBOT_MERGEDUSER.LAST_LOGIN),
-                )
-            }
+            .fetch(toMergedUser)
     }
 
     fun adminSetMergedUserSuperuser(
@@ -412,25 +330,16 @@ class SpybotQueryService(
     fun passkeysForUser(userId: Long): List<PasskeyView> =
         dsl
             .select(
-                SPYBOT_USERPASSKEY.ID,
-                SPYBOT_USERPASSKEY.NAME,
-                SPYBOT_USERPASSKEY.PLATFORM,
+                SPYBOT_USERPASSKEY.ID.notNull(),
+                SPYBOT_USERPASSKEY.NAME.notNull(),
+                SPYBOT_USERPASSKEY.PLATFORM.notNull(),
                 SPYBOT_USERPASSKEY.ADDED_ON,
                 SPYBOT_USERPASSKEY.LAST_USED,
-                SPYBOT_USERPASSKEY.BACKUP_STATE,
+                SPYBOT_USERPASSKEY.BACKUP_STATE.notNull(),
             ).from(SPYBOT_USERPASSKEY)
             .where(SPYBOT_USERPASSKEY.USER_ID.eq(userId))
             .orderBy(SPYBOT_USERPASSKEY.ADDED_ON.desc())
-            .fetch {
-                PasskeyView(
-                    id = it.get(SPYBOT_USERPASSKEY.ID) ?: 0L,
-                    name = it.get(SPYBOT_USERPASSKEY.NAME) ?: "",
-                    platform = it.get(SPYBOT_USERPASSKEY.PLATFORM) ?: "",
-                    addedOn = it.get(SPYBOT_USERPASSKEY.ADDED_ON),
-                    lastUsed = it.get(SPYBOT_USERPASSKEY.LAST_USED),
-                    synced = it.get(SPYBOT_USERPASSKEY.BACKUP_STATE) ?: false,
-                )
-            }
+            .fetch(mapping(::PasskeyView))
 
     fun renamePasskey(
         userId: Long,
@@ -598,17 +507,11 @@ class SpybotQueryService(
 
     fun steamIdsForUser(userId: Long): List<SteamIdView> =
         dsl
-            .select(SPYBOT_STEAMID.ID, SPYBOT_STEAMID.STEAM_ID, SPYBOT_STEAMID.ACCOUNT_NAME)
+            .select(SPYBOT_STEAMID.ID.notNull(), SPYBOT_STEAMID.STEAM_ID.notNull(), SPYBOT_STEAMID.ACCOUNT_NAME)
             .from(SPYBOT_STEAMID)
             .where(SPYBOT_STEAMID.MERGED_USER_ID.eq(userId))
             .orderBy(SPYBOT_STEAMID.ID.desc())
-            .fetch {
-                SteamIdView(
-                    id = it.get(SPYBOT_STEAMID.ID) ?: 0L,
-                    steamId = it.get(SPYBOT_STEAMID.STEAM_ID) ?: 0L,
-                    accountName = it.get(SPYBOT_STEAMID.ACCOUNT_NAME),
-                )
-            }
+            .fetch(mapping(::SteamIdView))
 
     fun addSteamId(
         userId: Long,
@@ -888,21 +791,14 @@ class SpybotQueryService(
     fun queuedMessagesForMergedUser(mergedUserId: Long): List<QueuedClientMessageView> =
         dsl
             .select(
-                SPYBOT_QUEUEDCLIENTMESSAGE.ID,
-                SPYBOT_QUEUEDCLIENTMESSAGE.MERGED_USER_ID,
-                SPYBOT_QUEUEDCLIENTMESSAGE.TEXT,
-                SPYBOT_QUEUEDCLIENTMESSAGE.TYPE,
+                SPYBOT_QUEUEDCLIENTMESSAGE.ID.notNull(),
+                SPYBOT_QUEUEDCLIENTMESSAGE.MERGED_USER_ID.notNull(),
+                SPYBOT_QUEUEDCLIENTMESSAGE.TEXT.notNull(),
+                SPYBOT_QUEUEDCLIENTMESSAGE.TYPE.notNull(),
             ).from(SPYBOT_QUEUEDCLIENTMESSAGE)
             .where(SPYBOT_QUEUEDCLIENTMESSAGE.MERGED_USER_ID.eq(mergedUserId))
             .orderBy(SPYBOT_QUEUEDCLIENTMESSAGE.DATE.desc(), SPYBOT_QUEUEDCLIENTMESSAGE.ID.desc())
-            .fetch {
-                QueuedClientMessageView(
-                    id = it.get(SPYBOT_QUEUEDCLIENTMESSAGE.ID) ?: 0L,
-                    mergedUserId = it.get(SPYBOT_QUEUEDCLIENTMESSAGE.MERGED_USER_ID) ?: 0L,
-                    text = it.get(SPYBOT_QUEUEDCLIENTMESSAGE.TEXT) ?: "",
-                    type = it.get(SPYBOT_QUEUEDCLIENTMESSAGE.TYPE) ?: "",
-                )
-            }
+            .fetch(mapping(::QueuedClientMessageView))
 
     fun deleteQueuedMessage(messageId: Long) {
         dsl
@@ -989,18 +885,18 @@ class SpybotQueryService(
     fun liveApi(): LiveApiResponse {
         val channels =
             dsl
-                .select(TSCHANNEL.ID, TSCHANNEL.NAME)
+                .select(TSCHANNEL.ID.notNull(), TSCHANNEL.NAME)
                 .from(TSCHANNEL)
                 .orderBy(TSCHANNEL.ORDER.asc())
-                .fetch { LiveApiChannel(it.get(TSCHANNEL.ID) ?: 0, it.get(TSCHANNEL.NAME)) }
+                .fetch(mapping(::LiveApiChannel))
         val clients =
             dsl
-                .select(TSUSER.NAME, TSUSERACTIVITY.CID)
+                .select(TSUSER.NAME, TSUSERACTIVITY.CID.notNull())
                 .from(TSUSERACTIVITY)
                 .join(TSUSER)
                 .on(TSUSER.ID.eq(TSUSERACTIVITY.TSUSERID))
                 .where(TSUSERACTIVITY.ENDTIME.isNull)
-                .fetch { LiveApiUser(it.get(TSUSER.NAME), it.get(TSUSERACTIVITY.CID) ?: 0) }
+                .fetch(mapping(::LiveApiUser))
 
         return LiveApiResponse(clients = clients, channels = channels)
     }
@@ -1030,10 +926,10 @@ class SpybotQueryService(
     fun liveClients(): Pair<List<ChannelView>, List<LiveClientView>> {
         val channels =
             dsl
-                .select(TSCHANNEL.ID, TSCHANNEL.NAME)
+                .select(TSCHANNEL.ID.notNull(), TSCHANNEL.NAME)
                 .from(TSCHANNEL)
                 .orderBy(TSCHANNEL.ORDER.asc())
-                .fetch { ChannelView(it.get(TSCHANNEL.ID) ?: 0, it.get(TSCHANNEL.NAME)?.let(::unescapeTeamSpeak)) }
+                .fetch(mapping { id, name -> ChannelView(id, name?.let(::unescapeTeamSpeak)) })
 
         val clients =
             dsl
@@ -1615,6 +1511,29 @@ class SpybotQueryService(
     }
 
     fun weeklyAwardCandidates(): List<TopUserWeek> = topUsersOfWeek()
+
+    // Projections that several queries share. Column order is the DTO's constructor order:
+    // Records.mapping(::Dto) checks that at compile time, so a mismatch cannot reach runtime.
+    private fun selectMergedUser() =
+        dsl.select(
+            SPYBOT_MERGEDUSER.ID.notNull(),
+            SPYBOT_MERGEDUSER.NAME.notNull(),
+            SPYBOT_MERGEDUSER.OBSOLETE.notNull(),
+            SPYBOT_MERGEDUSER.IS_SUPERUSER.notNull(),
+            SPYBOT_MERGEDUSER.LAST_LOGIN,
+        )
+
+    private val toMergedUser = mapping(::MergedUserView)
+
+    private fun selectNewsEvent() =
+        dsl.select(
+            SPYBOT_NEWSEVENT.ID.notNull(),
+            SPYBOT_NEWSEVENT.TEXT.notNull(),
+            SPYBOT_NEWSEVENT.WEBSITE_LINK,
+            SPYBOT_NEWSEVENT.DATE.notNull(),
+        )
+
+    private val toNewsEvent = mapping(::AdminNewsEventRow)
 
     private fun Record.toMergedUser(): MergedUserView =
         MergedUserView(

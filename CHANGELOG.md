@@ -11,6 +11,7 @@ So a release is simply a tag on master.
 - Fixed browsers keeping a day-old copy of the site's scripts and styles after a deploy, which broke passkey registration right after the passkey rework
 - Polished the passkey list on the profile page: provider icon and synced/device-bound badge, relative timestamps, inline rename, and updates without a page reload
 - Moved passkeys to Spring Security's WebAuthn support: existing passkeys were removed and need to be re-added, and passkeys now survive merging two accounts (#218)
+- Reads of NOT NULL columns now fail loudly instead of silently defaulting to 0, "" or now(); query results map onto DTOs by constructor, checked at compile time
 - Made changelog rows link to their commit on GitHub, with a hover highlight and relative timestamps instead of a repeated hash (#217)
 - Fixed passkey registration and login failing in production with a generic error because the origin was reconstructed from proxy headers that report http
 - Fixed the weekly awards job crashing on the production database because awards, news events and queued messages were inserted without a date
