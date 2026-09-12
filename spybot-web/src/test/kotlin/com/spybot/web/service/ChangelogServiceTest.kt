@@ -22,7 +22,10 @@ class ChangelogServiceTest {
         val entries = service.parseJson(json.toByteArray())
 
         assertEquals(2, entries.size)
-        assertEquals(ChangelogEntry("abc1234", Instant.parse("2026-09-11T22:37:49Z"), listOf("v3.1.0"), listOf("Newer change (#12)")), entries[0])
+        assertEquals(
+            ChangelogEntry("abc1234", Instant.parse("2026-09-11T22:37:49Z"), listOf("v3.1.0"), listOf("Newer change (#12)")),
+            entries[0],
+        )
         assertEquals("v3.1.0", entries[0].title)
         assertEquals("def5678", entries[1].title)
         assertEquals(listOf("Older change", "Another older change"), entries[1].bullets)
