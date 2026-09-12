@@ -3,7 +3,7 @@ plugins {
     kotlin("plugin.spring") version "2.2.21" apply false
     id("org.springframework.boot") version "4.1.1" apply false
     id("io.spring.dependency-management") version "1.1.7" apply false
-    id("nu.studer.jooq") version "10.1.1" apply false
+    id("nu.studer.jooq") version "10.2.1" apply false
 }
 
 allprojects {
