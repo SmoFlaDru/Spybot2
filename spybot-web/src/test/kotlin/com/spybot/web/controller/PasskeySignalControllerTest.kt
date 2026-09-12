@@ -18,7 +18,8 @@ import java.time.OffsetDateTime
 class PasskeySignalControllerTest {
     private val queryService = Mockito.mock(SpybotQueryService::class.java)
     private val controller = PasskeySignalController(queryService, SpybotProperties(publicBaseUrl = "https://spybot.bensge.com"))
-    private val principal = MergedUserPrincipal(MergedUserView(id = 708, name = "bensge", obsolete = false, isSuperuser = false, lastLogin = null))
+    private val principal =
+        MergedUserPrincipal(MergedUserView(id = 708, name = "bensge", obsolete = false, isSuperuser = false, lastLogin = null))
 
     private fun credential(
         handle: String,
@@ -28,7 +29,10 @@ class PasskeySignalControllerTest {
     @Test
     fun `accepted lists credential ids per handle, including handles that have none left`() {
         Mockito.`when`(queryService.webauthnUserHandlesForUser(708)).thenReturn(listOf("handle-old", "handle-new"))
-        Mockito.`when`(queryService.webauthnCredentialsForUser(708)).thenReturn(listOf(credential("handle-new", "cred-1"), credential("handle-new", "cred-2")))
+        Mockito
+            .`when`(
+                queryService.webauthnCredentialsForUser(708),
+            ).thenReturn(listOf(credential("handle-new", "cred-1"), credential("handle-new", "cred-2")))
 
         val accepted = controller.accepted(principal)
 

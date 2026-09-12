@@ -16,7 +16,8 @@ class AuthControllerTest {
     private val authenticationService = Mockito.mock(AuthenticationService::class.java)
     private val queryService = Mockito.mock(SpybotQueryService::class.java)
     private val controller = AuthController(authenticationService, queryService)
-    private val principal = MergedUserPrincipal(MergedUserView(id = 708, name = "bensge", obsolete = false, isSuperuser = false, lastLogin = null))
+    private val principal =
+        MergedUserPrincipal(MergedUserView(id = 708, name = "bensge", obsolete = false, isSuperuser = false, lastLogin = null))
 
     @Test
     fun `a magic-link login without any passkey lands on the profile with the passkey prompt`() {
@@ -31,7 +32,10 @@ class AuthControllerTest {
     @Test
     fun `a magic-link login with a passkey lands on the home page as before`() {
         Mockito.`when`(authenticationService.authenticateByLoginCode("code")).thenReturn(principal)
-        Mockito.`when`(queryService.passkeysForUser(708)).thenReturn(listOf(PasskeyView(1, "Mac", "iCloud Keychain", OffsetDateTime.now(), null, true)))
+        Mockito
+            .`when`(
+                queryService.passkeysForUser(708),
+            ).thenReturn(listOf(PasskeyView(1, "Mac", "iCloud Keychain", OffsetDateTime.now(), null, true)))
 
         val view = controller.linkAuth("code", MockHttpServletRequest(), MockHttpServletResponse())
 
