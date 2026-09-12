@@ -37,7 +37,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("com.webauthn4j:webauthn4j-core:0.31.0.RELEASE")
+    implementation("com.webauthn4j:webauthn4j-core:0.31.10.RELEASE")
     // Templates are generated to Kotlin at build time (see the jte block); only the runtime is
     // needed to execute them, and controllers call the generated classes directly.
     implementation("gg.jte:jte-runtime:${providers.gradleProperty("jteVersion").get()}")
