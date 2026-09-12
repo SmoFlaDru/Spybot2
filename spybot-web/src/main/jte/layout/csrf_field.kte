@@ -1,0 +1,2 @@
+@param csrf: org.springframework.security.web.csrf.CsrfToken?
+<input type="hidden" name="${if (csrf != null) csrf.parameterName else "_csrf"}" value="${if (csrf != null) csrf.token else ""}">

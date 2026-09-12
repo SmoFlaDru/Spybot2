@@ -1,4 +1,4 @@
-@param steamIds: java.util.List<com.spybot.core.model.SteamIdView>
+@param steamIds: List<com.spybot.core.model.SteamIdView>
 <div class="card">
     <div class="card-header">Linked Steam Accounts</div>
     <div class="table-responsive">

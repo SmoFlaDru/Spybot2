@@ -1,10 +1,7 @@
-@param loggedInUser: com.spybot.core.model.MergedUserView?
+@param chrome: com.spybot.web.jte.PageChrome
 @param timeRange: com.spybot.core.model.TimeRangeView
-@param activityByUser: java.util.List<com.spybot.core.model.TimelineUserSeries>
-@param csrf: org.springframework.security.web.csrf.CsrfToken?
-@param commitHash: String? = null
-@param buildTime: java.time.Instant? = null
-@template.layout.base(title = "Timeline", loggedInUser = loggedInUser, csrf = csrf, commitHash = commitHash, buildTime = buildTime, activePage = "timeline", content = @`
+@param activityByUser: List<com.spybot.core.model.TimelineUserSeries>
+@template.layout.base(title = "Timeline", chrome = chrome, activePage = "timeline", content = @`
     <div class="row row-cards justify-content-md-center">
         <div class="col-md-12">
             <div class="card">

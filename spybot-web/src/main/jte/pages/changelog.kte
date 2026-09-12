@@ -1,9 +1,6 @@
-@param loggedInUser: com.spybot.core.model.MergedUserView?
-@param csrf: org.springframework.security.web.csrf.CsrfToken?
-@param commitHash: String? = null
-@param buildTime: java.time.Instant? = null
-@param entries: java.util.List<com.spybot.web.service.ChangelogEntry>
-@template.layout.base(title = "Changelog", loggedInUser = loggedInUser, csrf = csrf, commitHash = commitHash, buildTime = buildTime, activePage = "changelog", content = @`
+@param chrome: com.spybot.web.jte.PageChrome
+@param entries: List<com.spybot.web.service.ChangelogEntry>
+@template.layout.base(title = "Changelog", chrome = chrome, activePage = "changelog", content = @`
     <div class="row row-cards justify-content-md-center">
         <div class="col-md-8">
             <div class="card">
