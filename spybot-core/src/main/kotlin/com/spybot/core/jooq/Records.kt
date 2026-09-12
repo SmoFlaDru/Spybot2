@@ -39,17 +39,4 @@ internal fun Record.localDate(field: String): LocalDate? =
         else -> null
     }
 
-internal fun parseJsonArray(raw: String): List<String> {
-    val trimmed = raw.trim()
-    if (trimmed.length < 2) {
-        return emptyList()
-    }
-    return trimmed
-        .removePrefix("[")
-        .removeSuffix("]")
-        .split(',')
-        .map { it.trim().removePrefix("\"").removeSuffix("\"") }
-        .filter { it.isNotBlank() }
-}
-
 internal fun OffsetDateTime.toEpochMillis(): Long = toInstant().toEpochMilli()
