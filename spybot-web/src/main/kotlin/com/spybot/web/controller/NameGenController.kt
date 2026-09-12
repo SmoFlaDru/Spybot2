@@ -6,8 +6,8 @@ import com.spybot.core.service.LikedNameService
 import com.spybot.web.jte.renderJte
 import com.spybot.web.service.namegen.Likers
 import com.spybot.web.service.namegen.NameGenService
-import gg.jte.generated.fragments.Jtenamegen_like_buttonGenerated
-import gg.jte.generated.fragments.Jtenamegen_topGenerated
+import gg.jte.generated.fragments.JteNameGenLikeButtonGenerated
+import gg.jte.generated.fragments.JteNameGenTopGenerated
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.constraints.NotBlank
@@ -65,7 +65,7 @@ class NameGenController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
-        Jtenamegen_topGenerated.render(out, null, topNames = likedNameService.top(TOP_LIMIT, Likers.of(principal, request)))
+        JteNameGenTopGenerated.render(out, null, topNames = likedNameService.top(TOP_LIMIT, Likers.of(principal, request)))
     }
 
     private fun likeButton(
@@ -75,7 +75,7 @@ class NameGenController(
     ) {
         response.setHeader("HX-Trigger", LIKES_CHANGED_EVENT)
         response.renderJte { out ->
-            Jtenamegen_like_buttonGenerated.render(
+            JteNameGenLikeButtonGenerated.render(
                 out,
                 null,
                 name = name,

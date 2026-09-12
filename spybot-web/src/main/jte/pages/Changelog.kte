@@ -1,6 +1,6 @@
 @param chrome: com.spybot.web.jte.PageChrome
 @param entries: List<com.spybot.web.service.ChangelogEntry>
-@template.layout.base(title = "Changelog", chrome = chrome, activePage = "changelog", content = @`
+@template.layout.Base(title = "Changelog", chrome = chrome, activePage = "changelog", content = @`
     <div class="row row-cards justify-content-md-center">
         <div class="col-md-8">
             <div class="card">
@@ -12,11 +12,11 @@
                         @if(entry.isCommitted)
                             <a class="list-group-item list-group-item-action text-decoration-none"
                                href="https://github.com/SmoFlaDru/Spybot2/commit/${entry.commit}" target="_blank" rel="noopener">
-                                @template.pages.changelog_entry(entry = entry)
+                                @template.pages.ChangelogEntry(entry = entry)
                             </a>
                         @else
                             <div class="list-group-item">
-                                @template.pages.changelog_entry(entry = entry)
+                                @template.pages.ChangelogEntry(entry = entry)
                             </div>
                         @endif
                     @endfor
