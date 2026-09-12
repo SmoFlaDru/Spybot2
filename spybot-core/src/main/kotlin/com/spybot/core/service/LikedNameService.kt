@@ -93,7 +93,9 @@ class LikedNameService(
         liker: Liker,
     ): List<LikedNameView> {
         val likes = DSL.count(SPYBOT_NAMELIKE.ID)
-        val likedByMe = DSL.boolOr(isLiker(liker))
+        // isLiker() compares a nullable column, so it is NULL rather than false on rows liked by
+        // the other kind of liker - and bool_or over only NULLs is NULL. Coalesce in SQL, not here.
+        val likedByMe = DSL.coalesce(DSL.boolOr(isLiker(liker)), DSL.inline(false))
         val lastLiked = DSL.max(SPYBOT_NAMELIKE.CREATED_AT)
         return dsl
             .select(
@@ -101,7 +103,6 @@ class LikedNameService(
                 SPYBOT_LIKEDNAME.REAL_NAME.notNull(),
                 SPYBOT_LIKEDNAME.SLANG.notNull(),
                 likes.notNull(),
-                // bool_or over the inner join is never null: every group has at least one like.
                 likedByMe.notNull(),
             ).from(SPYBOT_LIKEDNAME)
             .join(SPYBOT_NAMELIKE)
