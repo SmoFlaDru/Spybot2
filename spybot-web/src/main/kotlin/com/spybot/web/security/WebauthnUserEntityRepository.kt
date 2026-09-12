@@ -12,10 +12,12 @@ import java.util.Base64
 /**
  * Maps WebAuthn user handles to merged users for Spring Security.
  *
- * Spring identifies the account by the entity's [PublicKeyCredentialUserEntity.getName], which it
- * hands to the UserDetailsService - so that is the numeric merged-user id, the same value
- * [com.spybot.core.security.MergedUserPrincipal.getUsername] returns. The display name is what
- * the OS passkey prompt shows.
+ * The entity's name and display name are both the account name: password managers show the
+ * name as the passkey's "username", so it must be human-readable. Nothing resolves an account
+ * from the name - [MergedUserWebAuthnAuthenticationProvider] goes by the handle - which also
+ * means a rename leaves existing passkeys working. Spring asks [findByUsername] with
+ * `Authentication.getName()`, which for this app is the numeric merged-user id (see
+ * [com.spybot.core.security.MergedUserPrincipal.getUsername]).
  *
  * Handles are aliases, not a one-to-one key: after two accounts are merged, the source's handles
  * point at the target, so a passkey that still carries the old handle logs the user into the
@@ -31,16 +33,21 @@ class WebauthnUserEntityRepository(
     override fun findById(id: Bytes): PublicKeyCredentialUserEntity? {
         val userId = passkeyQueries.findWebauthnUserIdByHandle(id.toBase64UrlString()) ?: return null
         val user = mergedUserQueries.findMergedUserById(userId) ?: return null
-        return entity(id, userId, user.name)
+        return entity(id, user.name)
     }
 
     override fun findByUsername(username: String): PublicKeyCredentialUserEntity? {
         val userId = username.toLongOrNull() ?: return null
         val user = mergedUserQueries.findMergedUserById(userId) ?: return null
         val handle = passkeyQueries.findOrCreateWebauthnUserHandle(userId) { Bytes.random().toBase64UrlString() }
-        return entity(handleBytes(handle), userId, user.name)
+        return entity(handleBytes(handle), user.name)
     }
 
+    /**
+     * Only reached if Spring had to create an entity itself because [findByUsername] returned
+     * null, i.e. the logged-in user no longer exists. Spring names such an entity after
+     * `Authentication.getName()`, the user id.
+     */
     override fun save(userEntity: PublicKeyCredentialUserEntity) {
         val userId =
             userEntity.name.toLongOrNull()
@@ -54,14 +61,13 @@ class WebauthnUserEntityRepository(
 
     private fun entity(
         handle: Bytes,
-        userId: Long,
-        displayName: String,
+        name: String,
     ): PublicKeyCredentialUserEntity =
         ImmutablePublicKeyCredentialUserEntity
             .builder()
             .id(handle)
-            .name(userId.toString())
-            .displayName(displayName)
+            .name(name)
+            .displayName(name)
             .build()
 
     companion object {

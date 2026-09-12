@@ -37,7 +37,7 @@ class PasskeySignalControllerTest {
         val accepted = controller.accepted(principal)
 
         assertEquals("spybot.bensge.com", accepted.rpId)
-        assertEquals("708", accepted.name)
+        assertEquals("bensge", accepted.name, "the name is what password managers show as the passkey username")
         assertEquals("bensge", accepted.displayName)
         assertEquals(
             listOf(

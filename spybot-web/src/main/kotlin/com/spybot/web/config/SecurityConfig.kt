@@ -2,6 +2,7 @@ package com.spybot.web.config
 
 import com.spybot.core.config.SpybotProperties
 import com.spybot.core.service.AuthenticationService
+import com.spybot.core.service.PasskeyQueries
 import com.spybot.web.filter.LastSeenFilter
 import com.spybot.web.security.MergedUserWebAuthnAuthenticationProvider
 import com.spybot.web.security.WebauthnCredentialRepository
@@ -26,7 +27,6 @@ import org.springframework.security.web.servlet.util.matcher.PathPatternRequestM
 import org.springframework.security.web.util.matcher.OrRequestMatcher
 import org.springframework.security.web.webauthn.api.PublicKeyCredentialRpEntity
 import org.springframework.security.web.webauthn.authentication.WebAuthnAuthenticationFilter
-import org.springframework.security.web.webauthn.authentication.WebAuthnAuthenticationProvider
 import org.springframework.security.web.webauthn.management.WebAuthnRelyingPartyOperations
 import org.springframework.security.web.webauthn.management.Webauthn4JRelyingPartyOperations
 import java.net.URI
@@ -35,6 +35,7 @@ import java.net.URI
 @EnableWebSecurity
 class SecurityConfig(
     private val authenticationService: AuthenticationService,
+    private val passkeyQueries: PasskeyQueries,
     private val lastSeenFilter: LastSeenFilter,
     private val properties: SpybotProperties,
 ) {
@@ -72,7 +73,6 @@ class SecurityConfig(
     fun securityFilterChain(
         http: HttpSecurity,
         relyingParty: WebAuthnRelyingPartyOperations,
-        userDetailsService: UserDetailsService,
     ): SecurityFilterChain {
         http
             .authorizeHttpRequests {
@@ -136,11 +136,7 @@ class SecurityConfig(
                     .withObjectPostProcessor(
                         object : ObjectPostProcessor<WebAuthnAuthenticationFilter> {
                             override fun <O : WebAuthnAuthenticationFilter> postProcess(filter: O): O {
-                                val provider =
-                                    MergedUserWebAuthnAuthenticationProvider(
-                                        WebAuthnAuthenticationProvider(relyingParty, userDetailsService),
-                                        authenticationService,
-                                    )
+                                val provider = MergedUserWebAuthnAuthenticationProvider(relyingParty, passkeyQueries, authenticationService)
                                 filter.setAuthenticationManager(ProviderManager(provider))
                                 return filter
                             }

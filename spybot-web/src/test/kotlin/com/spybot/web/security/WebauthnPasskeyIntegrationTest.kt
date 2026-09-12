@@ -109,9 +109,9 @@ class WebauthnPasskeyIntegrationTest {
 
         assertEquals(32, first.id.bytes.size)
         assertEquals(first.id, second.id)
-        assertEquals(userId.toString(), first.name, "Spring loads the account by the entity name, so it must be the user id")
+        assertEquals("handle-user", first.name, "password managers show the name as the passkey's username")
         assertEquals("handle-user", first.displayName)
-        assertEquals(userId.toString(), userEntities.findById(first.id)!!.name)
+        assertEquals("handle-user", userEntities.findById(first.id)!!.name)
     }
 
     @Test
@@ -172,14 +172,14 @@ class WebauthnPasskeyIntegrationTest {
         credentials.save(authenticator.credentialRecord(aliceHandle))
 
         // Before the merge the passkey resolves to Alice...
-        assertEquals(alice.toString(), relyingParty.authenticate(authenticator.assertion(aliceHandle)).name)
+        assertEquals("alice", relyingParty.authenticate(authenticator.assertion(aliceHandle)).name)
 
         // ...then Alice is merged into Bob.
         adminService.mergeUsers(targetId = bob, sourceIds = listOf(alice))
 
         // The authenticator still presents Alice's handle; the server now maps it to Bob.
         val loggedIn = relyingParty.authenticate(authenticator.assertion(aliceHandle))
-        assertEquals(bob.toString(), loggedIn.name)
+        assertEquals("bob", loggedIn.name)
         assertEquals("bob", loggedIn.displayName)
         assertEquals(bob, passkeyQueries.findWebauthnUserIdByHandle(aliceHandle.toBase64UrlString()))
         assertEquals(1, passkeyQueries.passkeysForUser(bob).size)
@@ -188,7 +188,7 @@ class WebauthnPasskeyIntegrationTest {
         // Whichever handle Bob registers new passkeys under now, it resolves to Bob, and the
         // exclude list for a new registration covers the inherited passkey as well.
         val bobHandle = userEntities.findByUsername(bob.toString())!!.id
-        assertEquals(bob.toString(), userEntities.findById(bobHandle)!!.name)
+        assertEquals("bob", userEntities.findById(bobHandle)!!.name)
         assertEquals(1, credentials.findByUserId(bobHandle).size)
         assertEquals(1, credentials.findByUserId(aliceHandle).size)
     }
