@@ -8,6 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
+- Fixed passkey registration and login failing in production with a generic error because the origin was reconstructed from proxy headers that report http
 - Fixed the weekly awards job crashing on the production database because awards, news events and queued messages were inserted without a date
 - Added Silicon Valley personalities (Sam Altman, Mark Zuckerberg, Tim Cook, …) and US politicians (Donald Trump, Bernie Sanders, Joe Biden, …) to the name generator (#214)
 - Added "baits" to the name generator's Counter-Strike terms so "Bill Baits" can be generated, and removed "bomb" (#213)
