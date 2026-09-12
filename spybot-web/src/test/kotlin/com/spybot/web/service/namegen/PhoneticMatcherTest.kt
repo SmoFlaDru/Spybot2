@@ -34,6 +34,7 @@ class PhoneticMatcherTest {
         assertTrue(score("luk", "nuk") >= PhoneticMatcher.THRESHOLD, "Luke × nuke")
         assertTrue(score("hɛnɹi", "ɛntɹi") >= PhoneticMatcher.THRESHOLD, "Henry × entry")
         assertTrue(score("veɪdɚ", "beɪtɚ") >= PhoneticMatcher.THRESHOLD, "Vader × baiter")
+        assertTrue(score("ɡeɪts", "beɪts") >= PhoneticMatcher.THRESHOLD, "Gates × baits")
     }
 
     @Test
