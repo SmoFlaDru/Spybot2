@@ -1,0 +1,5 @@
+# Every pull request adds a bullet at the top of the changelog, so any two concurrent PRs
+# conflict there although both sides only added lines. The union merge driver keeps both
+# sides' lines instead of raising a conflict; order between the two new bullets is arbitrary
+# but harmless because the page groups entries by commit anyway.
+CHANGELOG.md merge=union
