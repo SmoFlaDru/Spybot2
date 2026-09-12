@@ -17,6 +17,7 @@ import com.webauthn4j.data.client.challenge.DefaultChallenge
 import com.webauthn4j.server.ServerProperty
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.slf4j.LoggerFactory
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
@@ -32,6 +33,7 @@ class PasskeyService(
     private val queryService: SpybotQueryService,
     private val authenticationService: AuthenticationService,
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
     private val webAuthnManager = WebAuthnManager.createNonStrictWebAuthnManager()
     private val objectConverter = ObjectConverter()
     private val attestedCredentialDataConverter = AttestedCredentialDataConverter(objectConverter)
@@ -126,7 +128,8 @@ class PasskeyService(
             )
             request.session.removeAttribute(PASSKEY_STATE_KEY)
             return mapOf("status" to "OK", "verified" to true)
-        }.getOrElse {
+        }.getOrElse { error ->
+            log.error("Passkey registration failed", error)
             mapOf("status" to "ERR", "verified" to false, "message" to "Error on server, please try again later")
         }
 
@@ -171,7 +174,8 @@ class PasskeyService(
             loginUser(stored.userId, request, response)
             request.session.removeAttribute(PASSKEY_STATE_KEY)
             return mapOf("verified" to true, "user" to stored.userId)
-        }.getOrElse {
+        }.getOrElse { error ->
+            log.warn("Passkey authentication failed", error)
             mapOf("verified" to false, "message" to "Passkey authentication failed")
         }
 
@@ -188,14 +192,22 @@ class PasskeyService(
         HttpSessionSecurityContextRepository().saveContext(context, request, response)
     }
 
+    /**
+     * The origin the browser signed into clientDataJSON has to match one of ours exactly. The
+     * configured public base URL is the canonical answer (it's already where the RP id comes
+     * from), so it always counts. The origin reconstructed from the request headers is accepted
+     * too, but only as a bonus: behind the production proxy chain TLS terminates before Caddy,
+     * and Caddy rewrites X-Forwarded-Proto to "http", so relying on the headers alone rejected
+     * every real registration and login with BadOriginException.
+     */
     private fun serverProperty(
         request: HttpServletRequest,
         challenge: String,
     ): ServerProperty {
         val forwardedProto = request.getHeader("X-Forwarded-Proto") ?: request.scheme
         val hostHeader = request.getHeader("X-Forwarded-Host") ?: request.getHeader("Host") ?: request.serverName
-        val origin = Origin.create("$forwardedProto://$hostHeader")
-        return ServerProperty(origin, rpId(), DefaultChallenge(decodeBase64Url(challenge)))
+        val origins = setOf(Origin.create(properties.publicBaseUrl), Origin.create("$forwardedProto://$hostHeader"))
+        return ServerProperty(origins, rpId(), DefaultChallenge(decodeBase64Url(challenge)))
     }
 
     private fun rpId(): String = URI(properties.publicBaseUrl).host
