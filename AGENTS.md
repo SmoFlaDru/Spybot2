@@ -40,7 +40,7 @@ Use Spring MVC + JTE for server-rendered pages. Keep the existing Tabler, HTMX, 
 
 - `MergedUserPrincipal` is the application principal. `is_superuser` maps to `ROLE_ADMIN`.
 - Protect authenticated and administrative routes in `SecurityConfig`; never rely solely on hiding navigation links.
-- HTML mutation flows use CSRF. Existing passkey endpoints have an explicit CSRF exemption for their JSON ceremony contract; do not broaden exemptions casually.
+- HTML mutation flows use CSRF, and so do the passkey endpoints; do not add CSRF exemptions casually.
 - Magic-link authentication is session based. Keep session creation/logout behavior compatible with the existing frontend.
 - The current passkey backend is custom/WebAuthn4j-based. A planned migration is to `spring-security-webauthn`; when implementing it, replace the backend contract and update `frontend/passkeys.js` together. Existing stored passkeys are intentionally disposable: delete/clear them as part of that migration rather than attempting credential migration.
 

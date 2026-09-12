@@ -22,7 +22,7 @@ import com.spybot.core.model.RecentEventView
 import com.spybot.core.model.RecentEventsPayload
 import com.spybot.core.model.SelectorOption
 import com.spybot.core.model.SteamIdView
-import com.spybot.core.model.StoredPasskey
+import com.spybot.core.model.WebauthnCredential
 import com.spybot.core.model.StreakView
 import com.spybot.core.model.TeamSpeakChannelSnapshot
 import com.spybot.core.model.TeamSpeakIdentity
@@ -42,7 +42,9 @@ import com.spybot.jooq.tables.references.SPYBOT_MERGEDUSER
 import com.spybot.jooq.tables.references.SPYBOT_NEWSEVENT
 import com.spybot.jooq.tables.references.SPYBOT_QUEUEDCLIENTMESSAGE
 import com.spybot.jooq.tables.references.SPYBOT_STEAMID
+import com.spybot.jooq.tables.records.SpybotUserpasskeyRecord
 import com.spybot.jooq.tables.references.SPYBOT_USERPASSKEY
+import com.spybot.jooq.tables.references.SPYBOT_WEBAUTHN_USER_HANDLE
 import com.spybot.jooq.tables.references.TSCHANNEL
 import com.spybot.jooq.tables.references.TSID
 import com.spybot.jooq.tables.references.TSUSER
@@ -438,91 +440,147 @@ class SpybotQueryService(
             .and(SPYBOT_USERPASSKEY.USER_ID.eq(userId))
             .execute() > 0
 
-    fun passkeyCredentialsForUser(userId: Long): List<StoredPasskey> =
+    // ---- WebAuthn credentials and user handles (see WebauthnCredential) ----
+
+    fun findWebauthnCredential(credentialId: String): WebauthnCredential? =
         dsl
-            .select(
-                SPYBOT_USERPASSKEY.ID,
-                SPYBOT_USERPASSKEY.USER_ID,
-                SPYBOT_USERPASSKEY.NAME,
-                SPYBOT_USERPASSKEY.PLATFORM,
-                SPYBOT_USERPASSKEY.ADDED_ON,
-                SPYBOT_USERPASSKEY.LAST_USED,
-                SPYBOT_USERPASSKEY.CREDENTIAL_ID,
-                SPYBOT_USERPASSKEY.TOKEN,
-                SPYBOT_USERPASSKEY.ENABLED,
-            ).from(SPYBOT_USERPASSKEY)
+            .selectFrom(SPYBOT_USERPASSKEY)
+            .where(SPYBOT_USERPASSKEY.CREDENTIAL_ID.eq(credentialId))
+            .fetchOne()
+            ?.toWebauthnCredential()
+
+    /** Every credential of the user a handle resolves to, across all of that user's handles. */
+    fun webauthnCredentialsForHandle(handle: String): List<WebauthnCredential> {
+        val userId = findWebauthnUserIdByHandle(handle) ?: return emptyList()
+        return dsl
+            .selectFrom(SPYBOT_USERPASSKEY)
             .where(SPYBOT_USERPASSKEY.USER_ID.eq(userId))
             .orderBy(SPYBOT_USERPASSKEY.ADDED_ON.desc())
-            .fetch {
-                StoredPasskey(
-                    id = it.get(SPYBOT_USERPASSKEY.ID) ?: 0L,
-                    userId = it.get(SPYBOT_USERPASSKEY.USER_ID) ?: 0L,
-                    name = it.get(SPYBOT_USERPASSKEY.NAME) ?: "",
-                    platform = it.get(SPYBOT_USERPASSKEY.PLATFORM) ?: "",
-                    addedOn = it.get(SPYBOT_USERPASSKEY.ADDED_ON),
-                    lastUsed = it.get(SPYBOT_USERPASSKEY.LAST_USED),
-                    credentialId = it.get(SPYBOT_USERPASSKEY.CREDENTIAL_ID) ?: "",
-                    token = it.get(SPYBOT_USERPASSKEY.TOKEN) ?: "",
-                    enabled = it.get(SPYBOT_USERPASSKEY.ENABLED) ?: false,
-                )
-            }
+            .fetch()
+            .map { it.toWebauthnCredential() }
+    }
 
-    fun findPasskeyByCredentialId(credentialId: String): StoredPasskey? =
-        dsl
-            .select(
-                SPYBOT_USERPASSKEY.ID,
-                SPYBOT_USERPASSKEY.USER_ID,
-                SPYBOT_USERPASSKEY.NAME,
-                SPYBOT_USERPASSKEY.PLATFORM,
-                SPYBOT_USERPASSKEY.ADDED_ON,
-                SPYBOT_USERPASSKEY.LAST_USED,
-                SPYBOT_USERPASSKEY.CREDENTIAL_ID,
-                SPYBOT_USERPASSKEY.TOKEN,
-                SPYBOT_USERPASSKEY.ENABLED,
-            ).from(SPYBOT_USERPASSKEY)
-            .where(SPYBOT_USERPASSKEY.CREDENTIAL_ID.eq(credentialId))
-            .and(SPYBOT_USERPASSKEY.ENABLED.eq(true))
-            .fetchOne {
-                StoredPasskey(
-                    id = it.get(SPYBOT_USERPASSKEY.ID) ?: 0L,
-                    userId = it.get(SPYBOT_USERPASSKEY.USER_ID) ?: 0L,
-                    name = it.get(SPYBOT_USERPASSKEY.NAME) ?: "",
-                    platform = it.get(SPYBOT_USERPASSKEY.PLATFORM) ?: "",
-                    addedOn = it.get(SPYBOT_USERPASSKEY.ADDED_ON),
-                    lastUsed = it.get(SPYBOT_USERPASSKEY.LAST_USED),
-                    credentialId = it.get(SPYBOT_USERPASSKEY.CREDENTIAL_ID) ?: "",
-                    token = it.get(SPYBOT_USERPASSKEY.TOKEN) ?: "",
-                    enabled = it.get(SPYBOT_USERPASSKEY.ENABLED) ?: false,
-                )
-            }
-
-    fun createPasskey(
-        userId: Long,
-        name: String,
-        platform: String,
-        credentialId: String,
-        token: String,
-        addedOn: Instant,
-    ): Long =
+    /** Inserts a new credential or updates the mutable parts of an existing one (counter, flags, last use). */
+    fun saveWebauthnCredential(credential: WebauthnCredential) {
         dsl
             .insertInto(SPYBOT_USERPASSKEY)
-            .set(SPYBOT_USERPASSKEY.USER_ID, userId)
-            .set(SPYBOT_USERPASSKEY.NAME, name)
+            .set(SPYBOT_USERPASSKEY.USER_ID, credential.userId)
+            .set(SPYBOT_USERPASSKEY.USER_HANDLE, credential.userHandle)
+            .set(SPYBOT_USERPASSKEY.CREDENTIAL_ID, credential.credentialId)
+            .set(SPYBOT_USERPASSKEY.PUBLIC_KEY_COSE, credential.publicKeyCose)
+            .set(SPYBOT_USERPASSKEY.SIGNATURE_COUNT, credential.signatureCount)
+            .set(SPYBOT_USERPASSKEY.UV_INITIALIZED, credential.uvInitialized)
+            .set(SPYBOT_USERPASSKEY.TRANSPORTS, credential.transports.joinToString(","))
+            .set(SPYBOT_USERPASSKEY.BACKUP_ELIGIBLE, credential.backupEligible)
+            .set(SPYBOT_USERPASSKEY.BACKUP_STATE, credential.backupState)
+            .set(SPYBOT_USERPASSKEY.AAGUID, credential.aaguid)
+            .set(SPYBOT_USERPASSKEY.ATTESTATION_OBJECT, credential.attestationObject)
+            .set(SPYBOT_USERPASSKEY.ATTESTATION_CLIENT_DATA_JSON, credential.attestationClientDataJson)
+            .set(SPYBOT_USERPASSKEY.NAME, credential.name)
+            .set(SPYBOT_USERPASSKEY.PLATFORM, credential.platform)
             .set(SPYBOT_USERPASSKEY.ENABLED, true)
-            .set(SPYBOT_USERPASSKEY.PLATFORM, platform)
-            .set(SPYBOT_USERPASSKEY.CREDENTIAL_ID, credentialId)
-            .set(SPYBOT_USERPASSKEY.TOKEN, token)
-            .set(SPYBOT_USERPASSKEY.ADDED_ON, OffsetDateTime.ofInstant(addedOn, ZoneOffset.UTC))
-            .returning(SPYBOT_USERPASSKEY.ID)
-            .fetchSingle(SPYBOT_USERPASSKEY.ID)!!
-
-    fun updatePasskeyLastUsed(passkeyId: Long) {
-        dsl
-            .update(SPYBOT_USERPASSKEY)
-            .set(SPYBOT_USERPASSKEY.LAST_USED, DSL.currentOffsetDateTime())
-            .where(SPYBOT_USERPASSKEY.ID.eq(passkeyId))
+            .set(SPYBOT_USERPASSKEY.ADDED_ON, credential.addedOn)
+            .set(SPYBOT_USERPASSKEY.LAST_USED, credential.lastUsed)
+            .onConflict(SPYBOT_USERPASSKEY.CREDENTIAL_ID)
+            .doUpdate()
+            .set(SPYBOT_USERPASSKEY.SIGNATURE_COUNT, credential.signatureCount)
+            .set(SPYBOT_USERPASSKEY.UV_INITIALIZED, credential.uvInitialized)
+            .set(SPYBOT_USERPASSKEY.BACKUP_STATE, credential.backupState)
+            .set(SPYBOT_USERPASSKEY.LAST_USED, credential.lastUsed)
             .execute()
     }
+
+    fun deleteWebauthnCredential(credentialId: String): Boolean =
+        dsl
+            .deleteFrom(SPYBOT_USERPASSKEY)
+            .where(SPYBOT_USERPASSKEY.CREDENTIAL_ID.eq(credentialId))
+            .execute() > 0
+
+    fun findWebauthnUserIdByHandle(handle: String): Long? =
+        dsl
+            .select(SPYBOT_WEBAUTHN_USER_HANDLE.MERGED_USER_ID)
+            .from(SPYBOT_WEBAUTHN_USER_HANDLE)
+            .where(SPYBOT_WEBAUTHN_USER_HANDLE.HANDLE.eq(handle))
+            .fetchOne(SPYBOT_WEBAUTHN_USER_HANDLE.MERGED_USER_ID)
+
+    /**
+     * The handle new passkeys are registered under: the user's oldest one, created on demand.
+     * Older handles a merged-in account brought along stay valid for the passkeys that carry them.
+     */
+    fun findOrCreateWebauthnUserHandle(
+        userId: Long,
+        newHandle: () -> String,
+    ): String {
+        val existing =
+            dsl
+                .select(SPYBOT_WEBAUTHN_USER_HANDLE.HANDLE)
+                .from(SPYBOT_WEBAUTHN_USER_HANDLE)
+                .where(SPYBOT_WEBAUTHN_USER_HANDLE.MERGED_USER_ID.eq(userId))
+                .orderBy(SPYBOT_WEBAUTHN_USER_HANDLE.CREATED.asc())
+                .limit(1)
+                .fetchOne(SPYBOT_WEBAUTHN_USER_HANDLE.HANDLE)
+        if (existing != null) return existing
+        val handle = newHandle()
+        saveWebauthnUserHandle(handle, userId)
+        return handle
+    }
+
+    fun saveWebauthnUserHandle(
+        handle: String,
+        userId: Long,
+    ) {
+        dsl
+            .insertInto(SPYBOT_WEBAUTHN_USER_HANDLE)
+            .set(SPYBOT_WEBAUTHN_USER_HANDLE.HANDLE, handle)
+            .set(SPYBOT_WEBAUTHN_USER_HANDLE.MERGED_USER_ID, userId)
+            .set(SPYBOT_WEBAUTHN_USER_HANDLE.CREATED, DSL.currentOffsetDateTime())
+            .onConflict(SPYBOT_WEBAUTHN_USER_HANDLE.HANDLE)
+            .doUpdate()
+            .set(SPYBOT_WEBAUTHN_USER_HANDLE.MERGED_USER_ID, userId)
+            .execute()
+    }
+
+    fun deleteWebauthnUserHandle(handle: String) {
+        dsl
+            .deleteFrom(SPYBOT_WEBAUTHN_USER_HANDLE)
+            .where(SPYBOT_WEBAUTHN_USER_HANDLE.HANDLE.eq(handle))
+            .execute()
+    }
+
+    /** Part of merging users: handles move with the passkeys so those passkeys keep logging in. */
+    fun adminReassignWebauthnUserHandles(
+        sourceIds: Collection<Long>,
+        targetId: Long,
+    ): Int {
+        if (sourceIds.isEmpty()) {
+            return 0
+        }
+        return dsl
+            .update(SPYBOT_WEBAUTHN_USER_HANDLE)
+            .set(SPYBOT_WEBAUTHN_USER_HANDLE.MERGED_USER_ID, targetId)
+            .where(SPYBOT_WEBAUTHN_USER_HANDLE.MERGED_USER_ID.`in`(sourceIds))
+            .execute()
+    }
+
+    private fun SpybotUserpasskeyRecord.toWebauthnCredential(): WebauthnCredential =
+        WebauthnCredential(
+            userId = userId!!,
+            userHandle = userHandle!!,
+            credentialId = credentialId!!,
+            publicKeyCose = publicKeyCose!!,
+            signatureCount = signatureCount ?: 0L,
+            uvInitialized = uvInitialized ?: false,
+            transports = transports.orEmpty().split(',').filter { it.isNotBlank() },
+            backupEligible = backupEligible ?: false,
+            backupState = backupState ?: false,
+            aaguid = aaguid.orEmpty(),
+            attestationObject = attestationObject!!,
+            attestationClientDataJson = attestationClientDataJson!!,
+            name = name.orEmpty(),
+            platform = platform.orEmpty(),
+            addedOn = addedOn ?: OffsetDateTime.now(ZoneOffset.UTC),
+            lastUsed = lastUsed,
+        )
 
     fun steamIdsForUser(userId: Long): List<SteamIdView> =
         dsl
@@ -1551,19 +1609,6 @@ class SpybotQueryService(
             obsolete = boolean("obsolete"),
             isSuperuser = boolean("is_superuser"),
             lastLogin = offsetDateTime("last_login"),
-        )
-
-    private fun Record.toStoredPasskey(): StoredPasskey =
-        StoredPasskey(
-            id = long("id"),
-            userId = long("user_id"),
-            name = string("name"),
-            platform = string("platform"),
-            addedOn = offsetDateTime("added_on"),
-            lastUsed = offsetDateTime("last_used"),
-            credentialId = string("credential_id"),
-            token = string("token"),
-            enabled = boolean("enabled"),
         )
 
     private fun Record.toTeamSpeakIdentity(): TeamSpeakIdentity =

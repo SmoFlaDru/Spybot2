@@ -79,6 +79,9 @@ class AdminService(
         val movedQueuedMessages = queryService.adminReassignQueuedMessages(deduplicatedSources, targetId)
         val movedLoginLinks = queryService.adminReassignLoginLinks(deduplicatedSources, targetId)
         val movedPasskeys = queryService.adminReassignPasskeys(deduplicatedSources, targetId)
+        // The WebAuthn user handles inside those passkeys can't change, so the handles follow
+        // the passkeys to the target: a login with an old handle then resolves to the merged user.
+        queryService.adminReassignWebauthnUserHandles(deduplicatedSources, targetId)
         val movedNameLikes = likedNameService.reassignLikes(deduplicatedSources, targetId)
         val obsoletedMergedUsers = queryService.adminSetMergedUsersObsolete(deduplicatedSources, true)
 

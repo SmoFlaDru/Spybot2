@@ -1,89 +1,95 @@
+// Passkey registration and login against Spring Security's WebAuthn endpoints.
+//
+//   POST /webauthn/register/options      -> PublicKeyCredentialCreationOptions (must be logged in)
+//   POST /webauthn/register              -> {publicKey: {credential, label}}
+//   POST /webauthn/authenticate/options  -> PublicKeyCredentialRequestOptions
+//   POST /login/webauthn                 -> the assertion; replies {redirectUrl, authenticated}
+//
+// All of them are CSRF-protected like the rest of the site, so every request carries the token
+// from the XSRF-TOKEN cookie.
 import {startAuthentication, startRegistration} from '@simplewebauthn/browser'
 
-const isAllowedRedirectUrl = url => {
-    const regex = /^[A-Za-z0-9/]+$/;
-    return regex.test(url);
+const csrfToken = () => {
+    const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);
+    return match ? decodeURIComponent(match[1]) : '';
 }
 
-const sendToServerForVerificationAndLogin = async (response) => {
-    try {
-        console.log("sendToServerForVerificationAndLogin:", response);
-        const verificationResp = await fetch('/passkeys/verify-authentication', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(response),
-        });
-        const verificationJSON = await verificationResp.json();
-
-        // Show UI appropriate for the `verified` status
-        if (verificationJSON && verificationJSON.verified) {
-            console.log("success")
-            const urlParams = new URLSearchParams(window.location.search);
-            let nextUrl = urlParams.get('next');
-            if (nextUrl === null || !isAllowedRedirectUrl(nextUrl)) {
-                nextUrl = '/profile';
-            }
-            window.location.href = nextUrl;
-        } else {
-            console.log("error", verificationJSON);
-        }
-    } catch (e) {
-        handleError(e);
-    }
-}
-
-const handleError = (error) => {
-    console.log("An error occurred:", error);
-}
-
-export const autocomplete = async () => {
-    try {
-        console.log("Setting up autocomplete");
-        const options = await fetch('/passkeys/generate-authentication-options')
-        const optionsPayload = (await options.json())["publicKey"]
-        // delete options["allowedCredentials"]
-        const response = await startAuthentication(optionsPayload, true)
-        await sendToServerForVerificationAndLogin(response)
-    } catch (e) {
-        handleError(e);
-    }
-};
-
-export const create = async () => {
-    const resp = await fetch('/passkeys/generate-registration-options');
-
-    let attResp;
-    try {
-        // Pass the options to the authenticator and wait for a response
-        attResp = await startRegistration((await resp.json()).publicKey);
-    } catch (error) {
-        // Some basic error handling
-        if (error.name === 'InvalidStateError') {
-            throw Error('Error: Authenticator was probably already registered by user');
-        } else {
-            throw Error(error);
-        }
-    }
-
-    // POST the response to the endpoint that calls
-    // @simplewebauthn/server -> verifyRegistrationResponse()
-    const verificationResp = await fetch('/passkeys/verify-registration', {
+const postJson = async (url, body) => {
+    const response = await fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-XSRF-TOKEN': csrfToken(),
         },
-        body: JSON.stringify(attResp),
+        body: JSON.stringify(body ?? {}),
     });
-
-    // Wait for the results of verification
-    const verificationJSON = await verificationResp.json();
-
-    // Show UI appropriate for the `verified` status
-    if (verificationJSON && verificationJSON.verified) {
-        return 'Success!';
-    } else {
-        throw Error(`Oh no, something went wrong! Response: <pre>${JSON.stringify(verificationJSON)}</pre>`);
+    if (!response.ok) {
+        throw new Error(`${url} failed with HTTP ${response.status}`);
     }
+    return response.json();
+}
+
+const isAllowedRedirectUrl = url => /^[A-Za-z0-9/]+$/.test(url);
+
+const redirectAfterLogin = () => {
+    const nextUrl = new URLSearchParams(window.location.search).get('next');
+    window.location.href = nextUrl !== null && isAllowedRedirectUrl(nextUrl) ? nextUrl : '/profile';
+}
+
+// A label for the new passkey as it will appear on the profile page. The provider (iCloud
+// Keychain, Windows Hello, ...) is derived server-side from the authenticator's AAGUID.
+const describeThisDevice = () => {
+    const ua = navigator.userAgent;
+    const device =
+        /iPhone/.test(ua) ? 'iPhone' :
+        /iPad/.test(ua) ? 'iPad' :
+        /Android/.test(ua) ? 'Android device' :
+        /Macintosh/.test(ua) ? 'Mac' :
+        /Windows/.test(ua) ? 'Windows PC' :
+        /Linux/.test(ua) ? 'Linux device' : 'This device';
+    const browser =
+        /Edg\//.test(ua) ? 'Edge' :
+        /Firefox\//.test(ua) ? 'Firefox' :
+        /Chrome\//.test(ua) ? 'Chrome' :
+        /Safari\//.test(ua) ? 'Safari' : 'browser';
+    return `${device} (${browser})`;
+}
+
+/**
+ * Conditional UI on the login page: offers the user's passkeys in the browser's autofill for the
+ * username field and completes the login when one is picked.
+ */
+export const autocomplete = async () => {
+    try {
+        const optionsJSON = await postJson('/webauthn/authenticate/options');
+        const assertion = await startAuthentication({optionsJSON, useBrowserAutofill: true});
+        const result = await postJson('/login/webauthn', assertion);
+        if (result && result.authenticated) {
+            redirectAfterLogin();
+        } else {
+            console.log('Passkey login was not accepted', result);
+        }
+    } catch (e) {
+        // Aborted autofill (the user navigated on, or a second call superseded this one) is
+        // routine and not worth surfacing.
+        console.log('Passkey autofill ended:', e);
+    }
+};
+
+/** Registers a new passkey for the logged-in user. Resolves on success, throws otherwise. */
+export const create = async () => {
+    const optionsJSON = await postJson('/webauthn/register/options');
+
+    let credential;
+    try {
+        credential = await startRegistration({optionsJSON});
+    } catch (error) {
+        if (error.name === 'InvalidStateError') {
+            throw new Error('This authenticator is already registered for your account');
+        }
+        throw error;
+    }
+
+    await postJson('/webauthn/register', {publicKey: {credential, label: describeThisDevice()}});
+    return 'Success!';
 }
