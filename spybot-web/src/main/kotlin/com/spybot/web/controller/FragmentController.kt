@@ -2,7 +2,9 @@ package com.spybot.web.controller
 
 import com.spybot.core.security.MergedUserPrincipal
 import com.spybot.core.service.LikedNameService
-import com.spybot.core.service.SpybotQueryService
+import com.spybot.core.service.PasskeyQueries
+import com.spybot.core.service.StatisticsQueries
+import com.spybot.core.service.SteamIdQueries
 import com.spybot.web.jte.renderJte
 import com.spybot.web.service.SpybotPageService
 import com.spybot.web.service.namegen.Likers
@@ -29,7 +31,9 @@ import org.springframework.web.server.ResponseStatusException
 @Controller
 class FragmentController(
     private val pageService: SpybotPageService,
-    private val queryService: SpybotQueryService,
+    private val passkeyQueries: PasskeyQueries,
+    private val statisticsQueries: StatisticsQueries,
+    private val steamIdQueries: SteamIdQueries,
     private val nameGenService: NameGenService,
     private val likedNameService: LikedNameService,
 ) {
@@ -45,7 +49,7 @@ class FragmentController(
         @RequestParam(name = "timespan", defaultValue = "7") timeSpan: Int,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
-        Jteactivity_fragmentGenerated.render(out, null, activityChart = queryService.activityChart(timeSpan))
+        Jteactivity_fragmentGenerated.render(out, null, activityChart = statisticsQueries.activityChart(timeSpan))
     }
 
     @GetMapping("/recent_events_fragment")
@@ -53,7 +57,7 @@ class FragmentController(
         @RequestParam(name = "start", defaultValue = "0") start: Int,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
-        Jterecent_events_fragmentGenerated.render(out, null, recentEvents = queryService.recentEvents(start))
+        Jterecent_events_fragmentGenerated.render(out, null, recentEvents = statisticsQueries.recentEvents(start))
     }
 
     @GetMapping("/profile/steamid/all")
@@ -61,7 +65,7 @@ class FragmentController(
         @AuthenticationPrincipal principal: MergedUserPrincipal,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
-        Jteprofile_steamidsGenerated.render(out, null, steamIds = queryService.steamIdsForUser(principal.id))
+        Jteprofile_steamidsGenerated.render(out, null, steamIds = steamIdQueries.steamIdsForUser(principal.id))
     }
 
     @GetMapping("/profile/steamid")
@@ -75,7 +79,7 @@ class FragmentController(
         @AuthenticationPrincipal principal: MergedUserPrincipal,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
-        Jteprofile_passkeysGenerated.render(out, null, passkeys = queryService.passkeysForUser(principal.id))
+        Jteprofile_passkeysGenerated.render(out, null, passkeys = passkeyQueries.passkeysForUser(principal.id))
     }
 
     @GetMapping("/profile/passkey/{id}/rename")
@@ -85,7 +89,7 @@ class FragmentController(
         response: HttpServletResponse,
     ) {
         val passkey =
-            queryService.passkeysForUser(principal.id).firstOrNull { it.id == id }
+            passkeyQueries.passkeysForUser(principal.id).firstOrNull { it.id == id }
                 ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
         response.renderJte { out ->
             Jteprofile_passkey_renameGenerated.render(out, null, passkey = passkey)

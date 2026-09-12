@@ -3,7 +3,9 @@ package com.spybot.web.controller
 import com.spybot.core.model.Liker
 import com.spybot.core.model.NameLikeStatus
 import com.spybot.core.service.LikedNameService
-import com.spybot.core.service.SpybotQueryService
+import com.spybot.core.service.PasskeyQueries
+import com.spybot.core.service.StatisticsQueries
+import com.spybot.core.service.SteamIdQueries
 import com.spybot.web.filter.VisitorIdFilter
 import com.spybot.web.service.SpybotPageService
 import com.spybot.web.service.namegen.GeneratedName
@@ -34,7 +36,9 @@ class FragmentControllerTest {
         val controller =
             FragmentController(
                 Mockito.mock(SpybotPageService::class.java),
-                Mockito.mock(SpybotQueryService::class.java),
+                Mockito.mock(PasskeyQueries::class.java),
+                Mockito.mock(StatisticsQueries::class.java),
+                Mockito.mock(SteamIdQueries::class.java),
                 nameGenService,
                 likedNameService,
             )

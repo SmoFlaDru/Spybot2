@@ -1,6 +1,7 @@
 package com.spybot.web.security
 
-import com.spybot.core.service.SpybotQueryService
+import com.spybot.core.service.PasskeyQueries
+import com.spybot.core.service.RecorderQueries
 import com.spybot.web.service.AdminService
 import com.webauthn4j.converter.AttestationObjectConverter
 import com.webauthn4j.converter.util.ObjectConverter
@@ -78,7 +79,10 @@ class WebauthnPasskeyIntegrationTest {
     private lateinit var credentials: WebauthnCredentialRepository
 
     @Autowired
-    private lateinit var queryService: SpybotQueryService
+    private lateinit var passkeyQueries: PasskeyQueries
+
+    @Autowired
+    private lateinit var recorderQueries: RecorderQueries
 
     @Autowired
     private lateinit var adminService: AdminService
@@ -94,7 +98,7 @@ class WebauthnPasskeyIntegrationTest {
             ).build()
 
     private fun newUser(name: String): Long =
-        queryService.createTeamSpeakIdentity(name, name.hashCode() and 0xffff, "uid-$name").mergedUserId
+        recorderQueries.createTeamSpeakIdentity(name, name.hashCode() and 0xffff, "uid-$name").mergedUserId
 
     @Test
     fun `a user gets one random handle, reused for every registration`() {
@@ -153,7 +157,7 @@ class WebauthnPasskeyIntegrationTest {
         assertEquals("Mac (Safari)", stored.label)
         assertEquals(setOf("internal", "hybrid"), stored.transports.map { it.value }.toSet())
         assertTrue(stored.isBackupEligible, "Safari's iCloud Keychain passkey is backup-eligible")
-        val listed = queryService.passkeysForUser(userId).single()
+        val listed = passkeyQueries.passkeysForUser(userId).single()
         assertEquals("Mac (Safari)", listed.name)
         assertEquals("iCloud Keychain", listed.platform, "the provider is derived from the AAGUID in the attestation")
         assertEquals(1, credentials.findByUserId(user.id).size)
@@ -177,9 +181,9 @@ class WebauthnPasskeyIntegrationTest {
         val loggedIn = relyingParty.authenticate(authenticator.assertion(aliceHandle))
         assertEquals(bob.toString(), loggedIn.name)
         assertEquals("bob", loggedIn.displayName)
-        assertEquals(bob, queryService.findWebauthnUserIdByHandle(aliceHandle.toBase64UrlString()))
-        assertEquals(1, queryService.passkeysForUser(bob).size)
-        assertEquals(0, queryService.passkeysForUser(alice).size)
+        assertEquals(bob, passkeyQueries.findWebauthnUserIdByHandle(aliceHandle.toBase64UrlString()))
+        assertEquals(1, passkeyQueries.passkeysForUser(bob).size)
+        assertEquals(0, passkeyQueries.passkeysForUser(alice).size)
 
         // Whichever handle Bob registers new passkeys under now, it resolves to Bob, and the
         // exclude list for a new registration covers the inherited passkey as well.
@@ -201,7 +205,7 @@ class WebauthnPasskeyIntegrationTest {
         val stored = credentials.findByCredentialId(authenticator.credentialId)!!
         assertEquals(7, stored.signatureCount)
         assertNotNull(stored.lastUsed)
-        assertNotNull(queryService.passkeysForUser(userId).single().lastUsed)
+        assertNotNull(passkeyQueries.passkeysForUser(userId).single().lastUsed)
     }
 
     @Test

@@ -1,6 +1,6 @@
 package com.spybot.web.service
 
-import com.spybot.core.service.SpybotQueryService
+import com.spybot.core.service.StatisticsQueries
 import org.jooq.DSLContext
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -21,7 +21,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class HallOfFameIntegrationTest {
     @Autowired
-    lateinit var queryService: SpybotQueryService
+    lateinit var statisticsQueries: StatisticsQueries
 
     @Autowired
     lateinit var dsl: DSLContext
@@ -71,7 +71,7 @@ class HallOfFameIntegrationTest {
         award(alice, 1)
         award(bob, 2)
 
-        val entries = queryService.hallOfFame().filter { it.userId in setOf(alice, bob, carol) }
+        val entries = statisticsQueries.hallOfFame().filter { it.userId in setOf(alice, bob, carol) }
 
         assertEquals(listOf("Bob", "Alice", "Carol"), entries.map { it.user })
         val byId = entries.associateBy { it.userId }

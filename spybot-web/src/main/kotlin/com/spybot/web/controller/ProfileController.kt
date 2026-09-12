@@ -1,7 +1,8 @@
 package com.spybot.web.controller
 
 import com.spybot.core.security.MergedUserPrincipal
-import com.spybot.core.service.SpybotQueryService
+import com.spybot.core.service.PasskeyQueries
+import com.spybot.core.service.SteamIdQueries
 import com.spybot.core.service.SteamService
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Pattern
@@ -22,7 +23,8 @@ import org.springframework.web.bind.annotation.RestController
 @Validated
 @RequestMapping("/profile")
 class ProfileController(
-    private val queryService: SpybotQueryService,
+    private val passkeyQueries: PasskeyQueries,
+    private val steamIdQueries: SteamIdQueries,
     private val steamService: SteamService,
 ) {
     @DeleteMapping("/passkey/{id}")
@@ -30,7 +32,7 @@ class ProfileController(
         @AuthenticationPrincipal principal: MergedUserPrincipal,
         @PathVariable id: Long,
     ): ResponseEntity<Void> =
-        if (queryService.deletePasskey(principal.id, id)) {
+        if (passkeyQueries.deletePasskey(principal.id, id)) {
             ResponseEntity.noContent().header("HX-Trigger", "passkeys_changed").build()
         } else {
             ResponseEntity.status(HttpStatus.FORBIDDEN).build()
@@ -42,7 +44,7 @@ class ProfileController(
         @PathVariable id: Long,
         @RequestParam("name") @NotBlank @Size(max = 255) name: String,
     ): ResponseEntity<Void> =
-        if (queryService.renamePasskey(principal.id, id, name.trim())) {
+        if (passkeyQueries.renamePasskey(principal.id, id, name.trim())) {
             ResponseEntity.noContent().header("HX-Trigger", "passkeys_changed").build()
         } else {
             ResponseEntity.status(HttpStatus.FORBIDDEN).build()
@@ -59,7 +61,7 @@ class ProfileController(
                 .badRequest()
                 .body("Could not verify this Steam ID. Please double check that it's correct.")
         }
-        queryService.addSteamId(principal.id, steamId.toLong(), accountName)
+        steamIdQueries.addSteamId(principal.id, steamId.toLong(), accountName)
         return ResponseEntity
             .noContent()
             .header("HX-Trigger", "steamids_changed")
@@ -71,7 +73,7 @@ class ProfileController(
         @AuthenticationPrincipal principal: MergedUserPrincipal,
         @PathVariable id: Long,
     ): ResponseEntity<Void> =
-        if (queryService.deleteSteamId(principal.id, id)) {
+        if (steamIdQueries.deleteSteamId(principal.id, id)) {
             ResponseEntity
                 .status(HttpStatus.OK)
                 .header("HX-Trigger", "steamids_changed")

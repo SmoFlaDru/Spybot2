@@ -12,13 +12,15 @@ import java.util.UUID
 
 @Service
 class RecorderDomainService(
-    private val queryService: SpybotQueryService,
+    private val mergedUserQueries: MergedUserQueries,
+    private val queuedMessageQueries: QueuedMessageQueries,
+    private val recorderQueries: RecorderQueries,
     private val properties: SpybotProperties,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
     fun syncChannels(channels: List<TeamSpeakChannelSnapshot>) {
-        queryService.upsertChannels(
+        recorderQueries.upsertChannels(
             resolveChannelDisplayOrder(channels).map { it.copy(name = escapeTeamSpeak(it.name)) },
         )
     }
@@ -28,13 +30,13 @@ class RecorderDomainService(
         gateway: RecorderMessageGateway,
     ) {
         val remaining = clients.toMutableList()
-        queryService.openSessions().forEach { openSession ->
+        recorderQueries.openSessions().forEach { openSession ->
             val keepAlive = remaining.firstOrNull { it.clientId == openSession.clientId && it.channelId == openSession.channelId }
             if (keepAlive != null) {
                 remaining.remove(keepAlive)
             } else {
                 log.info("Closing stale session for {}", openSession.tsUserName)
-                queryService.closeOpenSession(openSession.id, openSession.tsUserId, -2)
+                recorderQueries.closeOpenSession(openSession.id, openSession.tsUserId, -2)
             }
         }
 
@@ -52,17 +54,17 @@ class RecorderDomainService(
             }
 
             is TeamSpeakEvent.ClientLeave -> {
-                queryService.findIdentityByClientId(event.clientId)?.let {
-                    queryService.closeOpenSessionsForUser(it.tsUserId, event.reasonId)
+                recorderQueries.findIdentityByClientId(event.clientId)?.let {
+                    recorderQueries.closeOpenSessionsForUser(it.tsUserId, event.reasonId)
                 }
             }
 
             is TeamSpeakEvent.ClientMove -> {
                 channelNameLookup(event.channelToId)?.let {
-                    queryService.updateChannelName(event.channelToId, escapeTeamSpeak(it))
+                    recorderQueries.updateChannelName(event.channelToId, escapeTeamSpeak(it))
                 }
-                queryService.findIdentityByClientId(event.clientId)?.let {
-                    queryService.moveClientSession(it.tsUserId, event.channelToId, event.clientId, event.reasonId)
+                recorderQueries.findIdentityByClientId(event.clientId)?.let {
+                    recorderQueries.moveClientSession(it.tsUserId, event.channelToId, event.clientId, event.reasonId)
                 }
             }
         }
@@ -79,16 +81,16 @@ class RecorderDomainService(
         }
 
         channelNameLookup?.invoke(client.channelId)?.let {
-            queryService.updateChannelName(client.channelId, escapeTeamSpeak(it))
+            recorderQueries.updateChannelName(client.channelId, escapeTeamSpeak(it))
         }
 
         val identity =
-            queryService
+            recorderQueries
                 .findIdentityByUniqueIdentifier(client.uniqueIdentifier)
-                ?.let { queryService.renameIdentity(it, client.nickname) }
-                ?: queryService.createTeamSpeakIdentity(client.nickname, client.clientId, client.uniqueIdentifier)
+                ?.let { recorderQueries.renameIdentity(it, client.nickname) }
+                ?: recorderQueries.createTeamSpeakIdentity(client.nickname, client.clientId, client.uniqueIdentifier)
 
-        queryService.markClientSessionStarted(identity.tsUserId, client.channelId, client.clientId, joined)
+        recorderQueries.markClientSessionStarted(identity.tsUserId, client.channelId, client.clientId, joined)
         sendLoginLink(identity, client.clientId, gateway)
         sendQueuedMessages(identity, client.clientId, gateway)
     }
@@ -98,13 +100,13 @@ class RecorderDomainService(
         clientId: Int,
         gateway: RecorderMessageGateway,
     ) {
-        queryService.queuedMessagesForMergedUser(identity.mergedUserId).forEach { message ->
+        queuedMessageQueries.queuedMessagesForMergedUser(identity.mergedUserId).forEach { message ->
             gateway.pokeClient(
                 clientId,
                 "You got an important message from Spybot! Check out my private message for details",
             )
             gateway.sendTextMessage(clientId, message.text)
-            queryService.deleteQueuedMessage(message.id)
+            queuedMessageQueries.deleteQueuedMessage(message.id)
         }
     }
 
@@ -114,7 +116,7 @@ class RecorderDomainService(
         gateway: RecorderMessageGateway,
     ) {
         val code = UUID.randomUUID().toString().replace("-", "")
-        queryService.createLoginLink(identity.mergedUserId, code)
+        mergedUserQueries.createLoginLink(identity.mergedUserId, code)
         gateway.sendTextMessage(
             clientId,
             "Log into your account on Spybot: ${properties.publicBaseUrl}/link_auth?code=$code",

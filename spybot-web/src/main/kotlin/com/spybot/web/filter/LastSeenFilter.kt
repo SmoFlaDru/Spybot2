@@ -1,7 +1,7 @@
 package com.spybot.web.filter
 
 import com.spybot.core.security.MergedUserPrincipal
-import com.spybot.core.service.SpybotQueryService
+import com.spybot.core.service.MergedUserQueries
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -10,7 +10,7 @@ import org.springframework.web.filter.OncePerRequestFilter
 
 @Component
 class LastSeenFilter(
-    private val queryService: SpybotQueryService,
+    private val mergedUserQueries: MergedUserQueries,
 ) : OncePerRequestFilter() {
     override fun doFilterInternal(
         request: HttpServletRequest,
@@ -21,7 +21,7 @@ class LastSeenFilter(
         if (principal is org.springframework.security.core.Authentication &&
             principal.principal is MergedUserPrincipal
         ) {
-            queryService.touchLastSeen((principal.principal as MergedUserPrincipal).id)
+            mergedUserQueries.touchLastSeen((principal.principal as MergedUserPrincipal).id)
         }
         filterChain.doFilter(request, response)
     }

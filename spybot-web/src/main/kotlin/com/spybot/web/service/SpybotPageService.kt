@@ -4,29 +4,31 @@ import com.spybot.core.model.HomePageView
 import com.spybot.core.model.LiveClientView
 import com.spybot.core.model.UserPageView
 import com.spybot.core.security.MergedUserPrincipal
-import com.spybot.core.service.SpybotQueryService
+import com.spybot.core.service.StatisticsQueries
+import com.spybot.core.service.SteamIdQueries
 import com.spybot.core.service.SteamService
 import org.springframework.stereotype.Service
 
 @Service
 class SpybotPageService(
-    private val queryService: SpybotQueryService,
+    private val statisticsQueries: StatisticsQueries,
+    private val steamIdQueries: SteamIdQueries,
     private val steamService: SteamService,
 ) {
     fun home(timeSpan: Int): HomePageView =
         HomePageView(
-            activityChart = queryService.activityChart(timeSpan),
-            timeOfDay = queryService.timeOfDayHistogram(),
-            topUsersOfWeek = queryService.topUsersOfWeek(),
-            activeUsers = queryService.activeUsersStat(),
-            weekTrend = queryService.weekTrend(),
-            weekComparison = queryService.weekComparison(),
-            channelPopularity = queryService.channelPopularity(),
-            recentEvents = queryService.recentEvents(0),
+            activityChart = statisticsQueries.activityChart(timeSpan),
+            timeOfDay = statisticsQueries.timeOfDayHistogram(),
+            topUsersOfWeek = statisticsQueries.topUsersOfWeek(),
+            activeUsers = statisticsQueries.activeUsersStat(),
+            weekTrend = statisticsQueries.weekTrend(),
+            weekComparison = statisticsQueries.weekComparison(),
+            channelPopularity = statisticsQueries.channelPopularity(),
+            recentEvents = statisticsQueries.recentEvents(0),
         )
 
     fun live(): Pair<List<com.spybot.core.model.ChannelView>, List<LiveClientView>> {
-        val (channels, clients) = queryService.liveClients()
+        val (channels, clients) = statisticsQueries.liveClients()
         val steamAccounts =
             steamService
                 .getSteamUsersPlayingInfo(
@@ -49,14 +51,14 @@ class SpybotPageService(
     }
 
     fun userPage(userId: Long): UserPageView? {
-        val base = queryService.userPage(userId) ?: return null
+        val base = statisticsQueries.userPage(userId) ?: return null
         if (!base.headline.online) {
             return base
         }
 
         val steamAccounts =
             steamService.getSteamUsersPlayingInfo(
-                queryService.steamIdsForUser(userId).map { it.steamId.toString() },
+                steamIdQueries.steamIdsForUser(userId).map { it.steamId.toString() },
             )
         val active = steamAccounts.firstOrNull { it.onlineStatus != com.spybot.core.model.OnlineStatus.OFFLINE }
         return base.copy(

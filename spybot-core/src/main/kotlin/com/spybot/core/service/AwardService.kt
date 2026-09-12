@@ -9,20 +9,24 @@ import java.util.Locale
 
 @Service
 class AwardService(
-    private val queryService: SpybotQueryService,
+    private val awardQueries: AwardQueries,
+    private val mergedUserQueries: MergedUserQueries,
+    private val newsEventQueries: NewsEventQueries,
+    private val queuedMessageQueries: QueuedMessageQueries,
+    private val statisticsQueries: StatisticsQueries,
     private val properties: SpybotProperties,
 ) {
     @Transactional
     fun runEndOfWeekAwards(): Int {
-        val candidates = queryService.weeklyAwardCandidates().take(3)
+        val candidates = statisticsQueries.weeklyAwardCandidates().take(3)
         candidates.forEachIndexed { index, candidate ->
             val points = 3 - index
-            queryService.createAward(candidate.userId, points)
-            queryService.createNewsEvent(
+            awardQueries.createAward(candidate.userId, points)
+            newsEventQueries.createNewsEvent(
                 text = newsEventText(candidate.userId, index, points),
                 websiteLink = "/u/${candidate.userId}",
             )
-            queryService.replaceQueuedMessage(
+            queuedMessageQueries.replaceQueuedMessage(
                 mergedUserId = candidate.userId,
                 type = AWARD_USER_OF_WEEK,
                 text = privateMessage(index, points),
@@ -58,9 +62,9 @@ class AwardService(
         index: Int,
         points: Int,
     ): String {
-        val userName = escapeHtml(queryService.mergedUserName(userId).orEmpty())
-        val totalAwards = queryService.countAwardsForUser(userId)
-        val sameScoreAwards = queryService.countAwardsForUserByPoints(userId, points)
+        val userName = escapeHtml(mergedUserQueries.mergedUserName(userId).orEmpty())
+        val totalAwards = awardQueries.countAwardsForUser(userId)
+        val sameScoreAwards = awardQueries.countAwardsForUserByPoints(userId, points)
         val specifier =
             when (index) {
                 1 -> " second"

@@ -2,7 +2,9 @@ package com.spybot.web.controller
 
 import com.spybot.core.security.MergedUserPrincipal
 import com.spybot.core.service.LikedNameService
-import com.spybot.core.service.SpybotQueryService
+import com.spybot.core.service.PasskeyQueries
+import com.spybot.core.service.StatisticsQueries
+import com.spybot.core.service.SteamIdQueries
 import com.spybot.web.jte.PageChromeFactory
 import com.spybot.web.jte.renderJte
 import com.spybot.web.service.ChangelogService
@@ -32,7 +34,9 @@ import org.springframework.web.server.ResponseStatusException
 @Controller
 class PageController(
     private val pageService: SpybotPageService,
-    private val queryService: SpybotQueryService,
+    private val passkeyQueries: PasskeyQueries,
+    private val statisticsQueries: StatisticsQueries,
+    private val steamIdQueries: SteamIdQueries,
     private val changelogService: ChangelogService,
     private val nameGenService: NameGenService,
     private val likedNameService: LikedNameService,
@@ -65,7 +69,7 @@ class PageController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
-        val (timeRange, series) = queryService.timeline(rangeHours)
+        val (timeRange, series) = statisticsQueries.timeline(rangeHours)
         JtetimelineGenerated.render(out, null, chrome = chrome.of(principal, request), timeRange = timeRange, activityByUser = series)
     }
 
@@ -75,7 +79,7 @@ class PageController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
-        JtehalloffameGenerated.render(out, null, chrome = chrome.of(principal, request), topUsers = queryService.hallOfFame())
+        JtehalloffameGenerated.render(out, null, chrome = chrome.of(principal, request), topUsers = statisticsQueries.hallOfFame())
     }
 
     @GetMapping("/u/{userId}")
@@ -102,8 +106,8 @@ class PageController(
             null,
             chrome = chrome.of(principal, request),
             user = principal.user,
-            passkeys = queryService.passkeysForUser(principal.id),
-            steamIds = queryService.steamIdsForUser(principal.id),
+            passkeys = passkeyQueries.passkeysForUser(principal.id),
+            steamIds = steamIdQueries.steamIdsForUser(principal.id),
         )
     }
 

@@ -4,36 +4,38 @@ import com.spybot.core.model.AdminMergedUserRow
 import com.spybot.core.model.AdminNewsEventRow
 import com.spybot.core.model.AdminTsUserRow
 import com.spybot.core.model.MergeUsersResult
+import com.spybot.core.service.AdminQueries
 import com.spybot.core.service.LikedNameService
-import com.spybot.core.service.SpybotQueryService
+import com.spybot.core.service.NewsEventQueries
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class AdminService(
-    private val queryService: SpybotQueryService,
+    private val adminQueries: AdminQueries,
+    private val newsEventQueries: NewsEventQueries,
     private val likedNameService: LikedNameService,
 ) {
-    fun mergedUsers(search: String?): List<AdminMergedUserRow> = queryService.adminMergedUsers(search)
+    fun mergedUsers(search: String?): List<AdminMergedUserRow> = adminQueries.adminMergedUsers(search)
 
-    fun tsUsers(search: String?): List<AdminTsUserRow> = queryService.adminTsUsers(search)
+    fun tsUsers(search: String?): List<AdminTsUserRow> = adminQueries.adminTsUsers(search)
 
-    fun newsEvents(search: String?): List<AdminNewsEventRow> = queryService.adminNewsEvents(search)
+    fun newsEvents(search: String?): List<AdminNewsEventRow> = newsEventQueries.adminNewsEvents(search)
 
-    fun newsEventById(id: Long): AdminNewsEventRow? = queryService.adminNewsEventById(id)
+    fun newsEventById(id: Long): AdminNewsEventRow? = newsEventQueries.adminNewsEventById(id)
 
     fun createNewsEvent(
         text: String,
         websiteLink: String?,
-    ): Long = queryService.adminCreateNewsEvent(text, websiteLink?.takeIf { it.isNotBlank() })
+    ): Long = newsEventQueries.adminCreateNewsEvent(text, websiteLink?.takeIf { it.isNotBlank() })
 
     fun updateNewsEvent(
         id: Long,
         text: String,
         websiteLink: String?,
-    ): Boolean = queryService.adminUpdateNewsEvent(id, text, websiteLink?.takeIf { it.isNotBlank() })
+    ): Boolean = newsEventQueries.adminUpdateNewsEvent(id, text, websiteLink?.takeIf { it.isNotBlank() })
 
-    fun deleteNewsEvent(id: Long): Boolean = queryService.adminDeleteNewsEvent(id)
+    fun deleteNewsEvent(id: Long): Boolean = newsEventQueries.adminDeleteNewsEvent(id)
 
     data class AdminOverview(
         val mergedUsersCount: Int,
@@ -43,9 +45,9 @@ class AdminService(
 
     fun overview(): AdminOverview =
         AdminOverview(
-            mergedUsersCount = queryService.adminMergedUsers(null).size,
-            tsUsersCount = queryService.adminTsUsers(null).size,
-            newsEventsCount = queryService.adminNewsEvents(null).size,
+            mergedUsersCount = adminQueries.adminMergedUsers(null).size,
+            tsUsersCount = adminQueries.adminTsUsers(null).size,
+            newsEventsCount = newsEventQueries.adminNewsEvents(null).size,
         )
 
     @Transactional
@@ -56,7 +58,7 @@ class AdminService(
         val deduplicatedSources = sourceIds.distinct().filter { it != targetId }
         require(deduplicatedSources.isNotEmpty()) { "At least one source user is required" }
 
-        val loaded = queryService.adminFindMergedUsersByIds(deduplicatedSources + targetId)
+        val loaded = adminQueries.adminFindMergedUsersByIds(deduplicatedSources + targetId)
         val loadedById = loaded.associateBy { it.id }
         val target = loadedById[targetId] ?: error("Target merged user not found")
         require(!target.obsolete) { "Target user is obsolete and cannot be used as merge target" }
@@ -70,20 +72,20 @@ class AdminService(
         val sourceUsers = deduplicatedSources.mapNotNull { loadedById[it] }
         val shouldSetTargetAdmin = target.isSuperuser || sourceUsers.any { it.isSuperuser }
         if (shouldSetTargetAdmin != target.isSuperuser) {
-            queryService.adminSetMergedUserSuperuser(targetId, shouldSetTargetAdmin)
+            adminQueries.adminSetMergedUserSuperuser(targetId, shouldSetTargetAdmin)
         }
 
-        val movedTsUsers = queryService.adminReassignTsUsers(deduplicatedSources, targetId)
-        val movedSteamIds = queryService.adminReassignSteamIds(deduplicatedSources, targetId)
-        val movedAwards = queryService.adminReassignAwards(deduplicatedSources, targetId)
-        val movedQueuedMessages = queryService.adminReassignQueuedMessages(deduplicatedSources, targetId)
-        val movedLoginLinks = queryService.adminReassignLoginLinks(deduplicatedSources, targetId)
-        val movedPasskeys = queryService.adminReassignPasskeys(deduplicatedSources, targetId)
+        val movedTsUsers = adminQueries.adminReassignTsUsers(deduplicatedSources, targetId)
+        val movedSteamIds = adminQueries.adminReassignSteamIds(deduplicatedSources, targetId)
+        val movedAwards = adminQueries.adminReassignAwards(deduplicatedSources, targetId)
+        val movedQueuedMessages = adminQueries.adminReassignQueuedMessages(deduplicatedSources, targetId)
+        val movedLoginLinks = adminQueries.adminReassignLoginLinks(deduplicatedSources, targetId)
+        val movedPasskeys = adminQueries.adminReassignPasskeys(deduplicatedSources, targetId)
         // The WebAuthn user handles inside those passkeys can't change, so the handles follow
         // the passkeys to the target: a login with an old handle then resolves to the merged user.
-        queryService.adminReassignWebauthnUserHandles(deduplicatedSources, targetId)
+        adminQueries.adminReassignWebauthnUserHandles(deduplicatedSources, targetId)
         val movedNameLikes = likedNameService.reassignLikes(deduplicatedSources, targetId)
-        val obsoletedMergedUsers = queryService.adminSetMergedUsersObsolete(deduplicatedSources, true)
+        val obsoletedMergedUsers = adminQueries.adminSetMergedUsersObsolete(deduplicatedSources, true)
 
         return MergeUsersResult(
             targetId = targetId,
