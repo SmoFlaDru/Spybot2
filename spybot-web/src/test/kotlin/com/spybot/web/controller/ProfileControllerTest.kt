@@ -46,4 +46,32 @@ class ProfileControllerTest {
         assertEquals(HttpStatus.NO_CONTENT, response.statusCode)
         Mockito.verify(queryService).addSteamId(1, 123456789L, "Some Name")
     }
+
+    @Test
+    fun `renamePasskey trims the name, updates it and tells HTMX to refresh the list`() {
+        val queryService = Mockito.mock(SpybotQueryService::class.java)
+        Mockito.`when`(queryService.renamePasskey(7L, 42L, "Work laptop")).thenReturn(true)
+        val controller = ProfileController(queryService, Mockito.mock(SteamService::class.java))
+
+        val response = controller.renamePasskey(principal(7L), 42L, "  Work laptop ")
+
+        assertEquals(204, response.statusCode.value())
+        assertEquals("passkeys_changed", response.headers.getFirst("HX-Trigger"))
+    }
+
+    @Test
+    fun `renamePasskey refuses a passkey that is not the user's`() {
+        val queryService = Mockito.mock(SpybotQueryService::class.java)
+        Mockito.`when`(queryService.renamePasskey(7L, 42L, "Mine now")).thenReturn(false)
+        val controller = ProfileController(queryService, Mockito.mock(SteamService::class.java))
+
+        val response = controller.renamePasskey(principal(7L), 42L, "Mine now")
+
+        assertEquals(403, response.statusCode.value())
+    }
+
+    private fun principal(id: Long) =
+        com.spybot.core.security.MergedUserPrincipal(
+            com.spybot.core.model.MergedUserView(id = id, name = "user$id", obsolete = false, isSuperuser = false, lastLogin = null),
+        )
 }

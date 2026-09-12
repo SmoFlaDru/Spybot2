@@ -7,11 +7,14 @@ import com.spybot.web.service.SpybotPageService
 import com.spybot.web.service.namegen.Likers
 import com.spybot.web.service.namegen.NameGenService
 import jakarta.servlet.http.HttpServletRequest
+import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.server.ResponseStatusException
 
 @Controller
 class FragmentController(
@@ -74,6 +77,28 @@ class FragmentController(
 
     @GetMapping("/profile/steamid")
     fun addSteamIdModal(): String = "fragments/add_steamid_modal"
+
+    @GetMapping("/profile/passkey/all")
+    fun profilePasskeysFragment(
+        @AuthenticationPrincipal principal: MergedUserPrincipal,
+        model: Model,
+    ): String {
+        model.addAttribute("passkeys", queryService.passkeysForUser(principal.id))
+        return "fragments/profile_passkeys"
+    }
+
+    @GetMapping("/profile/passkey/{id}/rename")
+    fun renamePasskeyForm(
+        @AuthenticationPrincipal principal: MergedUserPrincipal,
+        @PathVariable id: Long,
+        model: Model,
+    ): String {
+        val passkey =
+            queryService.passkeysForUser(principal.id).firstOrNull { it.id == id }
+                ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        model.addAttribute("passkey", passkey)
+        return "fragments/profile_passkey_rename"
+    }
 
     @GetMapping("/namegen_fragment")
     fun nameGeneratorFragment(
