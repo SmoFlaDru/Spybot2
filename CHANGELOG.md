@@ -9,6 +9,7 @@ git: each group shows the commit's short hash and date, and its tag if the commi
 So a release is simply a tag on master.
 
 - Renamed the JTE templates to PascalCase so the generated template classes and their call sites no longer mix snake_case and camelCase (#228)
+- Offered to add a passkey right after a TeamSpeak login, and kept the browser's passkey manager in sync when passkeys are deleted or an account is renamed (WebAuthn Signal API)
 - Fixed browsers keeping a day-old copy of the site's scripts and styles after a deploy, which broke passkey registration right after the passkey rework
 - Polished the passkey list on the profile page: provider icon and synced/device-bound badge, relative timestamps, inline rename, and updates without a page reload
 - Moved passkeys to Spring Security's WebAuthn support: existing passkeys were removed and need to be re-added, and passkeys now survive merging two accounts (#218)

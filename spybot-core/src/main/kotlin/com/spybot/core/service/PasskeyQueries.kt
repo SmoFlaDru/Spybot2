@@ -64,13 +64,16 @@ class PasskeyQueries(
     /** Every credential of the user a handle resolves to, across all of that user's handles. */
     fun webauthnCredentialsForHandle(handle: String): List<WebauthnCredential> {
         val userId = findWebauthnUserIdByHandle(handle) ?: return emptyList()
-        return dsl
+        return webauthnCredentialsForUser(userId)
+    }
+
+    fun webauthnCredentialsForUser(userId: Long): List<WebauthnCredential> =
+        dsl
             .selectFrom(SPYBOT_USERPASSKEY)
             .where(SPYBOT_USERPASSKEY.USER_ID.eq(userId))
             .orderBy(SPYBOT_USERPASSKEY.ADDED_ON.desc())
             .fetch()
             .map { it.toWebauthnCredential() }
-    }
 
     /** Inserts a new credential or updates the mutable parts of an existing one (counter, flags, last use). */
     fun saveWebauthnCredential(credential: WebauthnCredential) {
@@ -114,6 +117,16 @@ class PasskeyQueries(
             .from(SPYBOT_WEBAUTHN_USER_HANDLE)
             .where(SPYBOT_WEBAUTHN_USER_HANDLE.HANDLE.eq(handle))
             .fetchOne(SPYBOT_WEBAUTHN_USER_HANDLE.MERGED_USER_ID)
+
+    /** Every handle a user owns, including ones inherited through merges. */
+    fun webauthnUserHandlesForUser(userId: Long): List<String> =
+        dsl
+            .select(SPYBOT_WEBAUTHN_USER_HANDLE.HANDLE)
+            .from(SPYBOT_WEBAUTHN_USER_HANDLE)
+            .where(SPYBOT_WEBAUTHN_USER_HANDLE.MERGED_USER_ID.eq(userId))
+            .orderBy(SPYBOT_WEBAUTHN_USER_HANDLE.CREATED.asc())
+            .fetch(SPYBOT_WEBAUTHN_USER_HANDLE.HANDLE)
+            .filterNotNull()
 
     /**
      * The handle new passkeys are registered under: the user's oldest one, created on demand.
