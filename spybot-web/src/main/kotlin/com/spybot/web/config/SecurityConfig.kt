@@ -3,6 +3,7 @@ package com.spybot.web.config
 import com.spybot.core.config.SpybotProperties
 import com.spybot.core.service.AuthenticationService
 import com.spybot.web.filter.LastSeenFilter
+import com.spybot.web.security.MergedUserWebAuthnAuthenticationProvider
 import com.spybot.web.security.WebauthnCredentialRepository
 import com.spybot.web.security.WebauthnUserEntityRepository
 import org.springframework.context.annotation.Bean
@@ -10,6 +11,8 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.ProviderManager
+import org.springframework.security.config.ObjectPostProcessor
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -21,6 +24,8 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 import org.springframework.security.web.util.matcher.OrRequestMatcher
+import org.springframework.security.web.webauthn.authentication.WebAuthnAuthenticationFilter
+import org.springframework.security.web.webauthn.authentication.WebAuthnAuthenticationProvider
 import org.springframework.security.web.webauthn.api.PublicKeyCredentialRpEntity
 import org.springframework.security.web.webauthn.management.WebAuthnRelyingPartyOperations
 import org.springframework.security.web.webauthn.management.Webauthn4JRelyingPartyOperations
@@ -59,7 +64,11 @@ class SecurityConfig(
     }
 
     @Bean
-    fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
+    fun securityFilterChain(
+        http: HttpSecurity,
+        relyingParty: WebAuthnRelyingPartyOperations,
+        userDetailsService: UserDetailsService,
+    ): SecurityFilterChain {
         http
             .authorizeHttpRequests {
                 it
@@ -113,9 +122,20 @@ class SecurityConfig(
                 // sends the token from the XSRF-TOKEN cookie.
                 it.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             }.webAuthn {
-                // Endpoints, session-bound challenges and the authentication provider come from
-                // Spring; the relying party itself is the webAuthnRelyingPartyOperations bean.
-                it.disableDefaultRegistrationPage(true)
+                // Endpoints and session-bound challenges come from Spring; the relying party is
+                // the webAuthnRelyingPartyOperations bean. The login filter gets a provider that
+                // turns Spring's WebAuthnAuthentication into the app's MergedUserPrincipal.
+                it
+                    .disableDefaultRegistrationPage(true)
+                    .withObjectPostProcessor(
+                        object : ObjectPostProcessor<WebAuthnAuthenticationFilter> {
+                            override fun <O : WebAuthnAuthenticationFilter> postProcess(filter: O): O {
+                                val provider = MergedUserWebAuthnAuthenticationProvider(WebAuthnAuthenticationProvider(relyingParty, userDetailsService), authenticationService)
+                                filter.setAuthenticationManager(ProviderManager(provider))
+                                return filter
+                            }
+                        },
+                    )
             }.logout {
                 it
                     .logoutRequestMatcher(pathPattern(HttpMethod.GET, "/logout"))
