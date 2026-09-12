@@ -8,6 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
+- Removed the legacy Python/Django application together with its scripts, CI workflows and IDE config; the static assets it still provided now live in spybot-web
 - Renamed the JTE templates to PascalCase so the generated template classes and their call sites no longer mix snake_case and camelCase (#228)
 - Offered to add a passkey right after a TeamSpeak login, and kept the browser's passkey manager in sync when passkeys are deleted or an account is renamed (WebAuthn Signal API)
 - Fixed browsers keeping a day-old copy of the site's scripts and styles after a deploy, which broke passkey registration right after the passkey rework

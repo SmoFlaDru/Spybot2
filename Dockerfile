@@ -26,7 +26,6 @@ RUN --mount=type=cache,target=/root/.gradle \
 
 COPY spybot-core ./spybot-core
 COPY spybot-web ./spybot-web
-COPY spybot ./spybot
 COPY --from=frontend-build /workspace/frontend/output ./frontend/output
 
 # Bind-mount .git (read-only, not COPY'd) so the git-properties Gradle plugin can read the real
