@@ -34,5 +34,6 @@ class MergedUserWebAuthnAuthenticationProvider(
         return UsernamePasswordAuthenticationToken.authenticated(principal, null, principal.authorities)
     }
 
-    override fun supports(authentication: Class<*>): Boolean = WebAuthnAuthenticationRequestToken::class.java.isAssignableFrom(authentication)
+    override fun supports(authentication: Class<*>): Boolean =
+        WebAuthnAuthenticationRequestToken::class.java.isAssignableFrom(authentication)
 }
