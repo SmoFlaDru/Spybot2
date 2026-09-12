@@ -5,14 +5,12 @@
 //   POST /webauthn/authenticate/options  -> PublicKeyCredentialRequestOptions
 //   POST /login/webauthn                 -> the assertion; replies {redirectUrl, authenticated}
 //
-// All of them are CSRF-protected like the rest of the site, so every request carries the token
-// from the XSRF-TOKEN cookie.
+// All of them are CSRF-protected like the rest of the site. Spring masks the CSRF token per
+// request, so the raw XSRF-TOKEN cookie is not accepted in a header; the page renders the masked
+// token into a meta tag (layout/base.kte) and that is what gets sent.
 import {startAuthentication, startRegistration} from '@simplewebauthn/browser'
 
-const csrfToken = () => {
-    const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);
-    return match ? decodeURIComponent(match[1]) : '';
-}
+const csrfToken = () => document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
 const postJson = async (url, body) => {
     const response = await fetch(url, {
