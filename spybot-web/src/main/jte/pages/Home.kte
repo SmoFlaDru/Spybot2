@@ -1,3 +1,4 @@
+@import com.spybot.core.model.InactiveChannels
 @param chrome: com.spybot.web.jte.PageChrome
 @param home: com.spybot.core.model.HomePageView
 @template.layout.Base(title = "Home", chrome = chrome, activePage = "home", content = @`
@@ -428,6 +429,7 @@
                     return getComputedStyle(document.body).getPropertyValue(name)
                 }
                 onChartReady(() => {
+                    const inactiveChannels = [@for(name in InactiveChannels.names)'${name}', @endfor];
                     const raw_data = [
                         @for(entry in home.channelPopularity)
                         {
@@ -451,12 +453,12 @@
                             series: [
                                 {
                                     name: 'Talking',
-                                    data: raw_data.filter(o => o.name !== "AFK" && o.name !== "bei Bedarf anstupsen")
+                                    data: raw_data.filter(o => !inactiveChannels.includes(o.name))
                                         .map(o => { return {x: o.name, y: o.percentage}})
                                 },
                                 {
                                     name: 'Inactive',
-                                    data: raw_data.filter(o => o.name === "AFK" || o.name === "bei Bedarf anstupsen")
+                                    data: raw_data.filter(o => inactiveChannels.includes(o.name))
                                         .map(o => { return {x: o.name, y: o.percentage}})
                                 }
                             ],

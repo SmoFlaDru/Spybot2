@@ -37,3 +37,17 @@ internal fun unescapeTeamSpeak(value: String): String {
     }
     return result.toString()
 }
+
+/** The inverse of [unescapeTeamSpeak] for the characters that occur in channel names: what the recorder stores. */
+internal fun escapeTeamSpeak(value: String): String =
+    buildString(value.length) {
+        for (char in value) {
+            when (char) {
+                '\\' -> append("\\\\")
+                '/' -> append("\\/")
+                ' ' -> append("\\s")
+                '|' -> append("\\p")
+                else -> append(char)
+            }
+        }
+    }

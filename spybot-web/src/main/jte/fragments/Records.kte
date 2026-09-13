@@ -1,0 +1,87 @@
+@import com.spybot.web.jte.formatDay
+@import com.spybot.web.jte.formatDuration
+@import com.spybot.web.jte.formatTime
+@param records: com.spybot.core.model.RecordsView?
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Records</h3>
+    </div>
+    @if(records == null)
+        <div class="card-body text-secondary">Records are being computed, check back in a minute.</div>
+    @else
+        <div class="list-group list-group-flush">
+            !{val topStreak = records.longestStreaks.firstOrNull()}
+            !{val topSession = records.longestSessions.firstOrNull()}
+            !{val topWeek = records.bestWeeks.firstOrNull()}
+            !{val peak = records.peakUsers}
+            !{val busiest = records.busiestDay}
+            @template.fragments.RecordRow(
+                icon = "flame",
+                title = "Longest streak",
+                value = if (topStreak != null) "${topStreak.length} days" else null,
+                userId = topStreak?.userId,
+                userName = topStreak?.userName,
+                detail = if (topStreak != null) "${formatDay(topStreak.startDay)} – ${formatDay(topStreak.endDay)}" else null,
+            )
+            @template.fragments.RecordRow(
+                icon = "clock-hour-9",
+                title = "Longest session",
+                value = if (topSession != null) formatDuration(topSession.value) else null,
+                userId = topSession?.userId,
+                userName = topSession?.userName,
+                detail = if (topSession != null) formatDay(topSession.date) else null,
+            )
+            @template.fragments.RecordRow(
+                icon = "calendar-stats",
+                title = "Best week",
+                value = if (topWeek != null) String.format("%.0f h", topWeek.value) else null,
+                userId = topWeek?.userId,
+                userName = topWeek?.userName,
+                detail = if (topWeek != null) "week of ${formatDay(topWeek.date)}" else null,
+            )
+            @template.fragments.RecordRow(
+                icon = "users",
+                title = "Most users online at once",
+                value = if (peak != null) "${peak.users} users" else null,
+                userId = null,
+                userName = null,
+                detail = if (peak != null) formatDay(peak.at.toLocalDate()) else null,
+            )
+            @template.fragments.RecordRow(
+                icon = "sun-high",
+                title = "Busiest day",
+                value = if (busiest != null) String.format("%.0f h online in total", busiest.hours) else null,
+                userId = null,
+                userName = null,
+                detail = if (busiest != null) formatDay(busiest.day) else null,
+            )
+        </div>
+        <div class="card-footer text-secondary small">Updated hourly, last <relative-time datetime="${records.computedAt.toString()}" tense="past">at ${formatTime(records.computedAt)}</relative-time></div>
+    @endif
+</div>
+
+@if(records != null && records.currentStreaks.isNotEmpty())
+    <div class="card mt-3">
+        <div class="card-header">
+            <h3 class="card-title">Current streaks</h3>
+        </div>
+        <div class="list-group list-group-flush list-group-hoverable">
+            @for(streak in records.currentStreaks)
+                <a href="/u/${streak.userId}" class="list-group-item text-decoration-none">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <span class="avatar bg-medal ${if (records.currentStreaks.indexOf(streak) == 0) "medal-gold" else "medal-silver"}">
+                                <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-flame"/></svg>
+                            </span>
+                        </div>
+                        <div class="col text-truncate">
+                            <span class="text-reset d-block">${streak.userName}</span>
+                            <span class="text-secondary small">since ${formatDay(streak.startDay)}</span>
+                        </div>
+                        <div class="col-auto text-secondary">${streak.length} days</div>
+                    </div>
+                </a>
+            @endfor
+        </div>
+    </div>
+@endif

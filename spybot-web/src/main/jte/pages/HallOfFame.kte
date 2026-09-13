@@ -1,5 +1,7 @@
+@import com.spybot.web.jte.formatDuration
 @param chrome: com.spybot.web.jte.PageChrome
 @param topUsers: List<com.spybot.core.model.HallOfFameEntry>
+@param records: com.spybot.core.model.RecordsView?
 @template.layout.Base(title = "Hall of Fame", chrome = chrome, activePage = "halloffame", content = @`
     <div class="row row-cards justify-content-md-center">
         <div class="col-md-8">
@@ -29,19 +31,15 @@
                                     <span class="text-muted me-2">${user.numSilverAwards} <svg width="24" height="24" class="silver"><use xlink:href="/tabler-sprite.svg#tabler-medal"/></svg></span>
                                     <span class="text-muted">${user.numBronzeAwards} <svg width="24" height="24" class="bronze"><use xlink:href="/tabler-sprite.svg#tabler-military-award"/></svg></span>
                                 </div>
-                                <div class="col-auto flex-row-reverse text-muted text-truncate mt-n1">${run {
-                                    val totalSeconds = user.time.toLong()
-                                    val hours = totalSeconds / 3600
-                                    val minutes = (totalSeconds % 3600) / 60
-                                    val hoursStr = if (hours > 0) "$hours hours " else ""
-                                    val minutesStr = if (minutes > 0) "$minutes min " else ""
-                                    "$hoursStr$minutesStr"
-                                }}</div>
+                                <div class="col-auto flex-row-reverse text-muted text-truncate mt-n1">${formatDuration(user.time)}</div>
                             </div>
                         </a>
                     @endfor
                 </div>
             </div>
+        </div>
+        <div class="col-md-4">
+            @template.fragments.Records(records = records)
         </div>
     </div>
 
