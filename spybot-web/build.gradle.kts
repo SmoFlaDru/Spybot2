@@ -37,7 +37,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("com.webauthn4j:webauthn4j-core:0.31.0.RELEASE")
+    // No version on purpose: webauthn4j is used directly only to parse attestation objects, and
+    // it must stay on exactly the release spring-security-webauthn is compiled against (a newer
+    // patch already broke binary compatibility once). Gradle takes the transitive version.
+    implementation("com.webauthn4j:webauthn4j-core")
     // Templates are generated to Kotlin at build time (see the jte block); only the runtime is
     // needed to execute them, and controllers call the generated classes directly.
     implementation("gg.jte:jte-runtime:${providers.gradleProperty("jteVersion").get()}")
