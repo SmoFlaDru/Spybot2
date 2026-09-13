@@ -8,7 +8,7 @@
 // All of them are CSRF-protected like the rest of the site. Spring masks the CSRF token per
 // request, so the raw XSRF-TOKEN cookie is not accepted in a header; the page renders the masked
 // token into a meta tag (layout/base.kte) and that is what gets sent.
-import {startAuthentication, startRegistration} from '@simplewebauthn/browser'
+import {platformAuthenticatorIsAvailable, sendSignal, startAuthentication, startRegistration} from '@simplewebauthn/browser'
 
 const csrfToken = () => document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
@@ -43,10 +43,12 @@ const getJson = async (url) => {
 }
 
 // ---- WebAuthn Signal API: keep the browser's passkey manager in sync with the server ----
-// Every call is best-effort: unsupported browsers and failures are silently ignored, since the
-// signals only ever remove or relabel stale entries the manager would otherwise keep showing.
+// Every call is best-effort: unsupported browsers (sendSignal throws there) and failures are
+// silently ignored, since the signals only ever remove or relabel stale entries the manager would
+// otherwise keep showing. Browsers ship all three signals together, so one check is enough to
+// skip the server round trip where none of them would work.
 
-const signalSupported = (name) => typeof PublicKeyCredential !== 'undefined' && typeof PublicKeyCredential[name] === 'function';
+const signalsSupported = () => typeof PublicKeyCredential !== 'undefined' && typeof PublicKeyCredential.signalAllAcceptedCredentials === 'function';
 
 /**
  * Tells the passkey manager exactly which passkeys the logged-in user still has, per user
@@ -55,23 +57,23 @@ const signalSupported = (name) => typeof PublicKeyCredential !== 'undefined' && 
  * profile's passkey list renders.
  */
 export const signalAccepted = async () => {
-    if (!signalSupported('signalAllAcceptedCredentials')) return;
+    if (!signalsSupported()) return;
     try {
         const accepted = await getJson('/passkeys/accepted');
         for (const handle of accepted.handles) {
-            await PublicKeyCredential.signalAllAcceptedCredentials({
-                rpId: accepted.rpId,
-                userId: handle.userId,
-                allAcceptedCredentialIds: handle.credentialIds,
+            await sendSignal({
+                signalName: 'allAcceptedCredentials',
+                rpID: accepted.rpId,
+                userID: handle.userId,
+                allAcceptedCredentialIDs: handle.credentialIds,
             });
-            if (signalSupported('signalCurrentUserDetails')) {
-                await PublicKeyCredential.signalCurrentUserDetails({
-                    rpId: accepted.rpId,
-                    userId: handle.userId,
-                    name: accepted.name,
-                    displayName: accepted.displayName,
-                });
-            }
+            await sendSignal({
+                signalName: 'currentUserDetails',
+                rpID: accepted.rpId,
+                userID: handle.userId,
+                userName: accepted.name,
+                userDisplayName: accepted.displayName,
+            });
         }
     } catch (e) {
         console.log('Passkey signalling skipped:', e);
@@ -80,11 +82,11 @@ export const signalAccepted = async () => {
 
 /** After a rejected login: if the server has never heard of the credential, let the manager drop it. */
 const signalUnknownIfGone = async (rpId, credentialId) => {
-    if (!signalSupported('signalUnknownCredential')) return;
+    if (!signalsSupported()) return;
     try {
         const {known} = await getJson(`/passkeys/known?credentialId=${encodeURIComponent(credentialId)}`);
         if (!known) {
-            await PublicKeyCredential.signalUnknownCredential({rpId, credentialId});
+            await sendSignal({signalName: 'unknownCredential', rpID: rpId, credentialID: credentialId});
             console.log('Told the browser to forget a passkey the server no longer knows');
         }
     } catch (e) {
@@ -172,7 +174,7 @@ export const create = async () => {
 /** Whether this browser can create a passkey on this device at all (drives the post-login prompt). */
 export const canOfferPasskey = async () => {
     try {
-        return typeof PublicKeyCredential !== 'undefined' && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+        return await platformAuthenticatorIsAvailable();
     } catch (e) {
         return false;
     }
