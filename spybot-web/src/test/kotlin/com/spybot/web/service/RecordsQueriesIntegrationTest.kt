@@ -144,12 +144,13 @@ class RecordsQueriesIntegrationTest {
         session(aliceTs, at(monday.plusDays(7), 18), 5.0) // next Monday: a new week
         session(bobTs, at(monday, 18), 6.0)
         session(bobTs, at(monday.plusDays(1), 18), 6.0, channel = afk)
+        session(bobTs, at(monday.plusDays(2), 18), 6.0, open = true) // still open (or never closed): not counted
 
         val records = recordsQueries.records()
 
         assertEquals(listOf(alice, bob), records.bestWeeks.map { it.userId })
         assertEquals(8.0, records.bestWeeks[0].value, 0.001)
-        assertEquals(6.0, records.bestWeeks[1].value, 0.001, "Bob's AFK session doesn't count")
+        assertEquals(6.0, records.bestWeeks[1].value, 0.001, "Bob's AFK and open sessions don't count")
         assertEquals(monday, records.bestWeeks[0].date)
 
         val bests = recordsQueries.personalBests(alice)

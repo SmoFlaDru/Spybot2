@@ -59,7 +59,7 @@ class RecordsQueries(
                 $SESSIONS_CTE
                 SELECT DATE_TRUNC('week', starttime)::date AS week_start, $HOURS_SUM AS hours
                 FROM sessions
-                WHERE NOT afk AND user_id = ?
+                WHERE NOT afk AND closed AND user_id = ?
                 GROUP BY week_start
                 ORDER BY hours DESC
                 LIMIT 1
@@ -143,7 +143,11 @@ class RecordsQueries(
                 """.trimIndent(),
             ).map { userRecord(it) }
 
-    /** Each user's best calendar week (Monday-based, a session counts for the week it started in), top [TOP_N] users. */
+    /**
+     * Each user's best calendar week (Monday-based, a session counts for the week it started in),
+     * top [TOP_N] users. Only closed sessions: an open one would count up to now, which turns a
+     * recorder outage into a record week for whoever was online when it went down.
+     */
     private fun bestWeeks(): List<UserRecord> =
         dsl
             .fetch(
@@ -152,7 +156,7 @@ class RecordsQueries(
                 weeks AS (
                     SELECT user_id, DATE_TRUNC('week', starttime)::date AS week_start, $HOURS_SUM AS hours
                     FROM sessions
-                    WHERE NOT afk
+                    WHERE NOT afk AND closed
                     GROUP BY user_id, week_start
                 ),
                 per_user AS (
