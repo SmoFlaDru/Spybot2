@@ -8,6 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
+- Stopped pinning webauthn4j separately; it now always matches the version Spring Security is built against, so a lone bump can no longer break passkey login
 - Updated frontend build dependencies (rollup 3.30.0, minimatch 5.1.9, picomatch 2.3.2), replacing three stale Dependabot PRs
 - Eingangsbereich now counts as an AFK channel everywhere (activity chart, user pages, live view markers, widget, records), and the widget no longer lists people in "bei Bedarf anstupsen" as active
 - Removed eleven sessions between 2016 and 2022 that the recorder had left running for up to five days or that were spent parked overnight; they inflated the total time of the users involved
