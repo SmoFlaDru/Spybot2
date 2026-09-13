@@ -12,7 +12,7 @@
     "@github/relative-time-element": "^5.0.0",
     "@simplewebauthn/browser": "^14.0.0",
     "@tabler/core": "^1.5.1",
-    "apexcharts": "^3.36.3",
+    "apexcharts": "^7.1.0",
     "htmx.org": "^1.9.2"
   },
   "devDependencies": {
