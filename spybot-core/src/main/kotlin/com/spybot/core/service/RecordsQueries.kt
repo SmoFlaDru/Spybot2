@@ -7,6 +7,7 @@ import com.spybot.core.jooq.long
 import com.spybot.core.jooq.offsetDateTime
 import com.spybot.core.jooq.string
 import com.spybot.core.model.BusiestDayRecord
+import com.spybot.core.model.InactiveChannels
 import com.spybot.core.model.PeakUsersRecord
 import com.spybot.core.model.PersonalBests
 import com.spybot.core.model.RecordsView
@@ -239,7 +240,7 @@ class RecordsQueries(
                     a.starttime,
                     COALESCE(a.endtime, NOW()) AS endtime,
                     a.endtime IS NOT NULL AS closed,
-                    c.name IN ('bei\sBedarf\sanstupsen', 'AFK') AS afk
+                    c.name IN (${InactiveChannels.sqlList}) AS afk
                 FROM tsuseractivity a
                 JOIN tsuser tu ON a.tsuserid = tu.id
                 JOIN tschannel c ON a.cid = c.id

@@ -16,6 +16,7 @@ import com.spybot.core.model.ChannelPopularityEntry
 import com.spybot.core.model.ChannelView
 import com.spybot.core.model.DailyActivityPoint
 import com.spybot.core.model.HallOfFameEntry
+import com.spybot.core.model.InactiveChannels
 import com.spybot.core.model.LiveApiChannel
 import com.spybot.core.model.LiveApiResponse
 import com.spybot.core.model.LiveApiUser
@@ -88,9 +89,10 @@ class StatisticsQueries(
                 where a.endtime is null
                 """.trimIndent(),
             ).forEach { record ->
-                when (record.string("channel_name")) {
-                    "bei Bedarf anstupsen", "AFK" -> inactive += record.get("user_name", String::class.java)
-                    else -> active += record.get("user_name", String::class.java)
+                if (InactiveChannels.isInactiveStoredName(record.string("channel_name"))) {
+                    inactive += record.get("user_name", String::class.java)
+                } else {
+                    active += record.get("user_name", String::class.java)
                 }
             }
 
@@ -154,7 +156,7 @@ class StatisticsQueries(
                         WHERE
                             starttime > CURRENT_DATE - (? || ' days')::interval
                             AND endtime IS NOT NULL
-                            AND channel.name NOT IN ('bei\sBedarf\sanstupsen', 'AFK')
+                            AND channel.name NOT IN (${InactiveChannels.sqlList})
                         GROUP BY date
                         ORDER BY date
                     ),
@@ -167,7 +169,7 @@ class StatisticsQueries(
                         WHERE
                             starttime > CURRENT_DATE - (? || ' days')::interval
                             AND endtime IS NOT NULL
-                            AND channel.name IN ('bei\sBedarf\sanstupsen', 'AFK')
+                            AND channel.name IN (${InactiveChannels.sqlList})
                         GROUP BY date
                         ORDER BY date
                     )
@@ -511,17 +513,18 @@ class StatisticsQueries(
                     SELECT
                         tsuseractivity.starttime AS starttime,
                         tsuseractivity.endtime AS endtime,
-                        tsuseractivity.cid AS channel,
+                        channel.name IN (${InactiveChannels.sqlList}) AS afk,
                         tsuserid AS user_id,
                         tsuser.merged_user_id AS mergeduserid
                     FROM tsuseractivity
                     JOIN tsuser ON tsuseractivity.tsuserid = tsuser.id
+                    JOIN tschannel channel ON tsuseractivity.cid = channel.id
                     WHERE tsuser.merged_user_id = ?
                 ),
                 total_time AS (
                     SELECT
-                        SUM(CASE WHEN channel IN (7, 13) THEN EXTRACT(EPOCH FROM AGE(COALESCE(endtime, NOW()), starttime)) ELSE 0 END) / 3600 AS afk_time,
-                        SUM(CASE WHEN channel NOT IN (7, 13) THEN EXTRACT(EPOCH FROM AGE(COALESCE(endtime, NOW()), starttime)) ELSE 0 END) / 3600 AS online_time,
+                        SUM(CASE WHEN afk THEN EXTRACT(EPOCH FROM AGE(COALESCE(endtime, NOW()), starttime)) ELSE 0 END) / 3600 AS afk_time,
+                        SUM(CASE WHEN NOT afk THEN EXTRACT(EPOCH FROM AGE(COALESCE(endtime, NOW()), starttime)) ELSE 0 END) / 3600 AS online_time,
                         MAX(endtime) AS last_seen,
                         MIN(starttime) AS first_seen
                     FROM user_time
@@ -606,7 +609,7 @@ class StatisticsQueries(
                         INNER JOIN tsuser ON tsuseractivity.tsuserid = tsuser.id
                         WHERE starttime > MAKE_DATE(2016, 1, 1)
                             AND endtime IS NOT NULL
-                            AND channel.name NOT IN ('bei\sBedarf\sanstupsen', 'AFK')
+                            AND channel.name NOT IN (${InactiveChannels.sqlList})
                             AND tsuser.merged_user_id = ?
                         GROUP BY year, month
                         ORDER BY year, month

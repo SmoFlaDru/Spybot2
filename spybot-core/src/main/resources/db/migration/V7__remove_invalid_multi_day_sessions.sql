@@ -3,7 +3,8 @@
 -- as hours in which no session ends at all, then every open session closed at the same second
 -- when the recorder comes back: 5-10 May 2016 (which gave Kilian a 123-hour longest session
 -- and 124-hour best week) and 18-19 Aug 2018 (23 hours, bensge and Mim840). The rest are one-
--- to two-day sessions in parking channels that nobody actually sat through either. They are
+-- to two-day sessions in parking channels that nobody actually sat through either, and one
+-- 20-hour night in "DO NOT ENTER". They are
 -- wrong data, not legitimate outliers, so the rows go rather than being hidden by a
 -- plausibility cap on session length. Matched on the timestamps as well as the ids so a
 -- database with different ids can't lose anything else.
@@ -13,6 +14,7 @@ WHERE (id, starttime, endtime) IN (
     (2428, '2016-05-05 18:03:57+00', '2016-05-10 21:42:59+00'), -- Kilian, PubG
     (2427, '2016-05-05 18:04:10+00', '2016-05-10 21:42:59+00'), -- Fritzge, PubG
     (6308, '2016-07-02 00:20:32+00', '2016-07-03 00:32:03+00'), -- bensge, bei Bedarf anstupsen
+    (10472, '2016-09-13 18:13:44+00', '2016-09-14 14:56:09+00'), -- sisi, DO NOT ENTER (parked, 20 h)
     (33041, '2017-11-25 14:21:40+00', '2017-11-26 19:34:35+00'), -- Talyn, AFK
     (44901, '2018-08-18 22:19:54+00', '2018-08-19 21:43:56+00'), -- bensge, Laberecke (outage)
     (44902, '2018-08-18 22:20:43+00', '2018-08-19 21:43:56+00'), -- Mim840, Laberecke (outage)
