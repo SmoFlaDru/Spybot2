@@ -225,10 +225,7 @@ class RecordsQueries(
 
         /**
          * The sessions every record is computed from. Everything before 2016 is dropped like on
-         * the user page (older data isn't trustworthy), and so are sessions longer than a day:
-         * the recorder used to leave sessions open or close them late after a lost connection,
-         * and a five-day "session" would otherwise be the record for everything. An open session
-         * ends now; one open for more than a day is that same bug and is skipped too.
+         * the user page (older data isn't trustworthy). An open session counts up to now.
          */
         val SESSIONS_CTE =
             """
@@ -244,7 +241,6 @@ class RecordsQueries(
                 JOIN tschannel c ON a.cid = c.id
                 WHERE tu.merged_user_id IS NOT NULL
                     AND a.starttime > MAKE_DATE(2016, 1, 1)
-                    AND COALESCE(a.endtime, NOW()) - a.starttime <= INTERVAL '24 hours'
             )
             """.trimIndent()
 

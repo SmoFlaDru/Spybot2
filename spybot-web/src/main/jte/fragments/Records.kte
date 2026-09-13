@@ -56,7 +56,7 @@
                 detail = if (busiest != null) formatDay(busiest.day) else null,
             )
         </div>
-        <div class="card-footer text-secondary small">Updated hourly, last at ${formatTime(records.computedAt)}</div>
+        <div class="card-footer text-secondary small">Updated hourly, last <relative-time datetime="${records.computedAt.toString()}" tense="past">at ${formatTime(records.computedAt)}</relative-time></div>
     @endif
 </div>
 

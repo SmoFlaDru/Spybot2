@@ -111,14 +111,14 @@ class RecordsQueriesIntegrationTest {
     }
 
     @Test
-    fun `longest sessions are one per user, closed, not AFK and at most a day long`() {
+    fun `longest sessions are one per user, closed and not AFK`() {
         val day = LocalDate.of(2024, 5, 4)
         val (alice, aliceTs) = newUser("Alice")
         val (bob, bobTs) = newUser("Bob")
         session(aliceTs, at(day, 10), 9.5)
+        session(aliceTs, at(day.minusDays(3), 10), 30.0, channel = afk) // long, but AFK
         session(aliceTs, at(day.plusDays(1), 10), 3.0)
         session(bobTs, at(day, 10), 2.0)
-        session(bobTs, at(day, 12), 30.0, channel = lobby) // recorder left this open too long: excluded
         session(bobTs, at(day, 13), 12.0, channel = afk) // AFK doesn't count as a session record
         session(bobTs, at(day.plusDays(2), 10), 5.0, open = true) // still running: not a record yet
 

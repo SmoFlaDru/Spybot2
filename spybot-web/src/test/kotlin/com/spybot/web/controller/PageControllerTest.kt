@@ -187,7 +187,7 @@ class PageControllerTest {
         assertTrue("Current streaks" in html, "current streaks card")
         assertTrue("since 10 Sep 2026" in html, html.substringAfter("Current streaks").take(1500))
         assertTrue("4 days" in html, "current streak length")
-        assertTrue("last at 10:05 UTC" in html, "records footer")
+        assertTrue("<relative-time datetime=\"2026-09-13T10:05Z\" tense=\"past\">at 10:05 UTC</relative-time>" in html, "records footer is a relative time with the absolute time as fallback")
     }
 
     @Test
