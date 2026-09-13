@@ -8,6 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
+- Updated the passkey browser library to SimpleWebAuthn 14 and switched the passkey-manager sync to its sendSignal helper
 - Passkeys now carry the account name as their username in password managers instead of the numeric user id; already registered passkeys are relabelled on the next profile visit in browsers that support the Signal API
 - Removed the legacy Python/Django application together with its scripts, CI workflows and IDE config; the static assets it still provided now live in spybot-web
 - Renamed the JTE templates to PascalCase so the generated template classes and their call sites no longer mix snake_case and camelCase (#228)
