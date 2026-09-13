@@ -54,6 +54,7 @@ import kotlin.math.roundToInt
 @Service
 class StatisticsQueries(
     private val dsl: DSLContext,
+    private val recordsQueries: RecordsQueries,
 ) {
     fun liveApi(): LiveApiResponse {
         val channels =
@@ -654,6 +655,7 @@ class StatisticsQueries(
             userId = userId,
             headline = headline,
             streak = streak,
+            bests = recordsQueries.personalBests(userId),
             months = months,
             totalTime = (headline.afkTime + headline.onlineTime).roundToInt(),
             gameId = 0,

@@ -8,6 +8,7 @@ import com.spybot.core.service.SteamIdQueries
 import com.spybot.web.jte.PageChromeFactory
 import com.spybot.web.jte.renderJte
 import com.spybot.web.service.ChangelogService
+import com.spybot.web.service.RecordsService
 import com.spybot.web.service.SpybotPageService
 import com.spybot.web.service.namegen.Likers
 import com.spybot.web.service.namegen.NameGenService
@@ -40,6 +41,7 @@ class PageController(
     private val changelogService: ChangelogService,
     private val nameGenService: NameGenService,
     private val likedNameService: LikedNameService,
+    private val recordsService: RecordsService,
     private val chrome: PageChromeFactory,
 ) {
     @GetMapping("/")
@@ -79,7 +81,13 @@ class PageController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ) = response.renderJte { out ->
-        JteHallOfFameGenerated.render(out, null, chrome = chrome.of(principal, request), topUsers = statisticsQueries.hallOfFame())
+        JteHallOfFameGenerated.render(
+            out,
+            null,
+            chrome = chrome.of(principal, request),
+            topUsers = statisticsQueries.hallOfFame(),
+            records = recordsService.current(),
+        )
     }
 
     @GetMapping("/u/{userId}")

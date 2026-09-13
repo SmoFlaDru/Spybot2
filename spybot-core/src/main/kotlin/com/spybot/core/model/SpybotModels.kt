@@ -192,6 +192,53 @@ data class MonthActivityPoint(
     val activity: Double,
 )
 
+/** One user's streak of consecutive days online, for the records lists. */
+data class StreakRecord(
+    val userId: Long,
+    val userName: String,
+    val startDay: LocalDate,
+    val endDay: LocalDate,
+    val length: Int,
+)
+
+/** A record held by one user: [value] is seconds for sessions and hours for weeks. */
+data class UserRecord(
+    val userId: Long,
+    val userName: String,
+    val value: Double,
+    val date: LocalDate,
+)
+
+/** The most users online at the same time and when that happened. */
+data class PeakUsersRecord(
+    val users: Int,
+    val at: OffsetDateTime,
+)
+
+/** The day with the most summed-up online hours. */
+data class BusiestDayRecord(
+    val day: LocalDate,
+    val hours: Double,
+)
+
+data class RecordsView(
+    val longestStreaks: List<StreakRecord>,
+    val currentStreaks: List<StreakRecord>,
+    val longestSessions: List<UserRecord>,
+    val bestWeeks: List<UserRecord>,
+    val peakUsers: PeakUsersRecord?,
+    val busiestDay: BusiestDayRecord?,
+    val computedAt: OffsetDateTime,
+)
+
+/** A user's own bests, shown on their page next to the community records. */
+data class PersonalBests(
+    val longestSessionSeconds: Double?,
+    val longestSessionDate: LocalDate?,
+    val bestWeekHours: Double?,
+    val bestWeekStart: LocalDate?,
+)
+
 data class TimeRangeView(
     val hours: Int,
     val options: List<SelectorOption>,
@@ -211,6 +258,7 @@ data class UserPageView(
     val userId: Long,
     val headline: UserHeadline,
     val streak: StreakView?,
+    val bests: PersonalBests,
     val months: List<MonthActivityPoint>,
     val totalTime: Int,
     val gameId: Int,

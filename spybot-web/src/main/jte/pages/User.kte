@@ -1,3 +1,5 @@
+@import com.spybot.web.jte.formatDay
+@import com.spybot.web.jte.formatDuration
 @param chrome: com.spybot.web.jte.PageChrome
 @param page: com.spybot.core.model.UserPageView
 @template.layout.Base(title = page.headline.mergedUsername, chrome = chrome, activePage = "user", content = @`
@@ -97,6 +99,40 @@
                             </div>
                             <div class="datagrid-content">
                                 <span>${page.streak?.length ?: 0} days</span>
+                            </div>
+                        </div>
+
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">
+                                <svg width="16" height="16" class="icon me-1"><use xlink:href="/tabler-sprite.svg#tabler-clock-hour-9"/></svg>
+                                Longest session
+                            </div>
+                            <div class="datagrid-content">
+                                !{val sessionSeconds = page.bests.longestSessionSeconds}
+                                !{val sessionDate = page.bests.longestSessionDate}
+                                @if(sessionSeconds != null && sessionDate != null)
+                                    <span>${formatDuration(sessionSeconds)}</span>
+                                    <span class="text-secondary small d-block">${formatDay(sessionDate)}</span>
+                                @else
+                                    <span class="text-secondary">none yet</span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">
+                                <svg width="16" height="16" class="icon me-1"><use xlink:href="/tabler-sprite.svg#tabler-calendar-stats"/></svg>
+                                Best week
+                            </div>
+                            <div class="datagrid-content">
+                                !{val weekHours = page.bests.bestWeekHours}
+                                !{val weekStart = page.bests.bestWeekStart}
+                                @if(weekHours != null && weekStart != null)
+                                    <span>${String.format("%.0f", weekHours)}h</span>
+                                    <span class="text-secondary small d-block">week of ${formatDay(weekStart)}</span>
+                                @else
+                                    <span class="text-secondary">none yet</span>
+                                @endif
                             </div>
                         </div>
 

@@ -1,0 +1,29 @@
+@param icon: String
+@param title: String
+@param value: String?
+@param userId: Long?
+@param userName: String?
+@param detail: String?
+<div class="list-group-item">
+    <div class="row align-items-center">
+        <div class="col-auto">
+            <span class="avatar bg-medal medal-gold">
+                <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-${icon}"/></svg>
+            </span>
+        </div>
+        <div class="col text-truncate">
+            <span class="text-secondary small d-block">${title}</span>
+            @if(value == null)
+                <span class="text-secondary">No data yet</span>
+            @else
+                <span class="text-reset">${value}</span>
+                @if(userId != null && userName != null)
+                    <span class="text-secondary">by</span> <a href="/u/${userId}" class="text-reset">${userName}</a>
+                @endif
+                @if(detail != null)
+                    <span class="text-secondary small d-block">${detail}</span>
+                @endif
+            @endif
+        </div>
+    </div>
+</div>
