@@ -64,11 +64,12 @@ class RecordsQueriesIntegrationTest {
         channel: Int = lobby,
         open: Boolean = false,
     ) {
+        // jOOQ binds OffsetDateTime as text in plain SQL, so cast; a null end stays an open session.
         dsl.execute(
-            "insert into tsuseractivity (tsuserid, starttime, endtime, cid) values (?, ?, ?, ?)",
+            "insert into tsuseractivity (tsuserid, starttime, endtime, cid) values (?, ?::timestamptz, ?::timestamptz, ?)",
             tsUserId,
-            start,
-            if (open) null else start.plusSeconds((hours * 3600).toLong()),
+            start.toString(),
+            if (open) null else start.plusSeconds((hours * 3600).toLong()).toString(),
             channel,
         )
     }
