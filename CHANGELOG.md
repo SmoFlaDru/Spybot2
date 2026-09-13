@@ -8,7 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
-- Removed three sessions from May 2016 that a recorder outage had left running for five days; they inflated the total time of the users involved
+- Removed eight sessions between 2016 and 2022 that the recorder had left running for one to five days; they inflated the total time of the users involved
 - Added records to the hall of fame: longest streak, longest session, best week, most users online at once and busiest day, plus the current streaks, and each user page now shows that user's longest session and best week
 - Fixed three regressions from the Tabler 1.5 update: missing gap between channel icons and names in the live view, unreadable chart axis labels in dark mode, and the recent activity chart growing taller every time its time span was changed
 - Updated htmx to 2.0 and minified the frontend bundle, which makes it smaller than before despite the new version
