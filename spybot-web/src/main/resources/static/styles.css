@@ -19,6 +19,12 @@
     background-color: transparent !important;
 }
 
+/* Tabler 1.4 shipped this rule in its ApexCharts vendor CSS and 1.5 dropped it, which left axis
+   labels and titles at ApexCharts' hard-coded #373d3f - unreadable on the dark theme. */
+.apexcharts-text {
+    fill: var(--tblr-body-color) !important;
+}
+
 tr.htmx-swapping td {
   opacity: 0;
   transition: opacity 1s ease-out;
