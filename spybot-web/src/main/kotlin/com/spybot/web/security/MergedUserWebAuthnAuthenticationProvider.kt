@@ -26,7 +26,16 @@ class MergedUserWebAuthnAuthenticationProvider(
 ) : AuthenticationProvider {
     override fun authenticate(authentication: Authentication): Authentication? {
         val token = authentication as? WebAuthnAuthenticationRequestToken ?: return null
-        val userEntity = relyingParty.authenticate(token.webAuthnRequest)
+        val userEntity =
+            try {
+                relyingParty.authenticate(token.webAuthnRequest)
+            } catch (e: RuntimeException) {
+                // Spring's operations report a bad assertion - unknown credential, wrong
+                // signature, replayed counter - as plain runtime exceptions. Without translating
+                // them the filter answers 500 instead of 401, and the login page never gets to
+                // tell the browser to forget a passkey the server has deleted.
+                throw BadCredentialsException(e.message ?: "Passkey assertion rejected", e)
+            }
         val userId =
             passkeyQueries.findWebauthnUserIdByHandle(userEntity.id.toBase64UrlString())
                 ?: throw BadCredentialsException("Passkey is not linked to a user")

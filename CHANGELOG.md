@@ -8,6 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
+- Fixed a passkey login with a deleted or unknown passkey answering 500 instead of 401, which also kept the browser from forgetting that passkey
 - Upgraded Kotlin from 2.2.21 to 2.4.20, and made the Spring Boot BOM follow the Kotlin plugin's version so the two can't drift apart
 - Stopped pinning webauthn4j separately; it now always matches the version Spring Security is built against, so a lone bump can no longer break passkey login
 - Updated frontend build dependencies (rollup 3.30.0, minimatch 5.1.9, picomatch 2.3.2), replacing three stale Dependabot PRs
