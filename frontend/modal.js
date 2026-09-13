@@ -1,4 +1,4 @@
-
+import htmx from 'htmx.org'
 const modal = new tabler.Modal(document.querySelector("#modal"), {});
 
 htmx.on("htmx:afterSwap", (e) => {

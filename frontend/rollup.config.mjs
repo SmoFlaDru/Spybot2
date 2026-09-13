@@ -1,5 +1,6 @@
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import css from "rollup-plugin-import-css";
+import terser from "@rollup/plugin-terser";
 
 export default [{
   context: 'window',
@@ -9,7 +10,7 @@ export default [{
     format: 'iife',
     name: 'jsbundle',
   },
-  plugins: [nodeResolve(), css({'output': 'main.css'})]
+  plugins: [nodeResolve(), css({'output': 'main.css'}), terser()]
 },
 {
   context: 'window',
@@ -19,5 +20,5 @@ export default [{
     format: 'iife',
     name: 'jsbundle',
   },
-  plugins: [nodeResolve()]
+  plugins: [nodeResolve(), terser()]
 }];
