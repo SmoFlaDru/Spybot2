@@ -8,6 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
+- Updated htmx to 2.0 and minified the frontend bundle, which makes it smaller than before despite the new version
 - Updated the passkey browser library to SimpleWebAuthn 14 and switched the passkey-manager sync to its sendSignal helper
 - CI now also builds the frontend bundle on every pull request, as a separate check next to the Kotlin build, so a broken rollup build or dependency bump is caught before it reaches the Docker image
 - Passkeys now carry the account name as their username in password managers instead of the numeric user id; already registered passkeys are relabelled on the next profile visit in browsers that support the Signal API

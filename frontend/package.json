@@ -13,11 +13,12 @@
     "@simplewebauthn/browser": "^14.0.0",
     "@tabler/core": "^1.5.1",
     "apexcharts": "^3.36.3",
-    "htmx.org": "^1.9.2"
+    "htmx.org": "^2.0.10"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.2",
     "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-terser": "^1.0.0",
     "rollup": "^3.29.5",
     "rollup-plugin-import-css": "^3.3.1"
   }
