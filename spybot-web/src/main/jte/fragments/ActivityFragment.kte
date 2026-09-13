@@ -128,7 +128,11 @@
         if (document.readyState === "loading") {
             document.addEventListener("DOMContentLoaded", renderActivityChart);
         } else {
-            renderActivityChart();
+            // Swapped in by htmx (hx-swap="outerHTML"): this script runs after the new card is
+            // inserted but before the old one is removed, so rendering now would size the 100%
+            // height chart against a column that momentarily holds both cards - and the chart
+            // would grow with every timespan change. Defer past the swap so the old card is gone.
+            setTimeout(renderActivityChart, 0);
         }
     </script>
 </div>

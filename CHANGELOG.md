@@ -8,6 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
+- Fixed three regressions from the Tabler 1.5 update: missing gap between channel icons and names in the live view, unreadable chart axis labels in dark mode, and the recent activity chart growing taller every time its time span was changed
 - Updated htmx to 2.0 and minified the frontend bundle, which makes it smaller than before despite the new version
 - Updated the passkey browser library to SimpleWebAuthn 14 and switched the passkey-manager sync to its sendSignal helper
 - CI now also builds the frontend bundle on every pull request, as a separate check next to the Kotlin build, so a broken rollup build or dependency bump is caught before it reaches the Docker image
