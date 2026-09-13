@@ -1,4 +1,4 @@
-name: 'Kotlin CI'
+name: 'CI'
 
 on:
   # push only covers master: every PR here targets master and dev is the
@@ -15,8 +15,33 @@ permissions:
   checks: write
   pull-requests: write
 
+# The two jobs are independent: the Kotlin tests don't need the frontend bundle (only bootJar
+# does, and that is built by the Docker image workflow), so they run in parallel and fail
+# separately. If a future job needs the real bundle, give it `needs: frontend` and pass
+# frontend/output along as an artifact rather than chaining the two jobs here.
 jobs:
-  test:
+  frontend:
+    name: Frontend bundle
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node 24
+        uses: actions/setup-node@v4
+        with:
+          # Same major as the Dockerfile's frontend-build stage, so CI can't pass on a Node the
+          # image build then rejects.
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Build bundle
+        run: npm run package
+
+  kotlin:
     name: Build & test
     runs-on: ubuntu-latest
     steps:
