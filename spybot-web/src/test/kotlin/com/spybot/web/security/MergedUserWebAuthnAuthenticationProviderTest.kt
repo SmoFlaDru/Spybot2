@@ -75,4 +75,12 @@ class MergedUserWebAuthnAuthenticationProviderTest {
         assertTrue(provider.supports(WebAuthnAuthenticationRequestToken::class.java))
         assertNull(provider.authenticate(UsernamePasswordAuthenticationToken("x", "y")))
     }
+
+    @Test
+    fun `a rejected assertion becomes a 401-style BadCredentialsException, not a 500`() {
+        `when`(relyingParty.authenticate(request)).thenThrow(IllegalArgumentException("Unable to find CredentialRecord with id x"))
+
+        val error = assertThrows<BadCredentialsException> { provider.authenticate(token) }
+        assertTrue(error.cause is IllegalArgumentException)
+    }
 }
