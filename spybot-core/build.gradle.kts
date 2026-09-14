@@ -9,13 +9,18 @@ plugins {
     id("nu.studer.jooq")
 }
 
-val jooqVersion = providers.gradleProperty("jooqVersion").get()
-
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.boot:spring-boot-dependencies:${providers.gradleProperty("springBootVersion").get()}")
+        // The BOM that matches the Spring Boot Gradle plugin version declared in the root build
+        // script - the one place to bump Spring Boot.
+        mavenBom(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
     }
 }
+
+// jOOQ's code generator and the classes it generates must be on the same jOOQ version as the
+// runtime, which comes from the Spring Boot BOM - so take the BOM's version for the generator
+// too, instead of pinning one that drifts from what the app actually runs.
+val jooqVersion: String = dependencyManagement.importedProperties["jooq.version"]!!
 
 dependencies {
     api("org.springframework:spring-context")
@@ -30,7 +35,6 @@ dependencies {
     implementation(kotlin("reflect"))
 
     jooqGenerator("org.postgresql:postgresql")
-    // Keep generator classpath versions aligned to avoid codegen runtime NoSuchMethodError
     jooqGenerator("org.jooq:jooq:$jooqVersion")
     jooqGenerator("org.jooq:jooq-meta:$jooqVersion")
     jooqGenerator("org.jooq:jooq-codegen:$jooqVersion")

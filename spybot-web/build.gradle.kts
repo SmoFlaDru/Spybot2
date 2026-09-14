@@ -19,7 +19,9 @@ plugins {
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.boot:spring-boot-dependencies:${providers.gradleProperty("springBootVersion").get()}")
+        // The BOM that matches the Spring Boot Gradle plugin version declared in the root build
+        // script - the one place to bump Spring Boot.
+        mavenBom(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
     }
 }
 
