@@ -16,7 +16,7 @@
     "htmx.org": "^2.0.10"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^25.0.2",
+    "@rollup/plugin-commonjs": "^29.0.3",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-terser": "^1.0.0",
     "rollup": "^3.30.0",
