@@ -9,6 +9,7 @@ git: each group shows the commit's short hash and date, and its tag if the commi
 So a release is simply a tag on master.
 
 - Replaced a Gradle configuration DSL deprecated in Gradle 9.6 in the build scripts
+- Moved the frontend build to Rollup 4 (with rollup-plugin-import-css 4) and dropped the unused @rollup/plugin-commonjs
 - Updated JTE to 3.2.4, with the Gradle plugin now taking its version from the same jteVersion property as the runtime
 - Upgraded to Spring Boot 4.1.1 for real (the earlier bump only moved the Gradle plugin) and made the dependency BOM and jOOQ follow the plugin version, so they can't drift apart again; brings Spring Security 7.1 and jOOQ 3.21
 - Fixed a passkey login with a deleted or unknown passkey answering 500 instead of 401, which also kept the browser from forgetting that passkey
