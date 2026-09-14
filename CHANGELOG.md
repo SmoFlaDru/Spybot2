@@ -8,6 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
+- Added scripts/copy_prod_db_to_lima.sh, which copies the production database into the Docker Postgres inside the spybot-dev Lima VM from the Mac
 - Replaced a Gradle configuration DSL deprecated in Gradle 9.6 in the build scripts
 - Moved the frontend build to Rollup 4 (with rollup-plugin-import-css 4) and dropped the unused @rollup/plugin-commonjs
 - Updated JTE to 3.2.4, with the Gradle plugin now taking its version from the same jteVersion property as the runtime
