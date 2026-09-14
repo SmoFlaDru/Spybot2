@@ -13,7 +13,7 @@ plugins {
     kotlin("plugin.spring")
     id("org.springframework.boot")
     id("io.spring.dependency-management")
-    id("gg.jte.gradle") version "3.2.3"
+    id("gg.jte.gradle") version "3.2.4"
     id("com.gorylenko.gradle-git-properties") version "4.0.1"
 }
 
