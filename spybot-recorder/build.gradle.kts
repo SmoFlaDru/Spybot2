@@ -15,7 +15,7 @@ dependencyManagement {
 
 // Resolves the Sentry OpenTelemetry javaagent jar so it can be copied into the Docker image,
 // keeping its version in lockstep with sentryVersion instead of a hardcoded download URL.
-val sentryAgent by configurations.creating
+val sentryAgent = configurations.create("sentryAgent")
 
 dependencies {
     implementation(project(":spybot-core"))
