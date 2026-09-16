@@ -8,6 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
+- Gave the production database the column defaults the migrations declare, so an insert can no longer pass the tests and fail in production
 - Fixed the admin TeamSpeak user list crashing because most identities have no recorded client id
 - Replaced a Gradle configuration DSL deprecated in Gradle 9.6 in the build scripts
 - Moved the frontend build to Rollup 4 (with rollup-plugin-import-css 4) and dropped the unused @rollup/plugin-commonjs
