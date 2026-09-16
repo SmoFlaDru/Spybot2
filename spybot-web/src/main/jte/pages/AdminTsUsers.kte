@@ -34,7 +34,7 @@
                                         <a href="/u/${user.mergedUserId}">${user.mergedUserName ?: user.mergedUserId.toString()}</a>
                                     @endif
                                 </td>
-                                <td class="text-secondary">${user.clientId}</td>
+                                <td class="text-secondary">${user.clientId?.toString() ?: "–"}</td>
                                 <td>
                                     @if(user.isCurrentlyOnline)
                                         <span class="badge bg-green">Online</span>
