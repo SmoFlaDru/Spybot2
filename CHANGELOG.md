@@ -8,6 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
+- Logging in from a protected page (a user page opened from the Hall of Fame, say) now returns to that page afterwards instead of the home or profile page, for both passkey and TeamSpeak logins
 - Made the Docker image builds on CI reuse cached Gradle dependencies between runs instead of re-downloading them on every push, so deploys reach the server faster
 - Gave the production database the column defaults the migrations declare, so an insert can no longer pass the tests and fail in production
 - Fixed the admin TeamSpeak user list crashing because most identities have no recorded client id
