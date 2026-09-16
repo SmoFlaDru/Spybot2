@@ -5,6 +5,8 @@ import com.spybot.core.service.AuthenticationService
 import com.spybot.core.service.PasskeyQueries
 import com.spybot.web.filter.LastSeenFilter
 import com.spybot.web.security.MergedUserWebAuthnAuthenticationProvider
+import com.spybot.web.security.PasskeyLoginSuccessHandler
+import com.spybot.web.security.PostLoginRedirect
 import com.spybot.web.security.WebauthnCredentialRepository
 import com.spybot.web.security.WebauthnUserEntityRepository
 import org.springframework.context.annotation.Bean
@@ -73,6 +75,7 @@ class SecurityConfig(
     fun securityFilterChain(
         http: HttpSecurity,
         relyingParty: WebAuthnRelyingPartyOperations,
+        postLoginRedirect: PostLoginRedirect,
     ): SecurityFilterChain {
         http
             .authorizeHttpRequests {
@@ -130,7 +133,8 @@ class SecurityConfig(
             }.webAuthn {
                 // Endpoints and session-bound challenges come from Spring; the relying party is
                 // the webAuthnRelyingPartyOperations bean. The login filter gets a provider that
-                // turns Spring's WebAuthnAuthentication into the app's MergedUserPrincipal.
+                // turns Spring's WebAuthnAuthentication into the app's MergedUserPrincipal, and a
+                // success handler that sends the browser back to the page the login started from.
                 it
                     .disableDefaultRegistrationPage(true)
                     .withObjectPostProcessor(
@@ -138,6 +142,7 @@ class SecurityConfig(
                             override fun <O : WebAuthnAuthenticationFilter> postProcess(filter: O): O {
                                 val provider = MergedUserWebAuthnAuthenticationProvider(relyingParty, passkeyQueries, authenticationService)
                                 filter.setAuthenticationManager(ProviderManager(provider))
+                                filter.setAuthenticationSuccessHandler(PasskeyLoginSuccessHandler(postLoginRedirect))
                                 return filter
                             }
                         },

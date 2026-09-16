@@ -94,11 +94,13 @@ const signalUnknownIfGone = async (rpId, credentialId) => {
     }
 };
 
-const isAllowedRedirectUrl = url => /^[A-Za-z0-9/]+$/.test(url);
+// The server answers a successful login with where to go next: the protected page that sent
+// the visitor to /login if there was one, otherwise the profile page. Only a site-relative path
+// is followed, so a bad value can never send the browser off-site.
+const isAllowedRedirectUrl = url => typeof url === 'string' && url.startsWith('/') && !url.startsWith('//');
 
-const redirectAfterLogin = () => {
-    const nextUrl = new URLSearchParams(window.location.search).get('next');
-    window.location.href = nextUrl !== null && isAllowedRedirectUrl(nextUrl) ? nextUrl : '/profile';
+const redirectAfterLogin = result => {
+    window.location.href = isAllowedRedirectUrl(result.redirectUrl) ? result.redirectUrl : '/profile';
 }
 
 // A label for the new passkey as it will appear on the profile page. The provider (iCloud
@@ -139,7 +141,7 @@ export const autocomplete = async () => {
     try {
         const result = await postJson('/login/webauthn', assertion);
         if (result && result.authenticated) {
-            redirectAfterLogin();
+            redirectAfterLogin(result);
             return;
         }
         console.log('Passkey login was not accepted', result);
