@@ -139,3 +139,26 @@ tr.htmx-swapping td {
         &::view-transition-new(page-content) { animation-name: spybot-slide-in-left; }
     }
 }
+
+/*
+ * Theme switch: a circular reveal from the theme button (see theme.js). The new theme's snapshot is
+ * clipped by an animated circle on top of the old one, so the default cross-fade is switched off and
+ * the nav/page names from the tab transitions are dropped to keep the whole page in one snapshot.
+ */
+:root[data-theme-reveal] :is(.sticky-top, .nav-active-indicator, .page-wrapper) {
+    view-transition-name: none;
+}
+
+:root[data-theme-reveal]::view-transition-old(root),
+:root[data-theme-reveal]::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
+:root[data-theme-reveal]::view-transition-old(root) {
+    z-index: 1;
+}
+
+:root[data-theme-reveal]::view-transition-new(root) {
+    z-index: 2;
+}
