@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="/main.css${assetVersion}">
     <link rel="stylesheet" href="/styles.css${assetVersion}">
     <script src="/early.js${assetVersion}"></script>
+    <script src="/view-transitions.js${assetVersion}"></script>
     <script src="/main.js${assetVersion}" defer></script>
 </head>
 <body hx-headers='{"X-XSRF-TOKEN": "${if (csrf != null) csrf.token else ""}"}'>
@@ -131,6 +132,7 @@
                     <div class="d-flex flex-column flex-md-row flex-fill align-items-stretch align-items-md-center">
                         <ul class="navbar-nav">
                             <li class="${if (activePage == "home") "nav-item active" else "nav-item"}">
+                                <span class="nav-active-indicator"></span>
                                 <a class="nav-link" href="/">
                                     <span class="nav-link-icon">
                                         <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-home"/></svg>
@@ -139,6 +141,7 @@
                                 </a>
                             </li>
                             <li class="${if (activePage == "timeline") "nav-item active" else "nav-item"}">
+                                <span class="nav-active-indicator"></span>
                                 <a class="nav-link" href="/timeline">
                                     <span class="nav-link-icon">
                                         <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-calendar-time"/></svg>
@@ -147,6 +150,7 @@
                                 </a>
                             </li>
                             <li class="${if (activePage == "halloffame") "nav-item active" else "nav-item"}">
+                                <span class="nav-active-indicator"></span>
                                 <a class="nav-link" href="/halloffame">
                                     <span class="nav-link-icon">
                                         <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-crown"/></svg>
@@ -155,6 +159,7 @@
                                 </a>
                             </li>
                             <li class="${if (activePage == "namegen") "nav-item active" else "nav-item"}">
+                                <span class="nav-active-indicator"></span>
                                 <a class="nav-link" href="/namegen">
                                     <span class="nav-link-icon">
                                         <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-masks-theater"/></svg>
@@ -164,6 +169,7 @@
                             </li>
                             @if(loggedInUser != null && loggedInUser.isSuperuser)
                                 <li class="${if (activePage == "admin") "nav-item active" else "nav-item"}">
+                                    <span class="nav-active-indicator"></span>
                                     <a class="nav-link" href="/admin">
                                         <span class="nav-link-icon">
                                             <svg width="24" height="24"><use xlink:href="/tabler-sprite.svg#tabler-lock"/></svg>
