@@ -8,6 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
+- The browser's title bar and toolbar (Safari, and Chrome on Android) now follow the selected theme instead of staying bright in dark mode
 - Switching the theme from the theme button now plays a circular reveal that grows out of the button (in browsers that support view transitions and when reduced motion is not requested)
 - Capped the "no data for this time range" illustration on the timeline page at a sensible width and centered it, instead of letting it stretch across a wide desktop window
 - Navigating between the top-bar tabs now animates in browsers that support view transitions (Safari 18.2+, Chrome): the blue underline slides to the new tab and the page slides out and in; other browsers navigate as before

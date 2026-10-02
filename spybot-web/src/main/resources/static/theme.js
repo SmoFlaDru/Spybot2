@@ -6,6 +6,20 @@
 
 const themeStorageKey = 'tablerTheme'
 
+// Header (navbar) background per theme. Browsers such as Safari tint their title/tab bar with the
+// theme-color meta tag, so keep it in sync with the theme instead of leaving the bar bright in dark mode.
+const browserThemeColors = {light: '#ffffff', dark: '#1e293b'}
+
+function setBrowserThemeColor(realTheme) {
+    let meta = document.querySelector('meta[name="theme-color"]')
+    if (!meta) {
+        meta = document.createElement('meta')
+        meta.name = 'theme-color'
+        document.head.appendChild(meta)
+    }
+    meta.content = browserThemeColors[realTheme]
+}
+
 function configureTheme(wantedTheme) {
     function readTheme(wantedTheme, urlParams, allowedValues) {
         if (allowedValues.has(wantedTheme)) {
@@ -39,6 +53,7 @@ function configureTheme(wantedTheme) {
         }
 
         document.body.setAttribute("data-spybot-theme", theme)
+        setBrowserThemeColor(realTheme)
     }
 
     console.log("configuring theme")
