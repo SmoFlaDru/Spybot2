@@ -29,3 +29,103 @@ tr.htmx-swapping td {
   opacity: 0;
   transition: opacity 1s ease-out;
 }
+
+/* Cross-document view transitions for the top nav (progressive enhancement). */
+
+/*
+ * Tabler draws the active-tab underline as a pseudo-element on .nav-item.active. Pseudo-elements
+ * cannot be view-transition snapshots, so a real .nav-active-indicator element draws the underline
+ * instead (left bar on mobile, like Tabler). The tab text and icon stay in the header snapshot.
+ */
+.navbar-expand-md .nav-item.active:after {
+    display: none;
+}
+
+.nav-active-indicator {
+    display: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -.25rem;
+    border: 0 solid var(--tblr-navbar-active-border-color);
+    border-bottom-width: 2px;
+    pointer-events: none;
+}
+
+.nav-item.active > .nav-active-indicator {
+    display: block;
+}
+
+@media (max-width: 767.98px) {
+    .navbar-collapse .nav-item.active > .nav-active-indicator {
+        right: auto;
+        top: 0;
+        bottom: 0;
+        border-bottom-width: 0;
+        border-left-width: 3px;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    @view-transition {
+        navigation: auto;
+    }
+
+    /* Keep the header out of the page transition; only the underline moves between tabs. */
+    .sticky-top {
+        view-transition-name: site-nav;
+    }
+
+    .nav-active-indicator {
+        view-transition-name: nav-indicator;
+    }
+
+    .page-wrapper {
+        view-transition-name: page-content;
+    }
+
+    ::view-transition-group(nav-indicator) {
+        animation-duration: 0.35s;
+        animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* The underline is a flat color: show one snapshot stretching instead of cross-fading two. */
+    ::view-transition-old(nav-indicator) {
+        display: none;
+    }
+
+    ::view-transition-new(nav-indicator) {
+        animation: none;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* The old page slides fully out while the new one slides fully in, clipped to the content area. */
+    ::view-transition-group(page-content) {
+        overflow: clip;
+        animation-duration: 0.4s;
+    }
+
+    ::view-transition-old(page-content),
+    ::view-transition-new(page-content) {
+        mix-blend-mode: normal;
+        animation-duration: 0.4s;
+        animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+        animation-fill-mode: both;
+    }
+
+    @keyframes spybot-slide-out-left { to { transform: translateX(-100%); } }
+    @keyframes spybot-slide-in-right { from { transform: translateX(100%); } }
+    @keyframes spybot-slide-out-right { to { transform: translateX(100%); } }
+    @keyframes spybot-slide-in-left { from { transform: translateX(-100%); } }
+
+    :root:active-view-transition-type(slide-forward) {
+        &::view-transition-old(page-content) { animation-name: spybot-slide-out-left; }
+        &::view-transition-new(page-content) { animation-name: spybot-slide-in-right; }
+    }
+
+    :root:active-view-transition-type(slide-back) {
+        &::view-transition-old(page-content) { animation-name: spybot-slide-out-right; }
+        &::view-transition-new(page-content) { animation-name: spybot-slide-in-left; }
+    }
+}
