@@ -25,7 +25,7 @@
                     @else
                         <div class="empty">
                             <div class="empty-img">
-                                <img src="/quitting_time.svg" height="128" alt="">
+                                <img src="/quitting_time.svg" class="empty-state-img" alt="">
                             </div>
                             <p class="empty-title">No data for this time range</p>
                             <p class="empty-subtitle text-muted">Try adjusting the time interval or come back later</p>

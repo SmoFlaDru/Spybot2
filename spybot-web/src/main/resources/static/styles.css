@@ -30,6 +30,16 @@ tr.htmx-swapping td {
   transition: opacity 1s ease-out;
 }
 
+/* Empty-state illustration: scale down on narrow screens, but never fill a wide desktop window. */
+.empty-state-img {
+    display: block;
+    width: 100%;
+    max-width: 24rem;
+    height: auto;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 /* Cross-document view transitions for the top nav (progressive enhancement). */
 
 /*
