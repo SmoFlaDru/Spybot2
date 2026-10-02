@@ -291,7 +291,8 @@ data class AdminTsUserRow(
     val mergedUserId: Long?,
     val mergedUserName: String?,
     val isCurrentlyOnline: Boolean,
-    val clientId: Int,
+    /** Last seen TeamSpeak client id; NULL for identities from before the recorder stored it. */
+    val clientId: Int?,
 )
 
 data class AdminNewsEventRow(

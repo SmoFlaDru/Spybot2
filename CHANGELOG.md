@@ -9,6 +9,10 @@ git: each group shows the commit's short hash and date, and its tag if the commi
 So a release is simply a tag on master.
 
 - Added scripts/copy_prod_db_to_lima.sh, which copies the production database into the Docker Postgres inside the spybot-dev Lima VM from the Mac
+- Logging in from a protected page (a user page opened from the Hall of Fame, say) now returns to that page afterwards instead of the home or profile page, for both passkey and TeamSpeak logins
+- Made the Docker image builds on CI reuse cached Gradle dependencies between runs instead of re-downloading them on every push, so deploys reach the server faster
+- Gave the production database the column defaults the migrations declare, so an insert can no longer pass the tests and fail in production
+- Fixed the admin TeamSpeak user list crashing because most identities have no recorded client id
 - Replaced a Gradle configuration DSL deprecated in Gradle 9.6 in the build scripts
 - Moved the frontend build to Rollup 4 (with rollup-plugin-import-css 4) and dropped the unused @rollup/plugin-commonjs
 - Updated JTE to 3.2.4, with the Gradle plugin now taking its version from the same jteVersion property as the runtime

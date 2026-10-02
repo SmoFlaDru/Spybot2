@@ -79,7 +79,7 @@ class AdminQueries(
                 TSUSER.MERGED_USER_ID,
                 SPYBOT_MERGEDUSER.NAME,
                 TSUSER.ISCURRENTLYONLINE.notNull(),
-                TSUSER.CLIENTID.notNull(),
+                TSUSER.CLIENTID,
             ).from(TSUSER)
             .leftJoin(SPYBOT_MERGEDUSER)
             .on(SPYBOT_MERGEDUSER.ID.eq(TSUSER.MERGED_USER_ID))

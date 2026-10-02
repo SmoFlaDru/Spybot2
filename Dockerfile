@@ -12,26 +12,34 @@ FROM eclipse-temurin:25-jdk AS build
 
 WORKDIR /workspace
 
-# Copy Gradle wrapper and build descriptors first for better layer reuse.
+# Keep the Gradle wrapper distribution and all resolved dependencies *inside the image layer*
+# rather than in a `--mount=type=cache`: BuildKit cache mounts are not part of what
+# `cache-to: type=gha` exports, so on CI's fresh runners they start empty every run and Gradle
+# re-downloaded its distribution and every dependency on each build. A plain directory in the
+# primed layer below is exported/restored with the layer cache and survives across runs.
+ENV GRADLE_USER_HOME=/workspace/.gradle-home
+
+# Copy Gradle wrapper and build descriptors first for better layer reuse. Only files that affect
+# dependency resolution belong here - anything that changes on every merge (CHANGELOG.md, sources)
+# would invalidate the primed dependency layer below and force a full re-download.
 COPY gradle ./gradle
-COPY gradlew gradlew.bat settings.gradle.kts build.gradle.kts gradle.properties CHANGELOG.md ./
+COPY gradlew gradlew.bat settings.gradle.kts build.gradle.kts gradle.properties ./
 COPY spybot-core/build.gradle.kts spybot-core/build.gradle.kts
 COPY spybot-web/build.gradle.kts spybot-web/build.gradle.kts
 COPY spybot-recorder/build.gradle.kts spybot-recorder/build.gradle.kts
 
 # Prime dependency/plugin caches before copying source files.
-RUN --mount=type=cache,target=/root/.gradle \
-    chmod +x ./gradlew && \
-    ./gradlew --no-daemon --max-workers=1 -Dkotlin.compiler.execution.strategy=in-process -Dkotlin.incremental=false :spybot-web:dependencies
+RUN chmod +x ./gradlew && \
+    ./gradlew --no-daemon --max-workers=1 -Dkotlin.compiler.execution.strategy=in-process -Dkotlin.incremental=false :spybot-core:dependencies :spybot-web:dependencies
 
+COPY CHANGELOG.md ./
 COPY spybot-core ./spybot-core
 COPY spybot-web ./spybot-web
 COPY --from=frontend-build /workspace/frontend/output ./frontend/output
 
 # Bind-mount .git (read-only, not COPY'd) so the git-properties Gradle plugin can read the real
 # commit; it changes every commit, so COPY-ing it would bust the dependency-priming layer cache.
-RUN --mount=type=cache,target=/root/.gradle \
-    --mount=type=bind,source=.git,target=.git,readonly \
+RUN --mount=type=bind,source=.git,target=.git,readonly \
     ./gradlew --no-daemon --max-workers=1 -Dkotlin.compiler.execution.strategy=in-process -Dkotlin.incremental=false :spybot-web:bootJar
 
 FROM eclipse-temurin:25-jre
