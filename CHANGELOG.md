@@ -8,6 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
+- Navigating between the top-bar tabs now animates in browsers that support view transitions (Safari 18.2+, Chrome): the blue underline slides to the new tab and the page slides out and in; other browsers navigate as before
 - Added scripts/copy_prod_db_to_lima.sh, which copies the production database into the Docker Postgres inside the spybot-dev Lima VM from the Mac
 - Logging in from a protected page (a user page opened from the Hall of Fame, say) now returns to that page afterwards instead of the home or profile page, for both passkey and TeamSpeak logins
 - Made the Docker image builds on CI reuse cached Gradle dependencies between runs instead of re-downloading them on every push, so deploys reach the server faster
