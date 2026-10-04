@@ -8,6 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
+- Linking a Steam account now explains problems in the dialog (a malformed Steam ID, a missing or too long account name, Steam being unreachable) instead of showing a raw server error page, and a 20-digit ID no longer crashes the request
 - The home page's recent activity chart labels every day on the 7-day view and about ten evenly spaced days on longer ranges (with a tick under every bar), and shows days without activity as empty bars
 - Upgraded htmx from 2 to 4 (requests now use fetch, attribute inheritance is explicit, events are renamed), updating the modal, Steam ID, passkey and activity-chart interactions to match
 - Upgraded ApexCharts from 3 to 7 using its modular build (only the chart types Spybot draws), keeping the charts looking as before apart from the home page activity chart, whose date labels now read "27 Sep" instead of "27."
