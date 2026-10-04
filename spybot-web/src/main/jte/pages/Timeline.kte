@@ -80,6 +80,9 @@
                     },
                     max: now,
                     min: min,
+                    // Without a tick count ApexCharts 7 pads the 6-hour range ~40 minutes past
+                    // "now"; with one it keeps min/max exact and still picks round tick times.
+                    tickAmount: 12,
                 },
                 yaxis: {
                     labels: {
@@ -112,9 +115,9 @@
                     },
                     theme: isDarkMode() ? 'dark' : 'light'
                 },
-                theme: {
-                    palette: 'palette2'
-                },
+                // The colours ApexCharts 3 used for theme.palette 'palette2', pinned so a library
+                // update can't silently recolour the timeline.
+                colors: ['#3f51b5', '#03a9f4', '#4caf50', '#f9ce1d', '#FF9800'],
                 dataLabels: {
                     enabled: true,
                     formatter: function (val, { seriesIndex, dataPointIndex, w }) {

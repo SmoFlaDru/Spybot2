@@ -8,6 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
+- Upgraded ApexCharts from 3 to 7 using its modular build (only the chart types Spybot draws), keeping the charts looking as before apart from the home page activity chart, whose date labels now read "27 Sep" instead of "27."
 - The browser's title bar and toolbar (Safari, and Chrome on Android) now take the color of the selected theme when a page loads instead of staying bright in dark mode; switching the theme on a page already open still needs a reload to update it in Safari
 - Switching the theme from the theme button now plays a circular reveal that grows out of the button (in browsers that support view transitions and when reduced motion is not requested)
 - Capped the "no data for this time range" illustration on the timeline page at a sensible width and centered it, instead of letting it stretch across a wide desktop window
