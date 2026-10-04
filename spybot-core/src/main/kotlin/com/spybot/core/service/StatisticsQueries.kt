@@ -147,7 +147,15 @@ class StatisticsQueries(
             dsl
                 .fetch(
                     """
-                    WITH active_data AS (
+                    WITH days AS (
+                        SELECT TO_CHAR(day, 'YYYY-MM-DD') AS date
+                        FROM generate_series(
+                            CURRENT_DATE::timestamp - (? || ' days')::interval,
+                            CURRENT_DATE::timestamp,
+                            '1 day'::interval
+                        ) AS day
+                    ),
+                    active_data AS (
                         SELECT
                             TO_CHAR(starttime, 'YYYY-MM-DD') AS date,
                             SUM(EXTRACT(EPOCH FROM AGE(endtime, starttime))) / 3600 AS time_hours
@@ -173,12 +181,15 @@ class StatisticsQueries(
                         GROUP BY date
                         ORDER BY date
                     )
-                    SELECT active_data.date,
-                           CAST(active_data.time_hours AS DOUBLE PRECISION) AS active_hours,
+                    SELECT days.date,
+                           COALESCE(CAST(active_data.time_hours AS DOUBLE PRECISION), 0) AS active_hours,
                            COALESCE(CAST(afk_data.time_hours AS DOUBLE PRECISION), 0) AS afk_hours
-                    FROM active_data
-                    LEFT OUTER JOIN afk_data ON active_data.date = afk_data.date
+                    FROM days
+                    LEFT OUTER JOIN active_data ON days.date = active_data.date
+                    LEFT OUTER JOIN afk_data ON days.date = afk_data.date
+                    ORDER BY days.date
                     """.trimIndent(),
+                    selected,
                     selected,
                     selected,
                 ).map {
