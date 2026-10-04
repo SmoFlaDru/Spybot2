@@ -5,8 +5,8 @@ import com.spybot.core.service.PasskeyQueries
 import com.spybot.core.service.SteamIdQueries
 import com.spybot.core.service.SteamService
 import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -27,6 +27,8 @@ class ProfileController(
     private val steamIdQueries: SteamIdQueries,
     private val steamService: SteamService,
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
+
     @DeleteMapping("/passkey/{id}")
     fun deletePasskey(
         @AuthenticationPrincipal principal: MergedUserPrincipal,
@@ -53,15 +55,42 @@ class ProfileController(
     @PostMapping("/steamid")
     fun addSteamId(
         @AuthenticationPrincipal principal: MergedUserPrincipal,
-        @RequestParam("steamid") @Pattern(regexp = "\\d{5,20}") steamId: String,
-        @RequestParam("name") @NotBlank accountName: String,
+        @RequestParam("steamid", defaultValue = "") rawSteamId: String,
+        @RequestParam("name", defaultValue = "") rawAccountName: String,
     ): ResponseEntity<String> {
-        if (steamService.getSteamUsersPlayingInfo(listOf(steamId)).isEmpty()) {
+        // Validated by hand rather than with constraint annotations: the add-account dialog shows
+        // the response body as-is, so every failure needs a plain-text message written for people.
+        val steamId = rawSteamId.trim()
+        val accountName = rawAccountName.trim()
+        val steamId64 = steamId.takeIf { STEAM_ID_PATTERN.matches(it) }?.toLongOrNull()
+        val validationError =
+            when {
+                steamId.isEmpty() -> "Please enter the Steam account ID."
+                steamId64 == null -> INVALID_STEAM_ID_MESSAGE
+                accountName.isEmpty() -> "Please enter an account name."
+                accountName.length > MAX_ACCOUNT_NAME_LENGTH ->
+                    "The account name can be at most $MAX_ACCOUNT_NAME_LENGTH characters long."
+                else -> null
+            }
+        if (validationError != null) {
+            return ResponseEntity.badRequest().body(validationError)
+        }
+
+        val steamAccounts =
+            try {
+                steamService.getSteamUsersPlayingInfo(listOf(steamId))
+            } catch (e: RuntimeException) {
+                log.warn("Steam lookup failed while linking Steam ID {}", steamId, e)
+                return ResponseEntity
+                    .status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body("Steam could not be reached to verify this ID. Please try again in a moment.")
+            }
+        if (steamAccounts.isEmpty()) {
             return ResponseEntity
                 .badRequest()
                 .body("Could not verify this Steam ID. Please double check that it's correct.")
         }
-        steamIdQueries.addSteamId(principal.id, steamId.toLong(), accountName)
+        steamIdQueries.addSteamId(principal.id, steamId64!!, accountName)
         return ResponseEntity
             .noContent()
             .header("HX-Trigger", "steamids_changed")
@@ -81,4 +110,12 @@ class ProfileController(
         } else {
             ResponseEntity.status(HttpStatus.FORBIDDEN).build()
         }
+
+    private companion object {
+        val STEAM_ID_PATTERN = Regex("\\d{5,20}")
+        const val MAX_ACCOUNT_NAME_LENGTH = 128
+        const val INVALID_STEAM_ID_MESSAGE =
+            "That doesn't look like a valid Steam ID. It should be a number of 5 to 20 digits " +
+                "(a Steam ID64 has 17 digits, for example 76561198012345678)."
+    }
 }

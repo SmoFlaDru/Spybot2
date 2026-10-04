@@ -28,7 +28,7 @@ class SteamService(
             return cached.value
         }
 
-        val apiKey = properties.steamApiKey ?: return emptyList()
+        val apiKey = properties.steamApiKey?.takeIf { it.isNotBlank() } ?: return emptyList()
         val response =
             webClientBuilder
                 .baseUrl("https://api.steampowered.com")
