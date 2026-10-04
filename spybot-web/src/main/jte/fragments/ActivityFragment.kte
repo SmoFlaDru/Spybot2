@@ -19,6 +19,12 @@
     </div>
     <script>
         var renderActivityChart = () => {
+            const days = [
+                @for(entry in activityChart.points) new Date('$unsafe{entry.date.toString()}T00:00:00Z'), @endfor
+            ]
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            const labels = days.map(d => String(d.getUTCDate()).padStart(2, '0') + ' ' + monthNames[d.getUTCMonth()])
+            const labelStep = Math.ceil(days.length / 31)
             window.ApexCharts && (new ApexCharts(document.getElementById('chart-mentions'), {
                 chart: {
                     height: "100%",
@@ -67,7 +73,11 @@
                 tooltip: {
                     theme: 'dark',
                     x: {
-                        format: 'dd MMMM',
+                        formatter: (value, {dataPointIndex}) => days[dataPointIndex].toLocaleDateString('en-GB', {
+                            day: '2-digit',
+                            month: 'long',
+                            timeZone: 'UTC',
+                        }),
                     },
                     shared: true,
                     intersect: false,
@@ -90,15 +100,9 @@
                 xaxis: {
                     labels: {
                         padding: 0,
-                        // ApexCharts 7 picks its own tick spacing (hour-level for this day-granular
-                        // series) and formats the ticks as "27 Sep 00:00" whatever datetimeFormatter
-                        // says, so format them as plain dates ourselves. The day alone ("27.", as in
-                        // 3.x) would be ambiguous because the ticks no longer fall on every day.
-                        formatter: (value, timestamp) => {
-                            const d = new Date(timestamp)
-                            return String(d.getUTCDate()).padStart(2, '0') + ' '
-                                + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getUTCMonth()]
-                        },
+                        // Label every day while that fits; on long ranges label every nth day so the
+                        // labels don't pile up.
+                        formatter: (value) => labels.indexOf(value) % labelStep === 0 ? value : '',
                     },
                     tooltip: {
                         enabled: false
@@ -106,7 +110,9 @@
                     axisBorder: {
                         show: false,
                     },
-                    type: 'datetime',
+                    // A category axis labels every bar. The series has an entry for every day of the
+                    // range (days without activity are zero), so nothing is misplaced in time.
+                    type: 'category',
                 },
                 yaxis: {
                     title: {
@@ -121,9 +127,7 @@
                         }
                     }
                 },
-                labels: [
-                    @for(entry in activityChart.points) '$unsafe{entry.date.toString()}', @endfor
-                ],
+                labels: labels,
                 colors: [tabler.tabler.getColor("primary"), tabler.tabler.getColor("red", 0.8), tabler.tabler.getColor("green", 0.8)],
                 legend: {
                     show: false,
