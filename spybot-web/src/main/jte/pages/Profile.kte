@@ -54,7 +54,7 @@
         });
 
         // Keep the browser's passkey manager in sync whenever the list is re-rendered.
-        document.body.addEventListener("htmx:afterSettle", (event) => {
+        document.body.addEventListener("htmx:after:settle", (event) => {
             if (event.target.id === "passkeys") passkeys.signalAccepted();
         });
 
