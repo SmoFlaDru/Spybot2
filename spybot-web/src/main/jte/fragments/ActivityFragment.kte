@@ -3,7 +3,7 @@
     <div class="card-header d-flex justify-content-between">
         <h3 class="card-title my-2">Recent activity</h3>
         <div class="lh-1">
-            <div class="dropdown" hx-target="#activity_fragment" hx-swap="outerHTML">
+            <div class="dropdown" hx-target:inherited="#activity_fragment" hx-swap:inherited="outerHTML">
                 <a class="dropdown-toggle text-secondary" href="#" data-bs-toggle="dropdown" aria-haspopup="true"
                    aria-expanded="false">${activityChart.activeOptionText}</a>
                 <div class="dropdown-menu dropdown-zx-end dropdown-menu-arrow" style="">
