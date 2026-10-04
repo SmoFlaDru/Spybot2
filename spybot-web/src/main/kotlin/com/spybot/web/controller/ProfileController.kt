@@ -65,12 +65,25 @@ class ProfileController(
         val steamId64 = steamId.takeIf { STEAM_ID_PATTERN.matches(it) }?.toLongOrNull()
         val validationError =
             when {
-                steamId.isEmpty() -> "Please enter the Steam account ID."
-                steamId64 == null -> INVALID_STEAM_ID_MESSAGE
-                accountName.isEmpty() -> "Please enter an account name."
-                accountName.length > MAX_ACCOUNT_NAME_LENGTH ->
+                steamId.isEmpty() -> {
+                    "Please enter the Steam account ID."
+                }
+
+                steamId64 == null -> {
+                    INVALID_STEAM_ID_MESSAGE
+                }
+
+                accountName.isEmpty() -> {
+                    "Please enter an account name."
+                }
+
+                accountName.length > MAX_ACCOUNT_NAME_LENGTH -> {
                     "The account name can be at most $MAX_ACCOUNT_NAME_LENGTH characters long."
-                else -> null
+                }
+
+                else -> {
+                    null
+                }
             }
         if (validationError != null) {
             return ResponseEntity.badRequest().body(validationError)
