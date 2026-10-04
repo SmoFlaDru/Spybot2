@@ -11,6 +11,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="csrf-token" content="${if (csrf != null) csrf.token else ""}">
+    <meta name="htmx-config" content='{"noSwap": [204, 304, "4xx", "5xx"]}'>
     <meta name="description" content="">
     <meta name="author" content="">
     <meta charset="utf-8">
@@ -25,7 +26,7 @@
     <script src="/view-transitions.js${assetVersion}"></script>
     <script src="/main.js${assetVersion}" defer></script>
 </head>
-<body hx-headers='{"X-XSRF-TOKEN": "${if (csrf != null) csrf.token else ""}"}'>
+<body hx-headers:inherited='{"X-XSRF-TOKEN": "${if (csrf != null) csrf.token else ""}"}'>
 <script src="/theme.js${assetVersion}"></script>
 <div class="page">
     <div class="sticky-top">
@@ -221,7 +222,7 @@
     </div>
 </div>
 <div id="modal" class="modal modal-blur fade">
-    <div id="dialog" class="modal-dialog modal-lg modal-dialog-centered" role="document" hx-target="this"></div>
+    <div id="dialog" class="modal-dialog modal-lg modal-dialog-centered" role="document" hx-target:inherited="this"></div>
 </div>
 </body>
 </html>

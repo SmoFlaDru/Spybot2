@@ -18,8 +18,6 @@ import "@tabler/core/dist/css/tabler-vendors.min.css"
 import "@tabler/core/dist/css/tabler-themes.min.css"
 import './modal'
 
-// htmx 2 no longer assigns itself to window; the templates' inline scripts (htmx.trigger(...))
-// and htmx's own hx-* processing of swapped-in content expect the global.
 window.htmx = htmx;
 // Same for ApexCharts: the templates build charts with `new ApexCharts(...)` inline.
 window.ApexCharts = ApexCharts;
