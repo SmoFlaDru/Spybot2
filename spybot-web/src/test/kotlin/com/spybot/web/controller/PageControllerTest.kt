@@ -247,7 +247,7 @@ class PageControllerTest {
 
         assertTrue(html.contains("#abc1234"), "an untagged entry leads with the hash, prefixed with #")
         assertTrue(html.contains("#def5678"), "a tagged entry still shows its hash, prefixed with #")
-        assertTrue(html.contains("Built on 2026-10-09"), "the build date is shown")
+        assertTrue(html.contains("""Built <relative-time datetime="2026-10-09T12:34:56Z">"""), "the build time is shown as a relative time")
         assertTrue(html.contains("from branch <code>fix/example</code>"), "the branch is shown")
     }
 }

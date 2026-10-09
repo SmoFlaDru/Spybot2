@@ -9,7 +9,7 @@
                 </div>
                 @if(chrome.buildTime != null || chrome.branch != null)
                     <div class="card-body py-2 border-bottom text-secondary small" id="build-info">
-                        @if(chrome.buildTime != null)Built on ${chrome.buildTime.toString().substring(0, 10)}@endif@if(chrome.buildTime != null && chrome.branch != null) @endif@if(chrome.branch != null)from branch <code>${chrome.branch}</code>@endif
+                        @if(chrome.buildTime != null)Built <relative-time datetime="${chrome.buildTime.toString()}">${chrome.buildTime.toString()}</relative-time>@endif@if(chrome.buildTime != null && chrome.branch != null) @endif@if(chrome.branch != null)from branch <code>${chrome.branch}</code>@endif
                     </div>
                 @endif
                 <div class="list-group list-group-flush">
