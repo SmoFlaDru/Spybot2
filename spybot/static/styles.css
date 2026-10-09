@@ -15,6 +15,22 @@
     height: calc(50% - var(--tblr-gutter-y))
 }
 
+/* Give the chart plot more room on phones: tighter card header and bottom padding */
+@media (max-width: 768px) {
+    .chart-card .card-header {
+        min-height: 2.75rem;
+    }
+
+    .chart-card .card-header .card-title {
+        margin-top: 0.25rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+
+    .chart-card .card-body {
+        padding-bottom: 0.25rem;
+    }
+}
+
 .apexcharts-canvas > svg {
     background-color: transparent !important;
 }
