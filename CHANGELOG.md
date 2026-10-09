@@ -8,6 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
+- The changelog page now shows commit hashes with a leading # that lights up when hovered, and a line at the top saying how long ago the running build was made and from which git branch
 - Added scripts/docker-build.sh so the Docker images also build from a git worktree (the Dockerfile now takes its git metadata from a named "gitdir" build context that defaults to the repository's .git)
 - The home page's recent activity chart now picks its day labels from the width each bar actually gets (a date under every bar, weekday initial over day number on phones, or thinned dates), re-rendering when the chart resizes, and the chart cards are tighter on phones, with the dead space under the time of day histogram removed
 - Linking a Steam account now explains problems in the dialog (a malformed Steam ID, a missing or too long account name, Steam being unreachable) instead of showing a raw server error page, and a 20-digit ID no longer crashes the request
