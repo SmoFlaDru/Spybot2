@@ -12,6 +12,10 @@ continuation lines):
 - <notable change>
 ```
 
+## v3.0.0-beta.2 - 2026-10-09 (99274f2)
+- Fixed the Recent activity chart's day labels: they now sit centered under each bar and adapt to the available width (weekday and day, stacked initial over day on phones, or thinned dates for long spans)
+- Tightened the chart cards on phones and removed dead space under the time-of-day histogram
+
 ## v3.0.0-beta.1 - 2026-08-27 (72c2bf1)
 - Rewrote Spybot on Spring Boot + Kotlin (spybot-core, spybot-web, spybot-recorder), alongside the existing Django app
 - Added the admin interface (dashboard, merged users, TS users, news events, merge users)
