@@ -33,6 +33,8 @@ docker compose build
 docker compose up -d
 ```
 
+From a git worktree, use `scripts/docker-build.sh` in place of `docker compose build` (the web image reads git metadata at build time, and a worktree's `.git` is only a pointer file).
+
 ## Code style
 
 Kotlin is formatted with ktlint through pre-commit; the check runs on every pull request.

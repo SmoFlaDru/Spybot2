@@ -63,6 +63,8 @@ Use Spring MVC + JTE for server-rendered pages. Keep the existing Tabler, HTMX, 
   docker compose up -d
   ```
 
+- In a git worktree, build with `scripts/docker-build.sh spybot-web` instead of `docker compose build spybot-web`: a worktree's `.git` is only a pointer file, so the plain build cannot read the git metadata the web image needs. Everywhere else the two are equivalent.
+
 ## Testing expectations
 
 - Add service tests for domain and query behavior, especially transactions that reassign user-linked data.

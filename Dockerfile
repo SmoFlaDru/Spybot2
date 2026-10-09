@@ -1,5 +1,12 @@
 # syntax=docker/dockerfile:1.7
 
+# The repository's git metadata. A normal checkout has a .git directory, copied here as-is. In a
+# git worktree .git is only a pointer file to a directory outside the build context, so
+# scripts/docker-build.sh passes a real one as the named build context "gitdir", which replaces
+# this stage (docker build --build-context gitdir=<a .git directory>).
+FROM scratch AS gitdir
+COPY .git /
+
 FROM node:24-bookworm AS frontend-build
 
 WORKDIR /workspace/frontend
@@ -37,9 +44,10 @@ COPY spybot-core ./spybot-core
 COPY spybot-web ./spybot-web
 COPY --from=frontend-build /workspace/frontend/output ./frontend/output
 
-# Bind-mount .git (read-only, not COPY'd) so the git-properties Gradle plugin can read the real
-# commit; it changes every commit, so COPY-ing it would bust the dependency-priming layer cache.
-RUN --mount=type=bind,source=.git,target=.git,readonly \
+# Bind-mount the gitdir stage (read-only, not COPY'd into the build stage) so the git-properties
+# Gradle plugin and the changelog grouping can read the real history; it changes every commit, so
+# COPY-ing it would bust the dependency-priming layer cache.
+RUN --mount=type=bind,from=gitdir,source=/,target=.git,readonly \
     ./gradlew --no-daemon --max-workers=1 -Dkotlin.compiler.execution.strategy=in-process -Dkotlin.incremental=false :spybot-web:bootJar
 
 FROM eclipse-temurin:25-jre
