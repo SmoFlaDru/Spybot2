@@ -9,7 +9,7 @@
                     @template.fragments.ActivityFragment(activityChart = home.activityChart)
                 </div>
                 <div class="col-md-12 col-height-50">
-                    <div class="card h-100">
+                    <div class="card chart-card h-100">
                         <div class="card-header">
                             <h3 class="card-title my-2">Time of day histogram</h3>
                         </div>
@@ -91,11 +91,6 @@
                                     // the hour formatter gets fractions.
                                     tickAmount: 12,
                                     labels: {formatter: x => (x <= 12 ? x : x-12) + (x < 12 ? 'am' : 'pm')},
-                                    title: {
-                                        text: "Hours",
-                                        offsetY: 68,
-                                        style: {fontWeight: 500},
-                                    },
                                     axisBorder: {
                                         show: false
                                     }

@@ -8,6 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
+- The home page's recent activity chart now picks its day labels from the width each bar actually gets (a date under every bar, weekday initial over day number on phones, or thinned dates), re-rendering when the chart resizes, and the chart cards are tighter on phones, with the dead space under the time of day histogram removed
 - Linking a Steam account now explains problems in the dialog (a malformed Steam ID, a missing or too long account name, Steam being unreachable) instead of showing a raw server error page, and a 20-digit ID no longer crashes the request
 - The home page's recent activity chart labels every day on the 7-day view and about ten evenly spaced days on longer ranges (with a tick under every bar), and shows days without activity as empty bars
 - Upgraded htmx from 2 to 4 (requests now use fetch, attribute inheritance is explicit, events are renamed), updating the modal, Steam ID, passkey and activity-chart interactions to match
