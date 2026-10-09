@@ -1,5 +1,5 @@
 @param activityChart: com.spybot.core.model.ActivityChartView
-<div class="card h-100" id="activity_fragment">
+<div class="card chart-card h-100" id="activity_fragment">
     <div class="card-header d-flex justify-content-between">
         <h3 class="card-title my-2">Recent activity</h3>
         <div class="lh-1">
@@ -18,16 +18,29 @@
         <div id="chart-mentions" class="h-100"></div>
     </div>
     <script>
+        var activityApex = null
         var renderActivityChart = () => {
             const days = [
                 @for(entry in activityChart.points) new Date('$unsafe{entry.date.toString()}T00:00:00Z'), @endfor
             ]
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
             const labels = days.map(d => String(d.getUTCDate()).padStart(2, '0') + ' ' + monthNames[d.getUTCMonth()])
-            // About 10 labels at most: every day on the 7-day view, every nth day on longer ranges,
-            // counted back from the latest day so that one is always labelled.
-            const labelStep = Math.ceil(days.length / 10)
-            window.ApexCharts && (new ApexCharts(document.getElementById('chart-mentions'), {
+            const el = document.getElementById('chart-mentions')
+            if (!el) return
+            // The label style follows the pixels available per bar (not the viewport), so it also
+            // works in a narrow grid column on a wide screen:
+            //  - dated: "02 Oct" under every bar
+            //  - stacked: weekday initial over the day number, for phones
+            //  - thinned: about one "02 Oct" per 60px, counted back from the latest day so that
+            //    one is always labelled
+            const slot = (el.clientWidth - 60) / days.length
+            const labelMode = slot >= 48 ? 'dated' : slot >= 24 ? 'stacked' : 'thinned'
+            const labelStep = labelMode === 'thinned'
+                ? Math.ceil(days.length / Math.max(2, Math.floor((el.clientWidth - 60) / 60)))
+                : 1
+            if (activityApex && activityApex.modeKey === labelMode + ':' + labelStep) return
+            if (activityApex) activityApex.destroy()
+            activityApex = window.ApexCharts && (new ApexCharts(el, {
                 chart: {
                     height: "100%",
                     type: "bar",
@@ -103,11 +116,17 @@
                     labels: {
                         padding: 0,
                         rotate: 0,
-                        formatter: (value) => (days.length - 1 - labels.indexOf(value)) % labelStep === 0 ? value : '',
+                        formatter: (value) => {
+                            const index = labels.indexOf(value)
+                            if ((days.length - 1 - index) % labelStep !== 0) return ''
+                            if (labelMode !== 'stacked') return value
+                            const weekday = days[index].toLocaleDateString(undefined, {weekday: 'narrow', timeZone: 'UTC'})
+                            return [weekday, String(days[index].getUTCDate())]
+                        },
                     },
-                    // A tick under every bar, so the days without a label can still be told apart.
+                    // Ticks sit between bars, so they only help when some bars go unlabelled.
                     axisTicks: {
-                        show: true,
+                        show: labelMode === 'thinned',
                     },
                     tooltip: {
                         enabled: false
@@ -137,17 +156,36 @@
                 legend: {
                     show: false,
                 },
-            })).render();
+            }))
+            if (activityApex) {
+                activityApex.modeKey = labelMode + ':' + labelStep
+                activityApex.render()
+            }
+        }
+
+        // Re-render when the chart's container changes width, since the label style depends on it.
+        var watchActivityChartSize = () => {
+            const el = document.getElementById('chart-mentions')
+            if (!el || !window.ResizeObserver) return
+            let timer = null
+            const observer = new ResizeObserver(() => {
+                clearTimeout(timer)
+                timer = setTimeout(() => {
+                    if (!el.isConnected) return observer.disconnect()
+                    renderActivityChart()
+                }, 150)
+            })
+            observer.observe(el)
         }
 
         if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", renderActivityChart);
+            document.addEventListener("DOMContentLoaded", () => { renderActivityChart(); watchActivityChartSize() });
         } else {
             // Swapped in by htmx (hx-swap="outerHTML"): this script runs after the new card is
             // inserted but before the old one is removed, so rendering now would size the 100%
             // height chart against a column that momentarily holds both cards - and the chart
             // would grow with every timespan change. Defer past the swap so the old card is gone.
-            setTimeout(renderActivityChart, 0);
+            setTimeout(() => { renderActivityChart(); watchActivityChartSize() }, 0);
         }
     </script>
 </div>
