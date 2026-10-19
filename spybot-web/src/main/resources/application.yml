@@ -37,12 +37,6 @@ sentry:
     minimum-breadcrumb-level: info
     minimum-event-level: error
 
-logging:
-  level:
-    org:
-      springframework:
-        security: TRACE
-
 server:
   port: ${PORT:8000}
 
