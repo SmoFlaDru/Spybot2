@@ -11,7 +11,7 @@ Spybot is a Spring Boot + Kotlin application in `spybot-core/`, `spybot-web/`, a
 - `spybot-recorder`: dedicated TeamSpeak event-recorder process.
 - `frontend/`: Rollup bundle entry points. `main.js` and `main.css` are the canonical browser bundle URLs.
 - `spybot-web/src/main/resources/static/`: static assets (icons, `styles.css`, `theme.js`, Tabler sprite) served by Spring.
-- `infrastructure/`: Caddy and Compose infrastructure configuration.
+- `infrastructure/`: production Compose file deployed by Dokploy.
 
 Use Spring MVC + JTE for server-rendered pages. Keep the existing Tabler, HTMX, ApexCharts, and browser-side behavior unless the task requires a change. Avoid adding JPA/Hibernate; persistence belongs in jOOQ services.
 
@@ -50,9 +50,9 @@ Use Spring MVC + JTE for server-rendered pages. Keep the existing Tabler, HTMX, 
 
 ## Docker and local development
 
-- Production Compose is `docker-compose.yml`; local-only overrides belong in `docker-compose.override.yml`.
+- Production runs on Dokploy from `infrastructure/docker-compose.dokploy.yml` (pushed by the deploy workflow). `docker-compose.local.yml` is the local-only stack; put `COMPOSE_FILE=docker-compose.local.yml` in your git-ignored `.env` so plain `docker compose ...` uses it.
 - Docker builds frontend assets in a Node stage and packages the Spring boot JAR in a Java stage. Keep the Dockerfile's dependency-layer split and BuildKit cache mounts intact.
-- The local Compose override persists buildx cache under `.buildx-cache/`, which is ignored by Git and excluded from build context.
+- The local Compose file persists buildx cache under `.buildx-cache/`, which is ignored by Git and excluded from build context.
 - Typical verification commands:
 
   ```sh

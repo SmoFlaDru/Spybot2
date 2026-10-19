@@ -5,4 +5,4 @@ frontend/output
 .gradle
 .buildx-cache
 **/build
-docker-compose.override.yml
+docker-compose.local.yml
