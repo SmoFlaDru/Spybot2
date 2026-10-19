@@ -8,6 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
+- Production logs are no longer flooded with Spring Security TRACE output (about a thousand lines a minute): the web app now logs at INFO and above, and the production containers' Docker logs are capped at 3 files of 10 MB each so they can no longer fill the disk
 - The changelog page now shows commit hashes with a leading # that lights up when hovered, and a line at the top saying how long ago the running build was made and from which git branch
 - Added scripts/docker-build.sh so the Docker images also build from a git worktree (the Dockerfile now takes its git metadata from a named "gitdir" build context that defaults to the repository's .git)
 - Production now deploys through Dokploy: the deploy workflows call the Dokploy API instead of copying files over SSH with a password, the production stack lives in infrastructure/docker-compose.dokploy.yml (no local Caddy, no published ports), and the local docker-compose.yml and override are replaced by a single docker-compose.local.yml selected with COMPOSE_FILE in your .env
