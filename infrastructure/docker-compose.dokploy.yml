@@ -66,6 +66,10 @@ services:
         condition: service_healthy
     secrets:
       - db_password
+    networks:
+      - default
+      # Shared with the TeamSpeak service (managed separately in Dokploy): set TS_IP=teamspeak.
+      - ts-net
   db:
     image: postgres:17.2
     restart: always
@@ -80,6 +84,8 @@ services:
       - db_password
 networks:
   dokploy-network:
+    external: true
+  ts-net:
     external: true
 volumes:
   spybot_pg_data:
