@@ -1,18 +1,33 @@
+# Local development stack: builds spybot-web and spybot-recorder from this checkout.
+# Production is deployed by Dokploy from infrastructure/docker-compose.dokploy.yml.
+#
+# Select this file with `COMPOSE_FILE=docker-compose.local.yml` in your (git-ignored) .env, then use
+# plain `docker compose build` / `docker compose up -d`. Needs secrets/db_password.txt.
 services:
   spybot-web:
-    image: ghcr.io/smofladru/spybot2-web:${SPYBOT_IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      cache_from:
+        - type=local,src=.buildx-cache/spybot-web
+      cache_to:
+        - type=local,dest=.buildx-cache/spybot-web,mode=max
     init: true
     restart: unless-stopped
     env_file:
       - .env
     environment:
       DB_PASSWORD_FILE: /run/secrets/db_password
+      SPRING_PROFILES_ACTIVE: ""
+      #SPRING_PROFILES_ACTIVE: localdev
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     depends_on:
       - db
     secrets:
       - db_password
+    volumes:
+      - $PWD:/workspace
     # Flyway runs as part of spybot-web's own startup (before it starts accepting requests), so a
     # passing healthcheck means migrations have already completed successfully. spybot-recorder
     # depends on this (condition: service_healthy below) so it never queries a column a pending
@@ -29,7 +44,13 @@ services:
       retries: 20
       start_period: 15s
   spybot-recorder:
-    image: ghcr.io/smofladru/spybot2-recorder:${SPYBOT_IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: spybot-recorder/Dockerfile
+      cache_from:
+        - type=local,src=.buildx-cache/spybot-recorder
+      cache_to:
+        - type=local,dest=.buildx-cache/spybot-recorder,mode=max
     init: true
     restart: unless-stopped
     env_file:
@@ -43,17 +64,6 @@ services:
         condition: service_healthy
     secrets:
       - db_password
-  caddy:
-    image: 'caddy:2.8-alpine'
-    restart: unless-stopped
-    cap_add:
-      - NET_ADMIN
-    ports:
-      - "20001:20001"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
   db:
     image: postgres:17.2
     restart: always
@@ -66,8 +76,6 @@ services:
     ports:
       - "127.0.0.1:5432:5432"
 volumes:
-  caddy_data:
-  caddy_config:
   spybot_pg_data:
 secrets:
   db_password:

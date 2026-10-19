@@ -26,7 +26,7 @@ Then use Gradle for everything else:
 ./gradlew :spybot-web:bootJar
 ```
 
-Or run the whole stack locally with Docker:
+Or run the whole stack locally with Docker (add `COMPOSE_FILE=docker-compose.local.yml` to your git-ignored `.env` first):
 
 ```sh
 docker compose build
