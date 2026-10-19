@@ -78,38 +78,32 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}
   deploy:
-    name: Deploy to Server
+    name: Deploy to Dokploy
     needs: build-push
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: upload infrastructure files
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_SECONDARY_HOST }}
-          username: ${{ secrets.SSH_SECONDARY_USERNAME }}
-          password: ${{ secrets.SSH_SECONDARY_PASSWORD }}
-          port: ${{ secrets.SSH_SECONDARY_PORT }}
-          source: infrastructure/*
-          target: spybot
-          strip_components: 1
-      - name: execute remote ssh commands
-        uses: appleboy/ssh-action@master
+      # Pins the deploy to the exact images just built (sha-<commit>), rather than :latest, so a
+      # concurrent push starting a new build elsewhere can't race this deploy onto a half-built
+      # or unintended version. Dokploy stores the compose file and the environment as a whole, so
+      # both are sent in full on every deploy: this repo (compose file) and the ENV_FILE secret
+      # (environment) stay the source of truth.
+      - name: Update compose file + image tag, then deploy
         env:
-          SECRET: ${{ secrets.ENV_FILE }}
+          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+          DOKPLOY_COMPOSE_ID: ${{ secrets.DOKPLOY_COMPOSE_ID }}
+          ENV_FILE: ${{ secrets.ENV_FILE }}
           COMMIT_SHA: ${{ github.sha }}
-        with:
-          host: ${{ secrets.SSH_SECONDARY_HOST }}
-          username: ${{ secrets.SSH_SECONDARY_USERNAME }}
-          password: ${{ secrets.SSH_SECONDARY_PASSWORD }}
-          port: ${{ secrets.SSH_SECONDARY_PORT }}
-          envs: SECRET,COMMIT_SHA
-          # Pin the deploy to the exact images just built (sha-<commit>), rather than :latest, so a
-          # concurrent push starting a new build elsewhere can't race this deploy onto a half-built
-          # or unintended version.
-          script: |
-            cd spybot
-            echo "$SECRET" > .env
-            echo "SPYBOT_IMAGE_TAG=sha-${COMMIT_SHA}" >> .env
-            docker compose -f docker-compose.yml pull
-            docker compose -f docker-compose.yml up -d --remove-orphans
+        run: |
+          set -euo pipefail
+          env_payload="$(printf '%s\nSPYBOT_IMAGE_TAG=sha-%s\n' "$ENV_FILE" "$COMMIT_SHA")"
+          jq -n --arg id "$DOKPLOY_COMPOSE_ID" --arg env "$env_payload" \
+                --rawfile compose infrastructure/docker-compose.dokploy.yml \
+                '{composeId: $id, env: $env, composeFile: $compose}' \
+            | curl -fsS -X POST "$DOKPLOY_URL/api/compose.update" \
+                -H "x-api-key: $DOKPLOY_API_KEY" -H "content-type: application/json" --data @-
+          jq -n --arg id "$DOKPLOY_COMPOSE_ID" --arg title "Deploy ${COMMIT_SHA::7}" \
+                '{composeId: $id, title: $title}' \
+            | curl -fsS -X POST "$DOKPLOY_URL/api/compose.deploy" \
+                -H "x-api-key: $DOKPLOY_API_KEY" -H "content-type: application/json" --data @-

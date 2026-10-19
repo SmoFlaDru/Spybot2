@@ -1,4 +1,4 @@
-name: Deploy to server via docker image
+name: Deploy via Dokploy manually
 
 on:
 #  push:
@@ -6,34 +6,26 @@ on:
   workflow_dispatch:
 jobs:
   deploy:
-    name: Deploy to Server manually
+    name: Deploy to Dokploy manually
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: upload infrastructure files
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_SECONDARY_HOST }}
-          username: ${{ secrets.SSH_SECONDARY_USERNAME }}
-          password: ${{ secrets.SSH_SECONDARY_PASSWORD }}
-          port: ${{ secrets.SSH_SECONDARY_PORT }}
-          source: infrastructure/*
-          target: spybot
-          strip_components: 1
-      - name: execute remote ssh commands
-        uses: appleboy/ssh-action@master
+      # No specific build to pin to here (unlike the automated workflow, which pins to the
+      # commit it just built) - re-pulls whatever :latest currently points at.
+      - name: Update compose file + environment, then deploy
         env:
-          SECRET: ${{ secrets.ENV_FILE }}
-        with:
-          host: ${{ secrets.SSH_SECONDARY_HOST }}
-          username: ${{ secrets.SSH_SECONDARY_USERNAME }}
-          password: ${{ secrets.SSH_SECONDARY_PASSWORD }}
-          port: ${{ secrets.SSH_SECONDARY_PORT }}
-          envs: SECRET
-          # No specific build to pin to here (unlike the automated workflow, which pins to the
-          # commit it just built) - re-pulls whatever :latest currently points at.
-          script: |
-            cd spybot
-            echo "$SECRET" > .env
-            docker compose -f docker-compose.yml pull
-            docker compose -f docker-compose.yml up -d --remove-orphans
+          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+          DOKPLOY_COMPOSE_ID: ${{ secrets.DOKPLOY_COMPOSE_ID }}
+          ENV_FILE: ${{ secrets.ENV_FILE }}
+        run: |
+          set -euo pipefail
+          jq -n --arg id "$DOKPLOY_COMPOSE_ID" --arg env "$ENV_FILE" \
+                --rawfile compose infrastructure/docker-compose.dokploy.yml \
+                '{composeId: $id, env: $env, composeFile: $compose}' \
+            | curl -fsS -X POST "$DOKPLOY_URL/api/compose.update" \
+                -H "x-api-key: $DOKPLOY_API_KEY" -H "content-type: application/json" --data @-
+          jq -n --arg id "$DOKPLOY_COMPOSE_ID" --arg title "Manual deploy" \
+                '{composeId: $id, title: $title}' \
+            | curl -fsS -X POST "$DOKPLOY_URL/api/compose.deploy" \
+                -H "x-api-key: $DOKPLOY_API_KEY" -H "content-type: application/json" --data @-
