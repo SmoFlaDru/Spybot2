@@ -81,6 +81,8 @@ jobs:
     name: Deploy to Dokploy
     needs: build-push
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       # Pins the deploy to the exact images just built (sha-<commit>), rather than :latest, so a
