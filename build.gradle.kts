@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.plugin.getKotlinPluginVersion
 
 plugins {
     kotlin("jvm") version "2.4.21" apply false
-    kotlin("plugin.spring") version "2.4.20" apply false
+    kotlin("plugin.spring") version "2.4.21" apply false
     id("org.springframework.boot") version "4.1.2" apply false
     id("io.spring.dependency-management") version "1.1.7" apply false
     id("nu.studer.jooq") version "10.2.1" apply false
