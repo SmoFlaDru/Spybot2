@@ -9,8 +9,7 @@
           </option>
           <option name="configurationFiles">
             <list>
-              <option value="$PROJECT_DIR$/docker-compose.yml" />
-              <option value="$PROJECT_DIR$/docker-compose.override.yml" />
+              <option value="$PROJECT_DIR$/docker-compose.local.yml" />
             </list>
           </option>
           <option name="serviceName" value="spybot-web" />

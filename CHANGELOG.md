@@ -8,8 +8,12 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
+- The web image now ships curl so the Compose healthcheck is a plain `curl -f` against the actuator health endpoint instead of a hand-written HTTP request over bash's /dev/tcp
+- The production recorder now joins a shared ts-net Docker network and can reach TeamSpeak by name (set TS_IP=teamspeak) instead of through the host's old bridge address 172.18.0.1
+- Production logs are no longer flooded with Spring Security TRACE output (about a thousand lines a minute): the web app now logs at INFO and above, and the production containers' Docker logs are capped at 3 files of 10 MB each so they can no longer fill the disk
 - The changelog page now shows commit hashes with a leading # that lights up when hovered, and a line at the top saying how long ago the running build was made and from which git branch
 - Added scripts/docker-build.sh so the Docker images also build from a git worktree (the Dockerfile now takes its git metadata from a named "gitdir" build context that defaults to the repository's .git)
+- Production now deploys through Dokploy: the deploy workflows call the Dokploy API instead of copying files over SSH with a password, the production stack lives in infrastructure/docker-compose.dokploy.yml (no local Caddy, no published ports), and the local docker-compose.yml and override are replaced by a single docker-compose.local.yml selected with COMPOSE_FILE in your .env
 - The home page's recent activity chart now picks its day labels from the width each bar actually gets (a date under every bar, weekday initial over day number on phones, or thinned dates), re-rendering when the chart resizes, and the chart cards are tighter on phones, with the dead space under the time of day histogram removed
 - Linking a Steam account now explains problems in the dialog (a malformed Steam ID, a missing or too long account name, Steam being unreachable) instead of showing a raw server error page, and a 20-digit ID no longer crashes the request
 - The home page's recent activity chart labels every day on the 7-day view and about ten evenly spaced days on longer ranges (with a tick under every bar), and shows days without activity as empty bars

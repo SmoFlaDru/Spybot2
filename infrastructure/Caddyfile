@@ -1,9 +1,0 @@
-{
-	auto_https off
-}
-:20001 {
-    bind 0.0.0.0
-    handle {
-        reverse_proxy spybot-web:8000
-    }
-}
