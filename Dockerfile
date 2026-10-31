@@ -52,6 +52,11 @@ RUN --mount=type=bind,from=gitdir,source=/,target=.git,readonly \
 
 FROM eclipse-temurin:25-jre
 
+# curl is what the Compose healthcheck uses to ask the actuator health endpoint whether the app is up.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY --from=build /workspace/spybot-web/build/libs/app.jar app.jar
 COPY --from=build /workspace/spybot-web/build/sentry-agent/sentry-opentelemetry-agent.jar sentry-opentelemetry-agent.jar
