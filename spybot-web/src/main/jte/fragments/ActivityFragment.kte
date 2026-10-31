@@ -152,7 +152,7 @@
                     }
                 },
                 labels: labels,
-                colors: [tabler.tabler.getColor("primary"), tabler.tabler.getColor("red", 0.8), tabler.tabler.getColor("green", 0.8)],
+                colors: [chartColor("primary"), chartColor("red", 0.8), chartColor("green", 0.8)],
                 legend: {
                     show: false,
                 },

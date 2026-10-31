@@ -198,7 +198,7 @@
             const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 
             const heatmapOptions = () => {
-                const rawMonthData = [${page.months.joinToString(", ") { "{ year: ${it.year}, month: ${it.month}, activity: ${it.activity} }" }}]
+                const rawMonthData = [$unsafe{page.months.joinToString(", ") { "{ year: ${it.year}, month: ${it.month}, activity: ${it.activity} }" }}]
                 const transformedMonthData = rawMonthData.reduce((acc, { year, month, activity }) => {
                     if (!acc[year]) {
                         acc[year] = [];
