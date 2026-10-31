@@ -20,6 +20,7 @@ data class PageChrome(
     val csrf: CsrfToken?,
     val commitHash: String? = null,
     val buildTime: Instant? = null,
+    val branch: String? = null,
 )
 
 @Component
@@ -37,5 +38,6 @@ class PageChromeFactory(
             csrf = request.csrfToken(),
             commitHash = gitProperties?.shortCommitId,
             buildTime = buildProperties?.time,
+            branch = gitProperties?.branch,
         )
 }

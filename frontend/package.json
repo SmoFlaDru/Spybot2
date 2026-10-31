@@ -12,8 +12,8 @@
     "@github/relative-time-element": "^5.3.1",
     "@simplewebauthn/browser": "^14.0.0",
     "@tabler/core": "^1.5.1",
-    "apexcharts": "^3.36.3",
-    "htmx.org": "^2.0.10"
+    "apexcharts": "^7.6.0",
+    "htmx.org": "^4.0.0"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^16.0.3",

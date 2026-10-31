@@ -24,6 +24,7 @@ import com.spybot.core.service.StatisticsQueries
 import com.spybot.core.service.SteamIdQueries
 import com.spybot.web.filter.VisitorIdFilter
 import com.spybot.web.jte.PageChromeFactory
+import com.spybot.web.service.ChangelogEntry
 import com.spybot.web.service.ChangelogService
 import com.spybot.web.service.RecordsService
 import com.spybot.web.service.SpybotPageService
@@ -35,8 +36,11 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import org.springframework.boot.info.BuildProperties
+import org.springframework.boot.info.GitProperties
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
+import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
@@ -203,5 +207,47 @@ class PageControllerTest {
 
         assertTrue("Records are being computed" in html, html.take(300))
         assertTrue("Current streaks" !in html)
+    }
+
+    @Test
+    fun `changelog shows hashes with a leading hash symbol and the build date and branch`() {
+        val changelogService = Mockito.mock(ChangelogService::class.java)
+        Mockito.`when`(changelogService.entries()).thenReturn(
+            listOf(
+                ChangelogEntry(
+                    commit = "abc1234",
+                    committedAt = Instant.parse("2026-10-08T10:00:00Z"),
+                    tags = emptyList(),
+                    bullets = listOf("Untagged change"),
+                ),
+                ChangelogEntry(
+                    commit = "def5678",
+                    committedAt = Instant.parse("2026-10-01T10:00:00Z"),
+                    tags = listOf("v3.0.0"),
+                    bullets = listOf("Tagged change"),
+                ),
+            ),
+        )
+        val gitProperties = GitProperties(java.util.Properties().apply { setProperty("branch", "fix/example") })
+        val buildProperties = BuildProperties(java.util.Properties().apply { setProperty("time", "2026-10-09T12:34:56Z") })
+        val changelogController =
+            PageController(
+                pageService,
+                passkeyQueries,
+                statisticsQueries,
+                steamIdQueries,
+                changelogService,
+                nameGenService,
+                likedNameService,
+                recordsService,
+                PageChromeFactory(pageService, gitProperties, buildProperties),
+            )
+
+        val html = render { request, response -> changelogController.changelog(null, request, response) }
+
+        assertTrue(html.contains("#abc1234"), "an untagged entry leads with the hash, prefixed with #")
+        assertTrue(html.contains("#def5678"), "a tagged entry still shows its hash, prefixed with #")
+        assertTrue(html.contains("""Built <relative-time datetime="2026-10-09T12:34:56Z">"""), "the build time is shown as a relative time")
+        assertTrue(html.contains("from branch <code>fix/example</code>"), "the branch is shown")
     }
 }

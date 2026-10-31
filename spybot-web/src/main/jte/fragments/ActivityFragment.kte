@@ -1,9 +1,9 @@
 @param activityChart: com.spybot.core.model.ActivityChartView
-<div class="card h-100" id="activity_fragment">
+<div class="card chart-card h-100" id="activity_fragment">
     <div class="card-header d-flex justify-content-between">
         <h3 class="card-title my-2">Recent activity</h3>
         <div class="lh-1">
-            <div class="dropdown" hx-target="#activity_fragment" hx-swap="outerHTML">
+            <div class="dropdown" hx-target:inherited="#activity_fragment" hx-swap:inherited="outerHTML">
                 <a class="dropdown-toggle text-secondary" href="#" data-bs-toggle="dropdown" aria-haspopup="true"
                    aria-expanded="false">${activityChart.activeOptionText}</a>
                 <div class="dropdown-menu dropdown-zx-end dropdown-menu-arrow" style="">
@@ -18,8 +18,29 @@
         <div id="chart-mentions" class="h-100"></div>
     </div>
     <script>
+        var activityApex = null
         var renderActivityChart = () => {
-            window.ApexCharts && (new ApexCharts(document.getElementById('chart-mentions'), {
+            const days = [
+                @for(entry in activityChart.points) new Date('$unsafe{entry.date.toString()}T00:00:00Z'), @endfor
+            ]
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            const labels = days.map(d => String(d.getUTCDate()).padStart(2, '0') + ' ' + monthNames[d.getUTCMonth()])
+            const el = document.getElementById('chart-mentions')
+            if (!el) return
+            // The label style follows the pixels available per bar (not the viewport), so it also
+            // works in a narrow grid column on a wide screen:
+            //  - dated: "02 Oct" under every bar
+            //  - stacked: weekday initial over the day number, for phones
+            //  - thinned: about one "02 Oct" per 60px, counted back from the latest day so that
+            //    one is always labelled
+            const slot = (el.clientWidth - 60) / days.length
+            const labelMode = slot >= 48 ? 'dated' : slot >= 24 ? 'stacked' : 'thinned'
+            const labelStep = labelMode === 'thinned'
+                ? Math.ceil(days.length / Math.max(2, Math.floor((el.clientWidth - 60) / 60)))
+                : 1
+            if (activityApex && activityApex.modeKey === labelMode + ':' + labelStep) return
+            if (activityApex) activityApex.destroy()
+            activityApex = window.ApexCharts && (new ApexCharts(el, {
                 chart: {
                     height: "100%",
                     type: "bar",
@@ -67,7 +88,11 @@
                 tooltip: {
                     theme: 'dark',
                     x: {
-                        format: 'dd MMMM',
+                        formatter: (value, {dataPointIndex}) => days[dataPointIndex].toLocaleDateString('en-GB', {
+                            day: '2-digit',
+                            month: 'long',
+                            timeZone: 'UTC',
+                        }),
                     },
                     shared: true,
                     intersect: false,
@@ -90,9 +115,18 @@
                 xaxis: {
                     labels: {
                         padding: 0,
-                        datetimeFormatter: {
-                            day: 'dd.',
+                        rotate: 0,
+                        formatter: (value) => {
+                            const index = labels.indexOf(value)
+                            if ((days.length - 1 - index) % labelStep !== 0) return ''
+                            if (labelMode !== 'stacked') return value
+                            const weekday = days[index].toLocaleDateString(undefined, {weekday: 'narrow', timeZone: 'UTC'})
+                            return [weekday, String(days[index].getUTCDate())]
                         },
+                    },
+                    // Ticks sit between bars, so they only help when some bars go unlabelled.
+                    axisTicks: {
+                        show: labelMode === 'thinned',
                     },
                     tooltip: {
                         enabled: false
@@ -100,7 +134,9 @@
                     axisBorder: {
                         show: false,
                     },
-                    type: 'datetime',
+                    // A category axis labels every bar. The series has an entry for every day of the
+                    // range (days without activity are zero), so nothing is misplaced in time.
+                    type: 'category',
                 },
                 yaxis: {
                     title: {
@@ -115,24 +151,41 @@
                         }
                     }
                 },
-                labels: [
-                    @for(entry in activityChart.points) '$unsafe{entry.date.toString()}', @endfor
-                ],
+                labels: labels,
                 colors: [tabler.tabler.getColor("primary"), tabler.tabler.getColor("red", 0.8), tabler.tabler.getColor("green", 0.8)],
                 legend: {
                     show: false,
                 },
-            })).render();
+            }))
+            if (activityApex) {
+                activityApex.modeKey = labelMode + ':' + labelStep
+                activityApex.render()
+            }
+        }
+
+        // Re-render when the chart's container changes width, since the label style depends on it.
+        var watchActivityChartSize = () => {
+            const el = document.getElementById('chart-mentions')
+            if (!el || !window.ResizeObserver) return
+            let timer = null
+            const observer = new ResizeObserver(() => {
+                clearTimeout(timer)
+                timer = setTimeout(() => {
+                    if (!el.isConnected) return observer.disconnect()
+                    renderActivityChart()
+                }, 150)
+            })
+            observer.observe(el)
         }
 
         if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", renderActivityChart);
+            document.addEventListener("DOMContentLoaded", () => { renderActivityChart(); watchActivityChartSize() });
         } else {
             // Swapped in by htmx (hx-swap="outerHTML"): this script runs after the new card is
             // inserted but before the old one is removed, so rendering now would size the 100%
             // height chart against a column that momentarily holds both cards - and the chart
             // would grow with every timespan change. Defer past the swap so the old card is gone.
-            setTimeout(renderActivityChart, 0);
+            setTimeout(() => { renderActivityChart(); watchActivityChartSize() }, 0);
         }
     </script>
 </div>

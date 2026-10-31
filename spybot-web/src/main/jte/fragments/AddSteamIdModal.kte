@@ -31,12 +31,12 @@
     (() => {
         const form = document.currentScript.previousElementSibling;
         const errorBox = form.querySelector("#add-steamid-error");
-        form.addEventListener("htmx:beforeRequest", () => {
+        form.addEventListener("htmx:before:request", () => {
             errorBox.classList.add("d-none");
             errorBox.textContent = "";
         });
-        form.addEventListener("htmx:responseError", (event) => {
-            errorBox.textContent = event.detail.xhr.responseText ||
+        form.addEventListener("htmx:response:error", (event) => {
+            errorBox.textContent = event.detail.ctx.text ||
                 "Could not verify this Steam ID. Please double check that it's correct.";
             errorBox.classList.remove("d-none");
         });

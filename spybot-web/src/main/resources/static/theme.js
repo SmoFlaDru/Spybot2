@@ -6,6 +6,20 @@
 
 const themeStorageKey = 'tablerTheme'
 
+// Header (navbar) background per theme. Browsers such as Safari tint their title/tab bar with the
+// theme-color meta tag, so keep it in sync with the theme instead of leaving the bar bright in dark mode.
+const browserThemeColors = {light: '#ffffff', dark: '#1e293b'}
+
+function setBrowserThemeColor(realTheme) {
+    let meta = document.querySelector('meta[name="theme-color"]')
+    if (!meta) {
+        meta = document.createElement('meta')
+        meta.name = 'theme-color'
+        document.head.appendChild(meta)
+    }
+    meta.content = browserThemeColors[realTheme]
+}
+
 function configureTheme(wantedTheme) {
     function readTheme(wantedTheme, urlParams, allowedValues) {
         if (allowedValues.has(wantedTheme)) {
@@ -39,6 +53,7 @@ function configureTheme(wantedTheme) {
         }
 
         document.body.setAttribute("data-spybot-theme", theme)
+        setBrowserThemeColor(realTheme)
     }
 
     console.log("configuring theme")
@@ -50,7 +65,48 @@ function configureTheme(wantedTheme) {
     const allowedValues = new Set(["light", "dark", "auto"])
 
     const theme = readTheme(wantedTheme, urlParams, allowedValues);
-    applyTheme(theme);
+    // Only a theme picked by the user (not the initial load or an OS change) gets the animation.
+    if (typeof wantedTheme === "string") {
+        applyThemeWithReveal(theme, applyTheme)
+    } else {
+        applyTheme(theme);
+    }
+}
+
+/**
+ * Switches the theme with a circular reveal that grows out of the theme button, using a
+ * same-document view transition. Falls back to an instant switch where view transitions are
+ * unsupported, when the user prefers reduced motion, or when the theme would not change.
+ */
+function applyThemeWithReveal(theme, applyTheme) {
+    const isDark = () => document.body.classList.contains("theme-dark")
+    const nextIsDark = theme === "dark" || (theme === "auto" && window.matchMedia("(prefers-color-scheme: dark)").matches)
+    const button = document.getElementById("theme-switch-btn")
+    if (!document.startViewTransition
+        || !button
+        || nextIsDark === isDark()
+        || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        applyTheme(theme)
+        return
+    }
+
+    const rect = button.getBoundingClientRect()
+    const x = rect.left + rect.width / 2
+    const y = rect.top + rect.height / 2
+    const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y))
+
+    // The marker lets styles.css suspend the nav/page view-transition names, so the whole page
+    // is one snapshot that the circle reveals.
+    const root = document.documentElement
+    root.setAttribute("data-theme-reveal", "")
+    const transition = document.startViewTransition(() => applyTheme(theme))
+    transition.ready.then(() => {
+        root.animate(
+            {clipPath: [`circle(0 at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`]},
+            {duration: 600, easing: "ease-in-out", pseudoElement: "::view-transition-new(root)"}
+        )
+    }).catch(() => {})
+    transition.finished.finally(() => root.removeAttribute("data-theme-reveal"))
 }
 
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener('change', configureTheme)

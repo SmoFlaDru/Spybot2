@@ -9,7 +9,7 @@
                     @template.fragments.ActivityFragment(activityChart = home.activityChart)
                 </div>
                 <div class="col-md-12 col-height-50">
-                    <div class="card h-100">
+                    <div class="card chart-card h-100">
                         <div class="card-header">
                             <h3 class="card-title my-2">Time of day histogram</h3>
                         </div>
@@ -54,7 +54,9 @@
                                 },
                                 fill:{
                                     colors: "rgb(" + getCSSVar('--tblr-info-rgb') + ")",
-                                    opacity: 0.3,
+                                    // ApexCharts < 4 ignored fill.opacity on bars, so the chart has
+                                    // always been solid; keep it that way.
+                                    opacity: 1,
                                 },
                                 stroke:{
                                     width: 0,
@@ -84,13 +86,11 @@
                                     type: "numeric",
                                     min: 0,
                                     max: 24,
-                                    tickAmount: 11,
+                                    // One tick every two hours. Newer ApexCharts place ticks at
+                                    // exactly max / tickAmount, so this must divide 24 evenly or
+                                    // the hour formatter gets fractions.
+                                    tickAmount: 12,
                                     labels: {formatter: x => (x <= 12 ? x : x-12) + (x < 12 ? 'am' : 'pm')},
-                                    title: {
-                                        text: "Hours",
-                                        offsetY: 68,
-                                        style: {fontWeight: 500},
-                                    },
                                     axisBorder: {
                                         show: false
                                     }
@@ -466,6 +466,12 @@
                                 treemap: {
                                     enableShades: true,
                                     shadeIntensity: 0.3,
+                                    // ApexCharts 7 draws each series name as a badge over the tiles
+                                    // by default; the legend already says which colour is which.
+                                    seriesTitle: {show: false},
+                                    // ...and skips labels on tiles smaller than 4px of text; label
+                                    // every tile like before.
+                                    dataLabels: {minFontSize: 0},
                                 }
                             },
                             stroke:{
