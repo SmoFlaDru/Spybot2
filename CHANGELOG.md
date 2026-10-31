@@ -8,6 +8,7 @@ time the changelog page groups these bullets by the master commit that added the
 git: each group shows the commit's short hash and date, and its tag if the commit has one.
 So a release is simply a tag on master.
 
+- Fixed the charts after the ApexCharts 8 and Tabler 1.7 upgrades: the home page activity chart's idle bars turned silver instead of red, because ApexCharts misread Tabler's new color-mix() colors, and the trend widget's graph could go missing; chart colors are now resolved to plain rgb() values in one shared helper
 - The web image now ships curl so the Compose healthcheck is a plain `curl -f` against the actuator health endpoint instead of a hand-written HTTP request over bash's /dev/tcp
 - The production recorder now joins a shared ts-net Docker network and can reach TeamSpeak by name (set TS_IP=teamspeak) instead of through the host's old bridge address 172.18.0.1
 - Production logs are no longer flooded with Spring Security TRACE output (about a thousand lines a minute): the web app now logs at INFO and above, and the production containers' Docker logs are capped at 3 files of 10 MB each so they can no longer fill the disk

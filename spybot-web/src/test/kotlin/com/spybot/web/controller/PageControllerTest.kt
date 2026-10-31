@@ -17,6 +17,7 @@ import com.spybot.core.model.SelectorOption
 import com.spybot.core.model.StreakRecord
 import com.spybot.core.model.TopUserWeek
 import com.spybot.core.model.UserRecord
+import com.spybot.core.model.WeekComparisonPoint
 import com.spybot.core.model.WeekTrendView
 import com.spybot.core.service.LikedNameService
 import com.spybot.core.service.PasskeyQueries
@@ -123,6 +124,46 @@ class PageControllerTest {
         assertTrue("Benno" in html, "top user of the week must be rendered")
         assertTrue("Something happened" in html, "recent events fragment must be rendered inside the page")
         assertTrue("Log in" in html, "an anonymous viewer sees the login link in the layout")
+    }
+
+    @Test
+    fun `home emits tiny numbers as valid javascript literals`() {
+        // A value like 7.2E-4 (a few seconds of activity) is printed in scientific notation; inside a
+        // <script> block JTE's escaping turned the minus into "E\-4", which is a syntax error that
+        // silently dropped the whole chart.
+        val homePage =
+            HomePageView(
+                activityChart =
+                    ActivityChartView(
+                        points = emptyList(),
+                        options = listOf(SelectorOption(text = "7 days", value = 7, active = true)),
+                        activeOptionText = "7 days",
+                    ),
+                timeOfDay = listOf("8" to 1.0E-5),
+                topUsersOfWeek = emptyList(),
+                activeUsers = ActiveUsersStat(usersThisWeek = 1, usersToday = 1),
+                weekTrend = WeekTrendView(currentWeekSum = 0.1, compareWeekSum = 0.1, fraction = 1.0, deltaPercent = "+0%"),
+                weekComparison =
+                    listOf(
+                        WeekComparisonPoint(
+                            datetime = OffsetDateTime.parse("2026-10-26T16:00:00Z"),
+                            hoursCurrent = 7.205975000000001E-4,
+                            hoursCompare = null,
+                        ),
+                    ),
+                channelPopularity = listOf(ChannelPopularityEntry(name = "Lobby", percentage = 9.9E-4)),
+                recentEvents = RecentEventsPayload(events = emptyList(), hasMore = false, start = 0),
+            )
+        Mockito.`when`(pageService.loggedInUser(null)).thenReturn(null)
+        Mockito.`when`(pageService.home(7)).thenReturn(homePage)
+
+        val html = render { request, response -> controller.home(7, null, request, response) }
+
+        assertTrue("hours_current: 7.205975000000001E-4," in html, "the week comparison value must be a plain JS number")
+        assertTrue("hours_compare: null" in html)
+        assertTrue("percentage: 9.9E-4," in html, "the treemap percentage must be a plain JS number")
+        assertTrue("[8, 1.0E-5]" in html, "the time of day value must be a plain JS number")
+        assertTrue("E\\-" !in html, "no numeric literal may contain an escaped minus")
     }
 
     @Test

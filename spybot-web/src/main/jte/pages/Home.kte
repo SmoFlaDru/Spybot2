@@ -24,7 +24,7 @@
                         document.addEventListener("DOMContentLoaded", function () {
                             if (!window.ApexCharts) return
                             const raw_data = [
-                                @for(entry in home.timeOfDay) [${entry.first}, ${entry.second}], @endfor
+                                @for(entry in home.timeOfDay) [${entry.first}, $unsafe{entry.second.toString()}], @endfor
                             ]
                             new ApexCharts(document.querySelector("#chart-tod"), {
                                 chart: {
@@ -335,8 +335,8 @@
                                     @for(entry in home.weekComparison)
                                     {
                                         datetime: '$unsafe{entry.datetime.toString()}',
-                                        hours_current: ${entry.hoursCurrent?.toString() ?: "null"},
-                                        hours_compare: ${entry.hoursCompare?.toString() ?: "null"}
+                                        hours_current: $unsafe{entry.hoursCurrent?.toString() ?: "null"},
+                                        hours_compare: $unsafe{entry.hoursCompare?.toString() ?: "null"}
                                     },
                                     @endfor
                                 ]
@@ -394,7 +394,7 @@
                                             },
                                         },
                                         labels: weekComparisonData.map(x => x.datetime),
-                                        colors: [tabler.tabler.getColor("primary"), tabler.tabler.getColor("gray-600")],
+                                        colors: [chartColor("primary"), chartColor("gray-600")],
                                         legend: {
                                             show: false,
                                         },
@@ -434,7 +434,7 @@
                         @for(entry in home.channelPopularity)
                         {
                             name: '${entry.name}',
-                            percentage: ${entry.percentage},
+                            percentage: $unsafe{entry.percentage.toString()},
                         },
                         @endfor
                     ]
@@ -476,9 +476,9 @@
                             },
                             stroke:{
                                 width: 5,
-                                colors: [getCSSVar('--tblr-bg-surface')],
+                                colors: [resolveCssColor(getCSSVar('--tblr-bg-surface'))],
                             },
-                            colors: [tabler.tabler.getColor("primary"), tabler.tabler.getColor("red")],
+                            colors: [chartColor("primary"), chartColor("red")],
                             dataLabels: {
                                 enabled: true,
                                 offsetY: -5,
