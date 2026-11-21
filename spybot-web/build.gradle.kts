@@ -4,7 +4,7 @@ buildscript {
     dependencies {
         // Used by generateChangelog to attribute CHANGELOG.md bullets to master commits at build
         // time; the Docker build image has no git binary, so this must be pure Java.
-        classpath("org.eclipse.jgit:org.eclipse.jgit:7.8.0.202609011348-r")
+        classpath("org.eclipse.jgit:org.eclipse.jgit:7.8.1.202611041320-r")
     }
 }
 
