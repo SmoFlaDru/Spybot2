@@ -1,3 +1,11 @@
+/* Tabler's .chart-lg pins the container to 15rem. Charts configured taller than that (timeline 550px,
+   user heatmap 350px) overflowed it, and the card background stopped at the container's edge. Older
+   ApexCharts happened to prop the container open; newer ones do not. Treat 15rem as a minimum instead. */
+.chart-lg {
+    height: auto;
+    min-height: 15rem;
+}
+
 .height-xs-150vw {
 }
 
